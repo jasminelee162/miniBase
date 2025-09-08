@@ -1,0 +1,10 @@
+^E:\SEPEXP\MINIBASE\BUILD\CMAKEFILES\50F3E64B3838FE8EFE8B90E9D3B75F4D\GENERATE.STAMP.RULE
+setlocal
+E:\CMake\bin\cmake.exe -SE:/SepExp/miniBase -BE:/SepExp/miniBase/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file E:/SepExp/miniBase/build/MiniDB.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
