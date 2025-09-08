@@ -31,4 +31,50 @@ private:
     mutable std::mutex mutex_;
 };
 
+class FIFOReplacer {
+public:
+    explicit FIFOReplacer(size_t num_pages) : capacity_(num_pages) {}
+    ~FIFOReplacer() = default;
+    FIFOReplacer(const FIFOReplacer&) = delete;
+    FIFOReplacer& operator=(const FIFOReplacer&) = delete;
+
+    bool Victim(frame_id_t* frame_id) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (queue_.empty()) return false;
+        if (queue_.size() < capacity_) return false;
+        frame_id_t fid = queue_.front();
+        queue_.pop_front();
+        in_queue_.erase(fid);
+        *frame_id = fid;
+        return true;
+    }
+
+    void Pin(frame_id_t frame_id) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto it = in_queue_.find(frame_id);
+        if (it != in_queue_.end()) {
+            queue_.erase(it->second);
+            in_queue_.erase(it);
+        }
+    }
+
+    void Unpin(frame_id_t frame_id) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (in_queue_.find(frame_id) != in_queue_.end()) return;
+        queue_.push_back(frame_id);
+        in_queue_[frame_id] = std::prev(queue_.end());
+    }
+
+    size_t Size() const {
+        std::lock_guard<std::mutex> lock(mutex_);
+        return queue_.size();
+    }
+
+private:
+    size_t capacity_;
+    std::list<frame_id_t> queue_;
+    std::unordered_map<frame_id_t, std::list<frame_id_t>::iterator> in_queue_;
+    mutable std::mutex mutex_;
+};
+
 }

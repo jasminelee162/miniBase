@@ -37,6 +37,9 @@ public:
     double GetHitRate() const;
     size_t GetPoolSize() const { return pool_size_; }
     size_t GetFreeFramesCount() const;
+    size_t GetNumReplacements() const { return num_replacements_.load(); }
+    size_t GetNumWritebacks() const { return num_writebacks_.load(); }
+    void SetPolicy(ReplacementPolicy p) { policy_ = p; }
     
     // 高级特性：动态调整
     bool ResizePool(size_t new_size);
@@ -59,11 +62,15 @@ private:
     std::list<frame_id_t> free_list_;
     
     // LRU替换器
-    std::unique_ptr<LRUReplacer> replacer_;
+    std::unique_ptr<LRUReplacer> lru_replacer_;
+    std::unique_ptr<FIFOReplacer> fifo_replacer_;
+    ReplacementPolicy policy_{ReplacementPolicy::LRU};
     
     // 性能统计
     std::atomic<size_t> num_hits_{0};
     std::atomic<size_t> num_accesses_{0};
+    std::atomic<size_t> num_replacements_{0};
+    std::atomic<size_t> num_writebacks_{0};
     
     // 并发控制
     mutable std::shared_mutex latch_;  // 保护页表和空闲列表

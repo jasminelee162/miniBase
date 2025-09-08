@@ -53,6 +53,9 @@ Status DiskManager::ReadPage(page_id_t page_id, char* page_data) {
         return Status::IO_ERROR;
     }
     num_reads_.fetch_add(1);
+    if constexpr (ENABLE_STORAGE_LOG) {
+        fprintf(stderr, "[DM] Read page %u\n", (unsigned)page_id);
+    }
     return Status::OK;
 }
 
@@ -72,6 +75,9 @@ Status DiskManager::WritePage(page_id_t page_id, const char* page_data) {
         return Status::IO_ERROR;
     }
     num_writes_.fetch_add(1);
+    if constexpr (ENABLE_STORAGE_LOG) {
+        fprintf(stderr, "[DM] Write page %u\n", (unsigned)page_id);
+    }
     // Advance next_page_id_ if we wrote past previous end
     page_id_t expected_next = static_cast<page_id_t>(offset / PAGE_SIZE + 2);
     if (expected_next > next_page_id_.load()) {
@@ -89,11 +95,21 @@ std::future<Status> DiskManager::WritePageAsync(page_id_t page_id, const char* p
 }
 
 page_id_t DiskManager::AllocatePage() {
+    std::lock_guard<std::mutex> lock(file_mutex_);
+    // 先复用空闲页
+    if (!free_page_ids_.empty()) {
+        page_id_t pid = free_page_ids_.front();
+        free_page_ids_.pop();
+        return pid;
+    }
     return next_page_id_.fetch_add(1);
 }
 
-void DiskManager::DeallocatePage(page_id_t /*page_id*/) {
-    // simple implementation: no free list, rely on higher layers
+void DiskManager::DeallocatePage(page_id_t page_id) {
+    if (page_id == INVALID_PAGE_ID) return;
+    std::lock_guard<std::mutex> lock(file_mutex_);
+    // 简单复用：加入空闲队列（不做去重，调用方需保证合法性）
+    free_page_ids_.push(page_id);
 }
 
 void DiskManager::FlushAllPages() {

@@ -49,7 +49,10 @@ void StorageEngine::Checkpoint() {
 
 void StorageEngine::PrintStats() const {
     std::cout << "BufferPoolSize=" << GetBufferPoolSize()
-              << ", HitRate=" << GetCacheHitRate() << std::endl;
+              << ", HitRate=" << GetCacheHitRate()
+              << ", Replacements=" << GetNumReplacements()
+              << ", Writebacks=" << GetNumWritebacks()
+              << std::endl;
 }
 
 double StorageEngine::GetCacheHitRate() const {
@@ -62,6 +65,18 @@ size_t StorageEngine::GetBufferPoolSize() const {
 
 bool StorageEngine::AdjustBufferPoolSize(size_t new_size) {
     return buffer_pool_manager_ ? buffer_pool_manager_->ResizePool(new_size) : false;
+}
+
+size_t StorageEngine::GetNumReplacements() const {
+    return buffer_pool_manager_ ? buffer_pool_manager_->GetNumReplacements() : 0;
+}
+
+size_t StorageEngine::GetNumWritebacks() const {
+    return buffer_pool_manager_ ? buffer_pool_manager_->GetNumWritebacks() : 0;
+}
+
+void StorageEngine::SetReplacementPolicy(ReplacementPolicy policy) {
+    if (buffer_pool_manager_) buffer_pool_manager_->SetPolicy(policy);
 }
 
 } // namespace minidb

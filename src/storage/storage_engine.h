@@ -37,6 +37,9 @@ public:
     void PrintStats() const;
     double GetCacheHitRate() const;
     size_t GetBufferPoolSize() const;
+    size_t GetNumReplacements() const;
+    size_t GetNumWritebacks() const;
+    void SetReplacementPolicy(ReplacementPolicy policy);
     
     // 动态调优（创新特性）
     bool AdjustBufferPoolSize(size_t new_size);
