@@ -7,6 +7,8 @@
 #include <mutex>
 #include <atomic>
 #include <future>
+#include <vector>
+#include <queue>
 
 namespace minidb {
 
@@ -44,6 +46,8 @@ private:
     std::string db_file_;
     std::fstream file_stream_;
     std::atomic<page_id_t> next_page_id_{1};  // 页面ID从1开始
+    // 简单空闲页管理：释放的页可复用
+    std::queue<page_id_t> free_page_ids_;
     
     // 统计信息
     std::atomic<size_t> num_reads_{0};

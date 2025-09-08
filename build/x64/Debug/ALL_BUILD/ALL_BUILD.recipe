@@ -8,6 +8,9 @@
       <FullPath>E:\SepExp\miniBase\build\src\Debug\minidb.exe</FullPath>
     </ProjectOutput>
     <ProjectOutput>
+      <FullPath>E:\SepExp\miniBase\build\tests\Debug\storage_test.exe</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
       <FullPath>E:\SepExp\miniBase\build\x64\Debug\ALL_BUILD</FullPath>
     </ProjectOutput>
   </ProjectOutputs>

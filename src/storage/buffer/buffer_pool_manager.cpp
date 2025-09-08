@@ -6,7 +6,8 @@ namespace minidb {
 BufferPoolManager::BufferPoolManager(size_t pool_size, DiskManager* disk_manager)
     : pool_size_(pool_size), disk_manager_(disk_manager) {
     pages_ = new Page[pool_size_];
-    replacer_ = std::make_unique<LRUReplacer>(pool_size_);
+    lru_replacer_ = std::make_unique<LRUReplacer>(pool_size_);
+    fifo_replacer_ = std::make_unique<FIFOReplacer>(pool_size_);
     frame_page_ids_.assign(pool_size_, INVALID_PAGE_ID);
     for (frame_id_t i = 0; i < pool_size_; ++i) {
         free_list_.push_back(i);
@@ -30,7 +31,9 @@ frame_id_t BufferPoolManager::FindVictimFrame() {
     }
     // 其次从替换器获取
     frame_id_t victim = INVALID_FRAME_ID;
-    if (replacer_->Victim(&victim)) {
+    if ((policy_ == ReplacementPolicy::LRU ? lru_replacer_->Victim(&victim)
+                                           : fifo_replacer_->Victim(&victim))) {
+        num_replacements_.fetch_add(1);
         return victim;
     }
     return INVALID_FRAME_ID;
@@ -43,6 +46,11 @@ bool BufferPoolManager::FlushFrameToPages(frame_id_t frame_id) {
     Status s = disk_manager_->WritePage(frame_page_ids_[frame_id], page.GetData());
     if (s != Status::OK) return false;
     page.SetDirty(false);
+    num_writebacks_.fetch_add(1);
+    if constexpr (ENABLE_STORAGE_LOG) {
+        // 简易日志（可改为更完整的日志系统）
+        fprintf(stderr, "[BPM] Writeback page %u from frame %zu\n", (unsigned)frame_page_ids_[frame_id], (size_t)frame_id);
+    }
     return true;
 }
 
@@ -54,7 +62,7 @@ Page* BufferPoolManager::FetchPage(page_id_t page_id) {
         frame_id_t fid = it->second;
         Page& page = pages_[fid];
         page.IncPinCount();
-        replacer_->Pin(fid);
+        if (policy_ == ReplacementPolicy::LRU) lru_replacer_->Pin(fid); else fifo_replacer_->Pin(fid);
         num_hits_.fetch_add(1);
         return &page;
     }
@@ -90,7 +98,7 @@ Page* BufferPoolManager::FetchPage(page_id_t page_id) {
     // Note: Page::Reset 会清空数据，这里不调用。仅设置 pin
     // 我们不在 Page 中持久保存 page_id_ 的 setter，因此不依赖内部 page_id_ 字段用于磁盘定位。
     frame_page.IncPinCount();
-    replacer_->Pin(fid);
+    if (policy_ == ReplacementPolicy::LRU) lru_replacer_->Pin(fid); else fifo_replacer_->Pin(fid);
     return &frame_page;
 }
 
@@ -119,7 +127,7 @@ Page* BufferPoolManager::NewPage(page_id_t* page_id) {
     frame_page_ids_[fid] = *page_id;
     frame_page.SetDirty(false);
     frame_page.IncPinCount();
-    replacer_->Pin(fid);
+    if (policy_ == ReplacementPolicy::LRU) lru_replacer_->Pin(fid); else fifo_replacer_->Pin(fid);
     return &frame_page;
 }
 
@@ -133,7 +141,7 @@ bool BufferPoolManager::UnpinPage(page_id_t page_id, bool is_dirty) {
     if (page.GetPinCount() <= 0) return false;
     page.DecPinCount();
     if (page.GetPinCount() == 0) {
-        replacer_->Unpin(fid);
+        if (policy_ == ReplacementPolicy::LRU) lru_replacer_->Unpin(fid); else fifo_replacer_->Unpin(fid);
     }
     return true;
 }
