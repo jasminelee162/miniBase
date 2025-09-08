@@ -1,0 +1,6 @@
+CREATE TABLE students
+INSERT INTO students
+DELETE FROM students
+SELECT * FROM students
+FILTER on age > 18
+PROJECT columns

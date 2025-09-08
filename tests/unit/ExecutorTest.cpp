@@ -1,26 +1,47 @@
-#include "../../src/engine/operators/Executor.h"
-#include "../../src/engine/operators/Page.h"
+#include "../../src/engine/executor/Executor.h"
 #include <iostream>
 
 int main()
 {
-    Page page;
-    page.page_id = 1;
-    Row row1 = {{{"id", "1"}, {"name", "Alice"}, {"age", "20"}}};
-    Row row2 = {{{"id", "2"}, {"name", "Bob"}, {"age", "25"}}};
-    page.rows.push_back(row1);
-    page.rows.push_back(row2);
+    Executor exec;
 
-    Executor exe;
-    auto scanned = exe.SeqScan(page);
-    auto filtered = exe.Filter(scanned, "Alice");
-    auto projected = exe.Project(filtered, {"id", "name"});
+    // 1. CREATE TABLE
+    PlanNode create;
+    create.type = PlanType::CreateTable;
+    create.table_name = "students";
+    exec.execute(&create);
 
-    for (auto &row : projected)
-    {
-        for (auto &col : row.columns)
-            std::cout << col.col_name << ":" << col.value << " ";
-        std::cout << std::endl;
-    }
+    // 2. INSERT
+    PlanNode insert;
+    insert.type = PlanType::Insert;
+    insert.table_name = "students";
+    insert.columns = {"id=1", "name='Alice'"};
+    exec.execute(&insert);
+
+    // 3. DELETE
+    PlanNode del;
+    del.type = PlanType::Delete;
+    del.table_name = "students";
+    del.predicate = "id=1";
+    exec.execute(&del);
+
+    // 4. SEQ SCAN
+    PlanNode scan;
+    scan.type = PlanType::SeqScan;
+    scan.table_name = "students";
+    exec.execute(&scan);
+
+    // 5. FILTER
+    PlanNode filter;
+    filter.type = PlanType::Filter;
+    filter.predicate = "age > 18";
+    exec.execute(&filter);
+
+    // 6. PROJECT
+    PlanNode project;
+    project.type = PlanType::Project;
+    project.columns = {"name", "age"};
+    exec.execute(&project);
+
     return 0;
 }
