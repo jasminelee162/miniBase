@@ -1,0 +1,4 @@
+# CMake generation dependency list for this directory.
+E:/SepExp/miniBase/build/_deps/googletest-src/googlemock/CMakeLists.txt
+E:/SepExp/miniBase/build/_deps/googletest-src/googlemock/cmake/gmock.pc.in
+E:/SepExp/miniBase/build/_deps/googletest-src/googlemock/cmake/gmock_main.pc.in

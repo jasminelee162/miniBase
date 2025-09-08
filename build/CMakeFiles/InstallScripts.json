@@ -1,0 +1,15 @@
+{
+	"InstallScripts" : 
+	[
+		"E:/SepExp/miniBase/build/cmake_install.cmake",
+		"E:/SepExp/miniBase/build/src/cmake_install.cmake",
+		"E:/SepExp/miniBase/build/src/util/cmake_install.cmake",
+		"E:/SepExp/miniBase/build/src/storage/cmake_install.cmake",
+		"E:/SepExp/miniBase/build/src/storage/buffer/cmake_install.cmake",
+		"E:/SepExp/miniBase/build/tests/cmake_install.cmake",
+		"E:/SepExp/miniBase/build/_deps/googletest-build/cmake_install.cmake",
+		"E:/SepExp/miniBase/build/_deps/googletest-build/googlemock/cmake_install.cmake",
+		"E:/SepExp/miniBase/build/_deps/googletest-build/googletest/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

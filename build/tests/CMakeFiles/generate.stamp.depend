@@ -1,0 +1,11 @@
+# CMake generation dependency list for this directory.
+E:/CMake/share/cmake-4.1/Modules/CheckCXXSourceCompiles.cmake
+E:/CMake/share/cmake-4.1/Modules/CheckIncludeFileCXX.cmake
+E:/CMake/share/cmake-4.1/Modules/CheckLibraryExists.cmake
+E:/CMake/share/cmake-4.1/Modules/ExternalProject/shared_internal_commands.cmake
+E:/CMake/share/cmake-4.1/Modules/FetchContent.cmake
+E:/CMake/share/cmake-4.1/Modules/FetchContent/CMakeLists.cmake.in
+E:/CMake/share/cmake-4.1/Modules/FindPackageHandleStandardArgs.cmake
+E:/CMake/share/cmake-4.1/Modules/FindPackageMessage.cmake
+E:/CMake/share/cmake-4.1/Modules/FindThreads.cmake
+E:/SepExp/miniBase/tests/CMakeLists.txt
