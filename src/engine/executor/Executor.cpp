@@ -2,9 +2,9 @@
  * 接收 PlanNode，然后调度执行（目前只打印，之后再接存储）
  */
 
-#include "Executor.h"
+#include "executor.h"
 #include <iostream>
-#include "../../../tests/unit/Logger.h"
+#include "../../../tests/unit/logger.h"
 
 static Logger logger("minidb.log");
 

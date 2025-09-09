@@ -1,4 +1,4 @@
-#include "../../src/cli/MiniCLI.h"
+#include "../../src/cli/miniCLI.h"
 
 int main()
 {

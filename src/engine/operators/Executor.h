@@ -1,6 +1,6 @@
 #pragma once
-#include "PlanNode.h"
-#include "Page.h"
+#include "planNode.h"
+#include "page.h"
 #include <vector>
 #include <string>
 

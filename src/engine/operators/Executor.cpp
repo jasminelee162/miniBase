@@ -1,7 +1,7 @@
 /**
  * 模拟执行算子逻辑
  */
-#include "Executor.h"
+#include "executor.h"
 
 std::vector<Row> Executor::SeqScan(Page &page)
 {
