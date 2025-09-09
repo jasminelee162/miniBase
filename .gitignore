@@ -9,9 +9,7 @@
 
 # IDE 文件夹
 .vs/
-.vscode/settings.json
-.vscode/tasks.json
-.vscode/launch.json
+.vscode/
 
 # CMake 生成的文件
 CMakeCache.txt
