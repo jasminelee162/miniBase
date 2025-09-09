@@ -10,9 +10,9 @@ miniBase/
   │  ├─ storage/              # 操作系统模块（页式存储、缓冲池、磁盘管理）
   │  │  ├─ page/              # Page、DiskManager
   │  │  └─ buffer/            # BufferPoolManager、LRUReplacer
-  │  ├─ catalog/              # 数据库目录（待实现）
+  │  ├─ catalog/              # 系统目录 (表/列元数据)
   │  ├─ frontend/             # SQL 编译器模块（待实现）
-  │  ├─ engine/               # 执行引擎（待实现）
+  │  ├─ engine/               # 数据库执行引擎
   │  └─ main.cpp              # 最小可运行示例
   ├─ tests/                   # 单元测试
   │  └─ unit/                 # 存储模块测试等
