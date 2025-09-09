@@ -12,7 +12,7 @@ namespace minidb {
 
 /**
  * 存储引擎：为上层数据库系统提供统一的存储访问接口
- * 这是你模块对外的主要API
+ * 存储模块对外的主要API
  */
 class StorageEngine {
 public:

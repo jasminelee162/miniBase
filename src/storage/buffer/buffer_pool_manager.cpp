@@ -1,7 +1,14 @@
 #include "storage/buffer/buffer_pool_manager.h"
+#include "util/logger.h"
 #include <cassert>
 
 namespace minidb {
+
+#ifdef PROJECT_ROOT_DIR
+static Logger g_storage_logger_bpm(std::string(PROJECT_ROOT_DIR) + "/logs/storage.log");
+#else
+static Logger g_storage_logger_bpm("storage.log");
+#endif
 
 BufferPoolManager::BufferPoolManager(size_t pool_size, DiskManager* disk_manager)
     : pool_size_(pool_size), disk_manager_(disk_manager) {
@@ -48,12 +55,15 @@ bool BufferPoolManager::FlushFrameToPages(frame_id_t frame_id) {
     page.SetDirty(false);
     num_writebacks_.fetch_add(1);
     if constexpr (ENABLE_STORAGE_LOG) {
-        // 简易日志（可改为更完整的日志系统）
-        fprintf(stderr, "[BPM] Writeback page %u from frame %zu\n", (unsigned)frame_page_ids_[frame_id], (size_t)frame_id);
+        g_storage_logger_bpm.log(
+            std::string("[BPM] Writeback page ") +
+            std::to_string((unsigned)frame_page_ids_[frame_id]) +
+            " from frame " + std::to_string((size_t)frame_id)
+        );
     }
     return true;
 }
-
+//从缓存池里获取一页
 Page* BufferPoolManager::FetchPage(page_id_t page_id) {
     std::unique_lock<std::shared_mutex> lock(latch_);
     num_accesses_.fetch_add(1);
@@ -101,7 +111,7 @@ Page* BufferPoolManager::FetchPage(page_id_t page_id) {
     if (policy_ == ReplacementPolicy::LRU) lru_replacer_->Pin(fid); else fifo_replacer_->Pin(fid);
     return &frame_page;
 }
-
+//申请新页 向DiskManager申请新页号,找一个槽位，清空页内容，pin 并返回
 Page* BufferPoolManager::NewPage(page_id_t* page_id) {
     if (page_id == nullptr) return nullptr;
     std::unique_lock<std::shared_mutex> lock(latch_);
@@ -120,8 +130,17 @@ Page* BufferPoolManager::NewPage(page_id_t* page_id) {
         frame_page_ids_[fid] = INVALID_PAGE_ID;
     }
 
-    // 分配新页并清零
+    // 分配新页并清零（磁盘满时返回 INVALID_PAGE_ID）
     *page_id = disk_manager_->AllocatePage();
+    if (*page_id == INVALID_PAGE_ID) {
+        // 回收该帧到空闲列表并返回失败
+        page_table_.erase(frame_page_ids_[fid]);
+        frame_page.Reset();
+        frame_page_ids_[fid] = INVALID_PAGE_ID;
+        std::lock_guard<std::mutex> guard(free_list_mutex_);
+        free_list_.push_front(fid);
+        return nullptr;
+    }
     std::memset(frame_page.GetData(), 0, PAGE_SIZE);
     page_table_[*page_id] = fid;
     frame_page_ids_[fid] = *page_id;
@@ -130,7 +149,7 @@ Page* BufferPoolManager::NewPage(page_id_t* page_id) {
     if (policy_ == ReplacementPolicy::LRU) lru_replacer_->Pin(fid); else fifo_replacer_->Pin(fid);
     return &frame_page;
 }
-
+//进程用完归还缓存，标记脏否
 bool BufferPoolManager::UnpinPage(page_id_t page_id, bool is_dirty) {
     std::unique_lock<std::shared_mutex> lock(latch_);
     auto it = page_table_.find(page_id);
@@ -145,7 +164,7 @@ bool BufferPoolManager::UnpinPage(page_id_t page_id, bool is_dirty) {
     }
     return true;
 }
-
+//把该页写回磁盘并清除脏标记
 bool BufferPoolManager::FlushPage(page_id_t page_id) {
     std::shared_lock<std::shared_mutex> lock(latch_);
     auto it = page_table_.find(page_id);
@@ -158,7 +177,7 @@ bool BufferPoolManager::FlushPage(page_id_t page_id) {
     page.SetDirty(false);
     return true;
 }
-
+//只有当页未被使用（pin=0）时才删；若脏则先写回
 bool BufferPoolManager::DeletePage(page_id_t page_id) {
     std::unique_lock<std::shared_mutex> lock(latch_);
     auto it = page_table_.find(page_id);
@@ -181,7 +200,7 @@ bool BufferPoolManager::DeletePage(page_id_t page_id) {
     disk_manager_->DeallocatePage(page_id);
     return true;
 }
-
+//把所有脏页写回，并调用 disk_manager_->FlushAllPages()
 void BufferPoolManager::FlushAllPages() {
     std::shared_lock<std::shared_mutex> lock(latch_);
     for (auto& kv : page_table_) {

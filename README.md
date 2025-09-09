@@ -42,6 +42,13 @@ miniBase/
 
 ## 模块二：操作系统模块（存储子系统）
 该模块提供页式存储、缓冲池与磁盘管理，是数据库系统的高性能持久化基础。
+- 生成构建目录，先配置再编译：
+`cd E:\SepExp\miniBase`
+`cmake -S . -B .\build -DCMAKE_BUILD_TYPE=Debug`
+`cd .\build`
+`cmake --build . --config Debug -j`
+- 进行存储模块的ctest单元测试：
+`ctest -C Debug -R storage_test -V`
 
 - 已实现组件：
   - Page（`src/storage/page/page.h`）：固定大小（默认 4KB）页数据结构，含脏页标记与 pin 计数、读写锁等。
@@ -72,6 +79,12 @@ miniBase/
   1) 获取或创建页 → 写入数据 → 标记脏并解 pin（PutPage）
   2) 需要时刷新（Checkpoint/FlushPage）
   3) 读取同一页验证内容；查看统计与策略切换
+- 创建引擎
+  `StorageEngine engine("minidb.data", 128);`  128是缓存池大小，可修改
+- 修改替换策略
+  `engine.SetReplacementPolicy(ReplacementPolicy::FIFO);`
+  或者
+  `engine.SetReplacementPolicy(ReplacementPolicy::LRU);`默认
 
 - 可选日志（便于实验与报告）
   - 在 `src/util/config.h` 将 `ENABLE_STORAGE_LOG` 设为 `true` 后重编译，可输出 `[DM]` 读/写、`[BPM]` 写回日志到标准错误流，便于观察淘汰与 I/O 行为。

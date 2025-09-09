@@ -12,11 +12,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 编译选项（区分 MSVC 与非 MSVC）
 if(MSVC)
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        add_compile_options(/W4 /Zi /Od /utf-8)
-    else()
-        add_compile_options(/W4 /O2 /DNDEBUG /utf-8)
-    endif()
+    # VS 多配置生成器下不要依赖 CMAKE_BUILD_TYPE，使用按配置选项
+    add_compile_options(/W4 /utf-8)
+    # 分开写，避免生成器表达式被当作单一参数解析异常
+    add_compile_options($<$<CONFIG:Debug>:/Zi>)
+    add_compile_options($<$<CONFIG:Debug>:/Od>)
+    add_compile_options($<$<CONFIG:Debug>:/RTC1>)
+    add_compile_options($<$<CONFIG:Release>:/O2>)
+    add_compile_options($<$<CONFIG:Release>:/DNDEBUG>)
 else()
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -Wall -Wextra -fsanitize=address")
@@ -28,6 +31,9 @@ endif()
 
 # 包含目录
 include_directories(src)
+
+# 提供项目根目录给代码使用（用于固定日志/数据文件路径）
+add_compile_definitions(PROJECT_ROOT_DIR="${CMAKE_SOURCE_DIR}")
 
 # 查找依赖库
 find_package(Threads REQUIRED)

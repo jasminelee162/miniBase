@@ -23,7 +23,8 @@ public:
     BufferPoolManager(const BufferPoolManager&) = delete;
     BufferPoolManager& operator=(const BufferPoolManager&) = delete;
 
-    // 核心页面操作
+    // 核心页面操作   缓存池核心接口 
+    //  
     Page* FetchPage(page_id_t page_id);
     Page* NewPage(page_id_t* page_id);
     bool UnpinPage(page_id_t page_id, bool is_dirty);
@@ -53,20 +54,22 @@ private:
     Page* pages_;  // 页面池数组
     DiskManager* disk_manager_;
     
-    // 页表：page_id -> frame_id 映射
+    // 页表：page_id -> frame_id 映射 某页在缓存的哪个“槽位”,即帧frame
     std::unordered_map<page_id_t, frame_id_t> page_table_;
-    // 反向映射：frame_id -> page_id（用于判定帧是否占用、写回等）
+    // 反向映射：frame_id -> page_id（用于判定槽位是否占用、写回等）
     std::vector<page_id_t> frame_page_ids_;
     
-    // 空闲帧列表
+    // 空闲槽位列表
     std::list<frame_id_t> free_list_;
     
     // LRU替换器
     std::unique_ptr<LRUReplacer> lru_replacer_;
+    // FIFO替换器
     std::unique_ptr<FIFOReplacer> fifo_replacer_;
+    // 替换策略 默认是LRU
     ReplacementPolicy policy_{ReplacementPolicy::LRU};
     
-    // 性能统计
+    // 性能统计  计数器：命中率、访问次数、替换次数、写回次数
     std::atomic<size_t> num_hits_{0};
     std::atomic<size_t> num_accesses_{0};
     std::atomic<size_t> num_replacements_{0};

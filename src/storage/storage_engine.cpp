@@ -1,7 +1,16 @@
 #include "storage/storage_engine.h"
+#include "util/logger.h"
+#include "util/config.h"
 #include <iostream>
+#include <sstream>
 
 namespace minidb {
+
+#ifdef PROJECT_ROOT_DIR
+static Logger g_storage_logger_engine(std::string(PROJECT_ROOT_DIR) + "/logs/storage.log");
+#else
+static Logger g_storage_logger_engine("storage.log");
+#endif
 
 StorageEngine::StorageEngine(const std::string& db_file, size_t buffer_pool_size)
     : disk_manager_(std::make_unique<DiskManager>(db_file)),
@@ -11,23 +20,23 @@ StorageEngine::StorageEngine(const std::string& db_file, size_t buffer_pool_size
 StorageEngine::~StorageEngine() {
     Shutdown();
 }
-
+//获取一页
 Page* StorageEngine::GetPage(page_id_t page_id) {
     return buffer_pool_manager_->FetchPage(page_id);
 }
-
+//申请新页
 Page* StorageEngine::CreatePage(page_id_t* page_id) {
     return buffer_pool_manager_->NewPage(page_id);
 }
-
+//用完页后归还缓存，标记脏否
 bool StorageEngine::PutPage(page_id_t page_id, bool is_dirty) {
     return buffer_pool_manager_->UnpinPage(page_id, is_dirty);
 }
-
+//删除一页
 bool StorageEngine::RemovePage(page_id_t page_id) {
     return buffer_pool_manager_->DeletePage(page_id);
 }
-
+//获取多页
 std::vector<Page*> StorageEngine::GetPages(const std::vector<page_id_t>& page_ids) {
     std::vector<Page*> result;
     result.reserve(page_ids.size());
@@ -36,45 +45,50 @@ std::vector<Page*> StorageEngine::GetPages(const std::vector<page_id_t>& page_id
     }
     return result;
 }
-
+//刷脏页并关闭文件
 void StorageEngine::Shutdown() {
     if (is_shutdown_.exchange(true)) return;
     if (buffer_pool_manager_) buffer_pool_manager_->FlushAllPages();
     if (disk_manager_) disk_manager_->Shutdown();
 }
-
+//只刷脏页不关闭文件
 void StorageEngine::Checkpoint() {
     if (buffer_pool_manager_) buffer_pool_manager_->FlushAllPages();
 }
-
+//打印统计信息
 void StorageEngine::PrintStats() const {
-    std::cout << "BufferPoolSize=" << GetBufferPoolSize()
-              << ", HitRate=" << GetCacheHitRate()
-              << ", Replacements=" << GetNumReplacements()
-              << ", Writebacks=" << GetNumWritebacks()
-              << std::endl;
+    std::ostringstream oss;
+    oss << "BufferPoolSize=" << GetBufferPoolSize()
+        << ", HitRate=" << GetCacheHitRate()
+        << ", Replacements=" << GetNumReplacements()
+        << ", Writebacks=" << GetNumWritebacks();
+    const std::string msg = oss.str();
+    std::cout << msg << std::endl;
+    if constexpr (ENABLE_STORAGE_LOG) {
+        g_storage_logger_engine.log(msg);
+    }
 }
-
+//缓存命中率
 double StorageEngine::GetCacheHitRate() const {
     return buffer_pool_manager_ ? buffer_pool_manager_->GetHitRate() : 0.0;
 }
-
+//缓存池大小
 size_t StorageEngine::GetBufferPoolSize() const {
     return buffer_pool_manager_ ? buffer_pool_manager_->GetPoolSize() : 0;
 }
-
+//调整缓存池大小
 bool StorageEngine::AdjustBufferPoolSize(size_t new_size) {
     return buffer_pool_manager_ ? buffer_pool_manager_->ResizePool(new_size) : false;
 }
-
+//替换次数
 size_t StorageEngine::GetNumReplacements() const {
     return buffer_pool_manager_ ? buffer_pool_manager_->GetNumReplacements() : 0;
 }
-
+//写回次数
 size_t StorageEngine::GetNumWritebacks() const {
     return buffer_pool_manager_ ? buffer_pool_manager_->GetNumWritebacks() : 0;
 }
-
+//设置替换策略
 void StorageEngine::SetReplacementPolicy(ReplacementPolicy policy) {
     if (buffer_pool_manager_) buffer_pool_manager_->SetPolicy(policy);
 }
