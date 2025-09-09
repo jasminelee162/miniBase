@@ -1,4 +1,4 @@
-#include "MiniCLI.h"
+#include "miniCLI.h"
 #include "../frontend/parser/SQLParser.h"
 #include "../engine/executor/Executor.h"
 #include <iostream>
