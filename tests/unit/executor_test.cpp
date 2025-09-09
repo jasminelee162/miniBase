@@ -3,7 +3,8 @@
 
 int main()
 {
-    Executor exec;
+    minidb::DiskManager dm("minidb.db"); // 1. 先创建 DiskManager
+    minidb::Executor exec(&dm);          // 2. 再创建 Executor
 
     // 1. CREATE TABLE
     PlanNode create;

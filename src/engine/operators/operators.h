@@ -1,10 +1,10 @@
 #pragma once
-#include "planNode.h"
-#include "page.h"
+#include "plan_node.h"
+#include "mem_page.h"
 #include <vector>
 #include <string>
 
-class Executor
+class Operators
 {
 public:
     std::vector<Row> SeqScan(Page &page);

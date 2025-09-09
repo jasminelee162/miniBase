@@ -4,3 +4,6 @@ DELETE FROM students
 SELECT * FROM students
 FILTER on age > 18
 PROJECT columns
+INSERT INTO test_table
+INSERT INTO users
+SELECT * FROM users

@@ -1,14 +1,14 @@
 /**
  * 模拟执行算子逻辑
  */
-#include "executor.h"
+#include "operators.h"
 
-std::vector<Row> Executor::SeqScan(Page &page)
+std::vector<Row> Operators::SeqScan(Page &page)
 {
     return page.rows;
 }
 
-std::vector<Row> Executor::Filter(const std::vector<Row> &rows, const std::string &predicate)
+std::vector<Row> Operators::Filter(const std::vector<Row> &rows, const std::string &predicate)
 {
     std::vector<Row> result;
     for (auto &row : rows)
@@ -25,7 +25,7 @@ std::vector<Row> Executor::Filter(const std::vector<Row> &rows, const std::strin
     return result;
 }
 
-std::vector<Row> Executor::Project(const std::vector<Row> &rows, const std::vector<std::string> &cols)
+std::vector<Row> Operators::Project(const std::vector<Row> &rows, const std::vector<std::string> &cols)
 {
     std::vector<Row> result;
     for (auto &row : rows)
