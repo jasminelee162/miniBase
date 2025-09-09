@@ -1,0 +1,26 @@
+# 构建目录
+/build/
+
+# 可执行文件 (Windows)
+*.exe
+
+# 日志文件
+*.log
+
+# IDE 文件夹
+.vs/
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+
+# CMake 生成的文件
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+DependInfo.cmake
+Makefile
+
+# 临时文件
+*.tmp
+*~
