@@ -50,6 +50,32 @@ miniBase/
   - BufferPoolManager（`src/storage/buffer/buffer_pool_manager.*`）：页面缓存、替换、刷盘与统计（命中率）。
   - StorageEngine（`src/storage/storage_engine.*`）：对外统一接口（Get/Create/Put/Remove/Checkpoint/统计）。
 
+- 对外接口一览（路径 / 函数签名 / 说明）
+  - 磁盘层（真实文件 I/O）`src/storage/page/disk_manager.h`
+    - `Status ReadPage(page_id_t page_id, char* page_data)`：按页号读取 4KB 到缓冲区；越界自动零填充。
+    - `Status WritePage(page_id_t page_id, const char* page_data)`：将 4KB 缓冲区写回对应页。
+    - `page_id_t AllocatePage()` / `void DeallocatePage(page_id_t)`：分配与回收页号（回收进入空闲队列，可复用）。
+  - 缓存层（缓冲池）`src/storage/buffer/buffer_pool_manager.h`
+    - `Page* FetchPage(page_id_t page_id)`：从缓存取页；未命中则从磁盘装入并可能触发替换。
+    - `Page* NewPage(page_id_t* out_id)`：分配新页并装入缓冲池，返回可写 `Page*`。
+    - `bool UnpinPage(page_id_t page_id, bool is_dirty)`：页用完解 pin；`is_dirty=true` 标记脏页。
+    - `bool FlushPage(page_id_t page_id)` / `void FlushAllPages()`：刷单页 / 全部脏页到磁盘。
+    - `void SetPolicy(ReplacementPolicy)`：切换替换策略（`LRU` 或 `FIFO`）。
+    - 统计：`double GetHitRate()`、`size_t GetNumReplacements()`、`size_t GetNumWritebacks()`。
+  - 统一门面（推荐上层仅依赖此层）`src/storage/storage_engine.h`
+    - `Page* GetPage(page_id_t)`、`Page* CreatePage(page_id_t*)`、`bool PutPage(page_id_t,bool is_dirty)`、`bool RemovePage(page_id_t)`。
+    - `void Checkpoint()` / `void Shutdown()`：全量刷脏 / 关闭。
+    - `double GetCacheHitRate()`、`size_t GetBufferPoolSize()`、`size_t GetNumReplacements()`、`size_t GetNumWritebacks()`。
+    - `void SetReplacementPolicy(ReplacementPolicy)`：设置 LRU/FIFO。
+
+- 使用示例（典型调用流程）
+  1) 获取或创建页 → 写入数据 → 标记脏并解 pin（PutPage）
+  2) 需要时刷新（Checkpoint/FlushPage）
+  3) 读取同一页验证内容；查看统计与策略切换
+
+- 可选日志（便于实验与报告）
+  - 在 `src/util/config.h` 将 `ENABLE_STORAGE_LOG` 设为 `true` 后重编译，可输出 `[DM]` 读/写、`[BPM]` 写回日志到标准错误流，便于观察淘汰与 I/O 行为。
+
 - 单元测试：
   - `tests/unit/storage_test.cpp` 覆盖基本页操作、并发访问、缓存命中率、LRU 策略。
   - 使用 CMake FetchContent 引入 googletest，自动匹配运行库配置；Windows 下默认使用 MSVC `/utf-8`。
@@ -82,8 +108,6 @@ miniBase/
 
 ### 构建（Windows/MSVC 示例）
 ```bash
-mkdir build
-cd build
 cmake -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug ..
 cmake --build . --config Debug
 ```
