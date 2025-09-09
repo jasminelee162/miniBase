@@ -1,0 +1,10 @@
+E:/Code/Project_grade3/SX/miniBase/build/CMakeFiles/ALL_BUILD.dir
+E:/Code/Project_grade3/SX/miniBase/build/CMakeFiles/ZERO_CHECK.dir
+E:/Code/Project_grade3/SX/miniBase/build/src/frontend/lexer/CMakeFiles/lexer.dir
+E:/Code/Project_grade3/SX/miniBase/build/src/frontend/lexer/CMakeFiles/lexer_test.dir
+E:/Code/Project_grade3/SX/miniBase/build/src/frontend/parser/CMakeFiles/parser.dir
+E:/Code/Project_grade3/SX/miniBase/build/src/frontend/parser/CMakeFiles/parser_test.dir
+E:/Code/Project_grade3/SX/miniBase/build/src/frontend/semantic/CMakeFiles/semantic.dir
+E:/Code/Project_grade3/SX/miniBase/build/src/frontend/semantic/CMakeFiles/semantic_test.dir
+E:/Code/Project_grade3/SX/miniBase/build/src/frontend/planner/CMakeFiles/planner.dir
+E:/Code/Project_grade3/SX/miniBase/build/src/frontend/planner/CMakeFiles/planner_test.dir

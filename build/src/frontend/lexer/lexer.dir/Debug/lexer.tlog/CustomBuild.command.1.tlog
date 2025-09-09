@@ -1,0 +1,10 @@
+^E:\CODE\PROJECT_GRADE3\SX\MINIBASE\SRC\FRONTEND\LEXER\CMAKELISTS.TXT
+setlocal
+D:\CMake\bin\cmake.exe -SE:/Code/Project_grade3/SX/miniBase -BE:/Code/Project_grade3/SX/miniBase/build --check-stamp-file E:/Code/Project_grade3/SX/miniBase/build/src/frontend/lexer/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
