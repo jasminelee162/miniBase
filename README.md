@@ -11,7 +11,7 @@ miniBase/
   │  │  ├─ page/              # Page、DiskManager
   │  │  └─ buffer/            # BufferPoolManager、LRUReplacer
   │  ├─ catalog/              # 系统目录 (表/列元数据)
-  │  ├─ frontend/             # SQL 编译器模块（待实现）
+  │  ├─ sql_compiler/         # SQL 编译器模块（包含 lexer/parser/semantic/planner）
   │  ├─ engine/               # 数据库执行引擎
   │  └─ main.cpp              # 最小可运行示例
   ├─ tests/                   # 单元测试
@@ -21,7 +21,7 @@ miniBase/
   └─ CMakeLists.txt           # 顶层构建脚本
 ```
 
-## 模块一：SQL 编译器模块（Frontend）
+## 模块一：SQL 编译器模块（sql_compiler）
 该模块将 SQL 文本转换为逻辑执行计划（Plan），为后续执行引擎与存储引擎提供输入。
 
 - 目标能力：
@@ -30,15 +30,20 @@ miniBase/
   - 语义分析：表/列存在性、类型一致性、列数/列序检查；维护 Catalog；输出语义结果或错误信息。
   - 计划生成：将 AST 转换为逻辑算子树（CreateTable、Insert、SeqScan、Filter、Project），输出为树/JSON/S-表达式之一。
 
-- 当前进度：
-  - 目录与构建脚手架已就绪（`src/frontend/`）。
-  - 具体实现待补充（Lexer/Parser/Semantic/PlanBuilder）。
+- 当前进度（基于 `src/sql_compiler/` 代码）：
+  - 已实现并加入构建：
+    - `lexer`：实现文件 `src/sql_compiler/lexer/lexer.cpp`、`lexer.h`，并有 `lexer_test.cpp`。
+    - `parser`：实现文件 `src/sql_compiler/parser/parser.cpp`、`ast.*`，并有 `parser_test.cpp`。
+    - `semantic`：实现文件 `src/sql_compiler/semantic/semantic_analyzer.*`，并有 `semantic_test.cpp`。
+    - `planner`：实现 `planner.cpp`/`planner.h`、`plan_printer.*`，并有 `planner_test.cpp`。
+  - 各子模块已通过 CMake 脚本接入顶层工程（`src/CMakeLists.txt` 中 add_subdirectory）。
+  - 仍需完成的工作：完整的 SQL 子集支持（某些语法/表达式/类型检查用例需补充）、更丰富的计划节点与表达式 AST 的紧密对接、与 Catalog/Engine 的联调。
 
-- 建议路线：
-  1) 定义 SQL 子集与 Token/AST/错误模型；
-  2) 实现 Lexer → Parser（递归下降或 LL(1)）；
-  3) 语义分析接入 Catalog；
-  4) 生成计划（SeqScan/Filter/Project 等）。
+-- 建议路线：
+1) 保持并扩展现有子模块的单元测试（lexer_test/parser_test/semantic_test/planner_test），逐步完善覆盖；
+2) 明确定义 parser 输出的 JSON/AST schema（方便 `JsonToPlan` 或 planner 使用）；
+3) 在 `planner`/`JsonToPlan` 中将 AST 映射到 `PlanNode`（注意表达式类型与 values 的类型扩展）；
+4) 与 `catalog`/`engine` 做联调测试（从完整 SQL 到执行结果）。
 
 ## 模块二：操作系统模块（存储子系统）
 该模块提供页式存储、缓冲池与磁盘管理，是数据库系统的高性能持久化基础。
@@ -121,8 +126,8 @@ miniBase/
 
 ### 构建（Windows/MSVC 示例）
 ```bash
-cmake -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug ..
-cmake --build . --config Debug
+cmake -DBUILD_TESTS=ON -S . -B build
+cmake --build build --config Debug
 ```
 
 ### 运行最小示例
@@ -138,7 +143,16 @@ E:\SepExp\miniBase\build\src\Debug\minidb.exe
 cd build
 cmake --build . --config Debug --target storage_test
 tests\\Debug\\storage_test.exe
-# 或
+# 运行 sql_compiler 模块的单元测试（示例）
+cmake --build . --config Debug --target lexer_test
+tests\\Debug\\lexer_test.exe
+cmake --build . --config Debug --target parser_test
+tests\\Debug\\parser_test.exe
+cmake --build . --config Debug --target semantic_test
+tests\\Debug\\semantic_test.exe
+cmake --build . --config Debug --target planner_test
+tests\\Debug\\planner_test.exe
+# 或使用 ctest（如果 tests/CMakeLists.txt 已注册对应测试）
 ctest -C Debug --output-on-failure
 ```
 
@@ -148,7 +162,7 @@ ctest -C Debug --output-on-failure
 - 数据库模块：Catalog 元数据、火山模型算子、持久化与重启后可查询。
 
 ## 开发计划（建议）
-1) 完成 Frontend 最小子集（CREATE/INSERT/SELECT/DELETE）的 Lexer/Parser/Semantic/Plan。
+1) 完成 `sql_compiler` 最小子集（CREATE/INSERT/SELECT/DELETE）的 Lexer/Parser/Semantic/Plan，并确保测试覆盖。
 2) 实现 Catalog（建表、查表、列定义），落盘到页式存储。
 3) 实现 Engine 基础算子，串联 StorageEngine；补充 CLI REPL。
 4) 扩展：UPDATE/JOIN/ORDER BY/GROUP BY、谓词下推、更多索引与优化。
