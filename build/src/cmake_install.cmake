@@ -1,4 +1,4 @@
-# Install script for directory: E:/Code/Project_grade3/SX/miniBase/src
+# Install script for directory: E:/Code/Project_grade3/SX/new/miniBase/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,27 +34,27 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("E:/Code/Project_grade3/SX/miniBase/build/src/frontend/lexer/cmake_install.cmake")
+  include("E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/lexer/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("E:/Code/Project_grade3/SX/miniBase/build/src/frontend/parser/cmake_install.cmake")
+  include("E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/parser/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("E:/Code/Project_grade3/SX/miniBase/build/src/frontend/semantic/cmake_install.cmake")
+  include("E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/semantic/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("E:/Code/Project_grade3/SX/miniBase/build/src/frontend/planner/cmake_install.cmake")
+  include("E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/planner/cmake_install.cmake")
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "E:/Code/Project_grade3/SX/miniBase/build/src/install_local_manifest.txt"
+  file(WRITE "E:/Code/Project_grade3/SX/new/miniBase/build/src/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

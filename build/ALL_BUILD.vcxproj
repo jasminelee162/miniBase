@@ -25,7 +25,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{81EBBC1A-7708-34C8-800F-A99CE9E0B414}</ProjectGuid>
+    <ProjectGuid>{135B63AA-6B9C-3161-AE12-EA4703C03CB1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
     <Platform>x64</Platform>
@@ -108,11 +108,11 @@
     </Midl>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="E:\Code\Project_grade3\SX\miniBase\CMakeLists.txt">
+    <CustomBuild Include="E:\Code\Project_grade3\SX\new\miniBase\CMakeLists.txt">
       <UseUtf8Encoding>Always</UseUtf8Encoding>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule E:/Code/Project_grade3/SX/miniBase/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule E:/Code/Project_grade3/SX/new/miniBase/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-D:\CMake\bin\cmake.exe -SE:/Code/Project_grade3/SX/miniBase -BE:/Code/Project_grade3/SX/miniBase/build --check-stamp-file E:/Code/Project_grade3/SX/miniBase/build/CMakeFiles/generate.stamp
+D:\CMake\bin\cmake.exe -SE:/Code/Project_grade3/SX/new/miniBase -BE:/Code/Project_grade3/SX/new/miniBase/build --check-stamp-file E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -120,12 +120,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\CMake\share\cmake-4.1\Modules\CMakeCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCXXInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCommonLanguageInclude.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeGenericSystem.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeInitializeConfigs.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeLanguageInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeRCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInitialize.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCXXLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCommonLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-Initialize.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\WindowsPaths.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeCCompiler.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeCXXCompiler.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeRCCompiler.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\CMake\share\cmake-4.1\Modules\CMakeCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCXXInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCommonLanguageInclude.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeGenericSystem.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeInitializeConfigs.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeLanguageInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeRCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInitialize.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCXXLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCommonLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-Initialize.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\WindowsPaths.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeCCompiler.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeCXXCompiler.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeRCCompiler.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule E:/Code/Project_grade3/SX/miniBase/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule E:/Code/Project_grade3/SX/new/miniBase/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
-D:\CMake\bin\cmake.exe -SE:/Code/Project_grade3/SX/miniBase -BE:/Code/Project_grade3/SX/miniBase/build --check-stamp-file E:/Code/Project_grade3/SX/miniBase/build/CMakeFiles/generate.stamp
+D:\CMake\bin\cmake.exe -SE:/Code/Project_grade3/SX/new/miniBase -BE:/Code/Project_grade3/SX/new/miniBase/build --check-stamp-file E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -133,12 +133,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\CMake\share\cmake-4.1\Modules\CMakeCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCXXInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCommonLanguageInclude.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeGenericSystem.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeInitializeConfigs.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeLanguageInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeRCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInitialize.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCXXLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCommonLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-Initialize.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\WindowsPaths.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeCCompiler.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeCXXCompiler.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeRCCompiler.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\CMake\share\cmake-4.1\Modules\CMakeCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCXXInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCommonLanguageInclude.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeGenericSystem.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeInitializeConfigs.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeLanguageInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeRCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInitialize.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCXXLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCommonLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-Initialize.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\WindowsPaths.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeCCompiler.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeCXXCompiler.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeRCCompiler.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule E:/Code/Project_grade3/SX/miniBase/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule E:/Code/Project_grade3/SX/new/miniBase/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
-D:\CMake\bin\cmake.exe -SE:/Code/Project_grade3/SX/miniBase -BE:/Code/Project_grade3/SX/miniBase/build --check-stamp-file E:/Code/Project_grade3/SX/miniBase/build/CMakeFiles/generate.stamp
+D:\CMake\bin\cmake.exe -SE:/Code/Project_grade3/SX/new/miniBase -BE:/Code/Project_grade3/SX/new/miniBase/build --check-stamp-file E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -146,12 +146,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\CMake\share\cmake-4.1\Modules\CMakeCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCXXInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCommonLanguageInclude.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeGenericSystem.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeInitializeConfigs.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeLanguageInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeRCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInitialize.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCXXLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCommonLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-Initialize.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\WindowsPaths.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeCCompiler.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeCXXCompiler.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeRCCompiler.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\CMake\share\cmake-4.1\Modules\CMakeCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCXXInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCommonLanguageInclude.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeGenericSystem.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeInitializeConfigs.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeLanguageInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeRCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInitialize.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCXXLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCommonLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-Initialize.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\WindowsPaths.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeCCompiler.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeCXXCompiler.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeRCCompiler.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule E:/Code/Project_grade3/SX/miniBase/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule E:/Code/Project_grade3/SX/new/miniBase/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
-D:\CMake\bin\cmake.exe -SE:/Code/Project_grade3/SX/miniBase -BE:/Code/Project_grade3/SX/miniBase/build --check-stamp-file E:/Code/Project_grade3/SX/miniBase/build/CMakeFiles/generate.stamp
+D:\CMake\bin\cmake.exe -SE:/Code/Project_grade3/SX/new/miniBase -BE:/Code/Project_grade3/SX/new/miniBase/build --check-stamp-file E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -159,8 +159,8 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\CMake\share\cmake-4.1\Modules\CMakeCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCXXInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCommonLanguageInclude.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeGenericSystem.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeInitializeConfigs.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeLanguageInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeRCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInitialize.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCXXLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCommonLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-Initialize.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\WindowsPaths.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeCCompiler.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeCXXCompiler.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeRCCompiler.cmake;E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\4.1.1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\Code\Project_grade3\SX\miniBase\build\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\CMake\share\cmake-4.1\Modules\CMakeCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCXXInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeCommonLanguageInclude.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeGenericSystem.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeInitializeConfigs.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeLanguageInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeRCInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInformation.cmake;D:\CMake\share\cmake-4.1\Modules\CMakeSystemSpecificInitialize.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Compiler\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCXXLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Internal\CMakeCommonLinkerInformation.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Linker\MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Linker\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-Initialize.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-C.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC-CXX.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows-MSVC.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\Windows.cmake;D:\CMake\share\cmake-4.1\Modules\Platform\WindowsPaths.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeCCompiler.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeCXXCompiler.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeRCCompiler.cmake;E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\4.1.1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\Code\Project_grade3\SX\new\miniBase\build\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
@@ -168,42 +168,42 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <ProjectReference Include="E:\Code\Project_grade3\SX\miniBase\build\ZERO_CHECK.vcxproj">
-      <Project>{4AF8884B-55EF-37FA-9642-F80D6FD04B71}</Project>
+    <ProjectReference Include="E:\Code\Project_grade3\SX\new\miniBase\build\ZERO_CHECK.vcxproj">
+      <Project>{FB98260E-93BB-3183-A623-9C5BB0CF0497}</Project>
       <Name>ZERO_CHECK</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
-    <ProjectReference Include="E:\Code\Project_grade3\SX\miniBase\build\src\frontend\lexer\lexer.vcxproj">
-      <Project>{62938A4E-D05D-3714-998B-5A23ED1568A2}</Project>
+    <ProjectReference Include="E:\Code\Project_grade3\SX\new\miniBase\build\src\sql_compiler\lexer\lexer.vcxproj">
+      <Project>{74E21D84-0BE7-3136-B7E5-5956F621FD52}</Project>
       <Name>lexer</Name>
     </ProjectReference>
-    <ProjectReference Include="E:\Code\Project_grade3\SX\miniBase\build\src\frontend\lexer\lexer_test.vcxproj">
-      <Project>{738BDAEC-6F7E-3CA1-A6F5-CCAEBF4C3876}</Project>
+    <ProjectReference Include="E:\Code\Project_grade3\SX\new\miniBase\build\src\sql_compiler\lexer\lexer_test.vcxproj">
+      <Project>{CBAC20A4-ED28-3AA1-AABF-649E82B795C5}</Project>
       <Name>lexer_test</Name>
     </ProjectReference>
-    <ProjectReference Include="E:\Code\Project_grade3\SX\miniBase\build\src\frontend\parser\parser.vcxproj">
-      <Project>{B0A64E96-1E77-3115-95F3-C1B24EB84542}</Project>
+    <ProjectReference Include="E:\Code\Project_grade3\SX\new\miniBase\build\src\sql_compiler\parser\parser.vcxproj">
+      <Project>{10821AA7-6B2C-3B84-AFE8-FE31AC51986F}</Project>
       <Name>parser</Name>
     </ProjectReference>
-    <ProjectReference Include="E:\Code\Project_grade3\SX\miniBase\build\src\frontend\parser\parser_test.vcxproj">
-      <Project>{2EB909E6-FC40-396F-89F0-53B64AF590E0}</Project>
+    <ProjectReference Include="E:\Code\Project_grade3\SX\new\miniBase\build\src\sql_compiler\parser\parser_test.vcxproj">
+      <Project>{2ABE5493-4715-37ED-AFEA-542252215BC5}</Project>
       <Name>parser_test</Name>
     </ProjectReference>
-    <ProjectReference Include="E:\Code\Project_grade3\SX\miniBase\build\src\frontend\planner\planner.vcxproj">
-      <Project>{6889E613-92A4-35CC-A4FA-FC0564EF677C}</Project>
+    <ProjectReference Include="E:\Code\Project_grade3\SX\new\miniBase\build\src\sql_compiler\planner\planner.vcxproj">
+      <Project>{EE34220B-6968-3314-B140-CC790AEEA18E}</Project>
       <Name>planner</Name>
     </ProjectReference>
-    <ProjectReference Include="E:\Code\Project_grade3\SX\miniBase\build\src\frontend\planner\planner_test.vcxproj">
-      <Project>{D48BC9C0-5A52-3A0F-AA47-34CC91285B87}</Project>
+    <ProjectReference Include="E:\Code\Project_grade3\SX\new\miniBase\build\src\sql_compiler\planner\planner_test.vcxproj">
+      <Project>{1D693966-51C0-3A69-9CA4-E3FB001A5FDF}</Project>
       <Name>planner_test</Name>
     </ProjectReference>
-    <ProjectReference Include="E:\Code\Project_grade3\SX\miniBase\build\src\frontend\semantic\semantic.vcxproj">
-      <Project>{D82672BA-20FB-3BE5-BE3C-803C18169FBC}</Project>
+    <ProjectReference Include="E:\Code\Project_grade3\SX\new\miniBase\build\src\sql_compiler\semantic\semantic.vcxproj">
+      <Project>{44B4C05F-3582-3435-89EE-4805167FCA3D}</Project>
       <Name>semantic</Name>
     </ProjectReference>
-    <ProjectReference Include="E:\Code\Project_grade3\SX\miniBase\build\src\frontend\semantic\semantic_test.vcxproj">
-      <Project>{D6F52E3F-C483-384B-901A-35B305D1E232}</Project>
+    <ProjectReference Include="E:\Code\Project_grade3\SX\new\miniBase\build\src\sql_compiler\semantic\semantic_test.vcxproj">
+      <Project>{99156DC2-6EA7-3321-A7B9-B7DF634BD18C}</Project>
       <Name>semantic_test</Name>
     </ProjectReference>
   </ItemGroup>

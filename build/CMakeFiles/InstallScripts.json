@@ -1,12 +1,12 @@
 {
 	"InstallScripts" : 
 	[
-		"E:/Code/Project_grade3/SX/miniBase/build/cmake_install.cmake",
-		"E:/Code/Project_grade3/SX/miniBase/build/src/cmake_install.cmake",
-		"E:/Code/Project_grade3/SX/miniBase/build/src/frontend/lexer/cmake_install.cmake",
-		"E:/Code/Project_grade3/SX/miniBase/build/src/frontend/parser/cmake_install.cmake",
-		"E:/Code/Project_grade3/SX/miniBase/build/src/frontend/semantic/cmake_install.cmake",
-		"E:/Code/Project_grade3/SX/miniBase/build/src/frontend/planner/cmake_install.cmake"
+		"E:/Code/Project_grade3/SX/new/miniBase/build/cmake_install.cmake",
+		"E:/Code/Project_grade3/SX/new/miniBase/build/src/cmake_install.cmake",
+		"E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/lexer/cmake_install.cmake",
+		"E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/parser/cmake_install.cmake",
+		"E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/semantic/cmake_install.cmake",
+		"E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/planner/cmake_install.cmake"
 	],
 	"Parallel" : false
 }

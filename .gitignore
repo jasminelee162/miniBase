@@ -1,0 +1,40 @@
+# 忽略编译产物
+/build/
+out/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# 常见二进制/中间文件
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+*.lib
+*.a
+*.pdb
+
+# IDE / 编辑器
+.vscode/
+.vs/
+.idea/
+*.suo
+*.user
+*.sln
+*.vcxproj*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 日志 / 临时
+*.log
+*.tmp
+
+# 语言运行时缓存
+__pycache__/
+node_modules/
