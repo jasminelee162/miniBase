@@ -1,0 +1,10 @@
+E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/ALL_BUILD.dir
+E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/ZERO_CHECK.dir
+E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/lexer/CMakeFiles/lexer.dir
+E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/lexer/CMakeFiles/lexer_test.dir
+E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/parser/CMakeFiles/parser.dir
+E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/parser/CMakeFiles/parser_test.dir
+E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/semantic/CMakeFiles/semantic.dir
+E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/semantic/CMakeFiles/semantic_test.dir
+E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/planner/CMakeFiles/planner.dir
+E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/planner/CMakeFiles/planner_test.dir
