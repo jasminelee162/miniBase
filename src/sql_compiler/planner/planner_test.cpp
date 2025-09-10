@@ -19,7 +19,7 @@ void testPlanner(const std::string& sql) {
         
         std::cout << "Tokens:" << std::endl;
         for (const auto& token : tokens) {
-            std::cout << "  " << token.toString() << std::endl;
+            // std::cout << "  " << token.toString() << std::endl;
         }
         
         // 语法分析
@@ -50,18 +50,13 @@ void testPlanner(const std::string& sql) {
         std::cout << "\nExecution Plan:" << std::endl;
         // 打印执行计划
         PlanPrinter printer;
-        plan->accept(printer);
-        std::cout << printer.getResult() << std::endl;
+        std::cout << printer.print(plan.get()) << std::endl;
         
-        // 打印计划的字符串表示
-        std::cout << "Plan String Representation:" << std::endl;
-        std::cout << plan->toString() << std::endl;
-        
-    } catch (const LexerError& e) {
-        std::cout << "Lexer Error: " << e.what() << " at line " << e.getLine() 
-                 << ", column " << e.getColumn() << std::endl;
-    } catch (const ParseError& e) {
-        std::cout << "Parser Error: " << e.what() << " at token " << e.getToken().toString() << std::endl;
+    // } catch (const Lexer::LexerError& e) {
+    //     std::cout << "Lexer Error: " << e.what() << " at line " << e.getLine() 
+    //              << ", column " << e.getColumn() << std::endl;
+    // } catch (const ParseError& e) {
+    //     std::cout << "Parser Error: " << e.what() << " at token " << e.getToken().toString() << std::endl;
     } catch (const SemanticError& e) {
         std::cout << "Semantic Error: [" << SemanticError::errorTypeToString(e.getType()) 
                  << "] " << e.what() << std::endl;
@@ -74,9 +69,6 @@ void testPlanner(const std::string& sql) {
 }
 
 int main() {
-    // 清空目录（用于测试）
-    Catalog::getInstance().clear();
-    
     // 测试CREATE TABLE语句
     testPlanner("CREATE TABLE student(id INT, name VARCHAR, age INT);");
     

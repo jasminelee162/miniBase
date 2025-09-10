@@ -1649,3 +1649,180 @@ events:
       Microsoft (R) Incremental Linker Version 14.38.33133.0
       Copyright (C) Microsoft Corporation.  All rights reserved.
 ...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "D:/CMake/share/cmake-4.1/Modules/Internal/CheckSourceCompiles.cmake:104 (try_compile)"
+      - "D:/CMake/share/cmake-4.1/Modules/CheckCXXSourceCompiles.cmake:103 (cmake_check_source_compiles)"
+      - "D:/CMake/share/cmake-4.1/Modules/FindThreads.cmake:99 (check_cxx_source_compiles)"
+      - "D:/CMake/share/cmake-4.1/Modules/FindThreads.cmake:163 (_threads_check_libc)"
+      - "CMakeLists.txt:39 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/CMakeScratch/TryCompile-zhbaeu"
+      binary: "E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/CMakeScratch/TryCompile-zhbaeu"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /GR /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: 'E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/CMakeScratch/TryCompile-zhbaeu'
+        
+        Run Build Command(s): D:/软件安装/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_1654d.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        适用于 .NET Framework MSBuild 版本 17.8.3+195e7f5a3
+        生成启动时间为 2025/9/10 9:18:30。
+        
+        节点 1 上的项目“E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zhbaeu\\cmTC_1654d.vcxproj”(默认目标)。
+        PrepareForBuild:
+          正在创建目录“cmTC_1654d.dir\\Debug\\”。
+          已启用结构化输出。编译器诊断的格式设置将反映错误层次结构。有关详细信息，请参阅 https://aka.ms/cpp/structured-output。
+          正在创建目录“E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zhbaeu\\Debug\\”。
+          正在创建目录“cmTC_1654d.dir\\Debug\\cmTC_1654d.tlog\\”。
+        InitializeBuildStatus:
+          正在创建“cmTC_1654d.dir\\Debug\\cmTC_1654d.tlog\\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+          正在对“cmTC_1654d.dir\\Debug\\cmTC_1654d.tlog\\unsuccessfulbuild”执行 Touch 任务。
+        ClCompile:
+          D:\\软件安装\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /GR /std:c++17 /Fo"cmTC_1654d.dir\\Debug\\\\" /Fd"cmTC_1654d.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zhbaeu\\src.cxx"
+          用于 x64 的 Microsoft (R) C/C++ 优化编译器 19.38.33133 版
+          版权所有(C) Microsoft Corporation。保留所有权利。
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /GR /std:c++17 /Fo"cmTC_1654d.dir\\Debug\\\\" /Fd"cmTC_1654d.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zhbaeu\\src.cxx"
+          src.cxx
+        E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zhbaeu\\src.cxx(1,10): error C1083: 无法打开包括文件: “pthread.h”: No such file or directory [E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zhbaeu\\cmTC_1654d.vcxproj]
+        已完成生成项目“E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zhbaeu\\cmTC_1654d.vcxproj”(默认目标)的操作 - 失败。
+        
+        生成失败。
+        
+        “E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zhbaeu\\cmTC_1654d.vcxproj”(默认目标) (1) ->
+        (ClCompile 目标) -> 
+          E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zhbaeu\\src.cxx(1,10): error C1083: 无法打开包括文件: “pthread.h”: No such file or directory [E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zhbaeu\\cmTC_1654d.vcxproj]
+        
+            0 个警告
+            1 个错误
+        
+        已用时间 00:00:06.43
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "D:/CMake/share/cmake-4.1/Modules/CheckLibraryExists.cmake:154 (try_compile)"
+      - "D:/CMake/share/cmake-4.1/Modules/FindThreads.cmake:112 (check_library_exists)"
+      - "D:/CMake/share/cmake-4.1/Modules/FindThreads.cmake:175 (_threads_check_lib)"
+      - "CMakeLists.txt:39 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthreads"
+    directories:
+      source: "E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/CMakeScratch/TryCompile-h37ndz"
+      binary: "E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/CMakeScratch/TryCompile-h37ndz"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /GR /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREADS_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: 'E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/CMakeScratch/TryCompile-h37ndz'
+        
+        Run Build Command(s): D:/软件安装/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_bc8c0.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        适用于 .NET Framework MSBuild 版本 17.8.3+195e7f5a3
+        生成启动时间为 2025/9/10 9:18:37。
+        
+        节点 1 上的项目“E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h37ndz\\cmTC_bc8c0.vcxproj”(默认目标)。
+        PrepareForBuild:
+          正在创建目录“cmTC_bc8c0.dir\\Debug\\”。
+          已启用结构化输出。编译器诊断的格式设置将反映错误层次结构。有关详细信息，请参阅 https://aka.ms/cpp/structured-output。
+          正在创建目录“E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h37ndz\\Debug\\”。
+          正在创建目录“cmTC_bc8c0.dir\\Debug\\cmTC_bc8c0.tlog\\”。
+        InitializeBuildStatus:
+          正在创建“cmTC_bc8c0.dir\\Debug\\cmTC_bc8c0.tlog\\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+          正在对“cmTC_bc8c0.dir\\Debug\\cmTC_bc8c0.tlog\\unsuccessfulbuild”执行 Touch 任务。
+        ClCompile:
+          D:\\软件安装\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /GR /std:c++17 /Fo"cmTC_bc8c0.dir\\Debug\\\\" /Fd"cmTC_bc8c0.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h37ndz\\CheckFunctionExists.cxx"
+          用于 x64 的 Microsoft (R) C/C++ 优化编译器 19.38.33133 版
+          版权所有(C) Microsoft Corporation。保留所有权利。
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /GR /std:c++17 /Fo"cmTC_bc8c0.dir\\Debug\\\\" /Fd"cmTC_bc8c0.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h37ndz\\CheckFunctionExists.cxx"
+          CheckFunctionExists.cxx
+        Link:
+          D:\\软件安装\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /OUT:"E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h37ndz\\Debug\\cmTC_bc8c0.exe" /INCREMENTAL /ILK:"cmTC_bc8c0.dir\\Debug\\cmTC_bc8c0.ilk" /NOLOGO pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/CMakeScratch/TryCompile-h37ndz/Debug/cmTC_bc8c0.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/CMakeScratch/TryCompile-h37ndz/Debug/cmTC_bc8c0.lib" /MACHINE:X64  /machine:x64 cmTC_bc8c0.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: 无法打开文件“pthreads.lib” [E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h37ndz\\cmTC_bc8c0.vcxproj]
+        已完成生成项目“E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h37ndz\\cmTC_bc8c0.vcxproj”(默认目标)的操作 - 失败。
+        
+        生成失败。
+        
+        “E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h37ndz\\cmTC_bc8c0.vcxproj”(默认目标) (1) ->
+        (Link 目标) -> 
+          LINK : fatal error LNK1104: 无法打开文件“pthreads.lib” [E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h37ndz\\cmTC_bc8c0.vcxproj]
+        
+            0 个警告
+            1 个错误
+        
+        已用时间 00:00:04.32
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "D:/CMake/share/cmake-4.1/Modules/CheckLibraryExists.cmake:154 (try_compile)"
+      - "D:/CMake/share/cmake-4.1/Modules/FindThreads.cmake:112 (check_library_exists)"
+      - "D:/CMake/share/cmake-4.1/Modules/FindThreads.cmake:176 (_threads_check_lib)"
+      - "CMakeLists.txt:39 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthread"
+    directories:
+      source: "E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/CMakeScratch/TryCompile-fnyl9p"
+      binary: "E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/CMakeScratch/TryCompile-fnyl9p"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /GR /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREAD_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: 'E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/CMakeScratch/TryCompile-fnyl9p'
+        
+        Run Build Command(s): D:/软件安装/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_bf100.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        适用于 .NET Framework MSBuild 版本 17.8.3+195e7f5a3
+        生成启动时间为 2025/9/10 9:18:44。
+        
+        节点 1 上的项目“E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fnyl9p\\cmTC_bf100.vcxproj”(默认目标)。
+        PrepareForBuild:
+          正在创建目录“cmTC_bf100.dir\\Debug\\”。
+          已启用结构化输出。编译器诊断的格式设置将反映错误层次结构。有关详细信息，请参阅 https://aka.ms/cpp/structured-output。
+          正在创建目录“E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fnyl9p\\Debug\\”。
+          正在创建目录“cmTC_bf100.dir\\Debug\\cmTC_bf100.tlog\\”。
+        InitializeBuildStatus:
+          正在创建“cmTC_bf100.dir\\Debug\\cmTC_bf100.tlog\\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+          正在对“cmTC_bf100.dir\\Debug\\cmTC_bf100.tlog\\unsuccessfulbuild”执行 Touch 任务。
+        ClCompile:
+          D:\\软件安装\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /GR /std:c++17 /Fo"cmTC_bf100.dir\\Debug\\\\" /Fd"cmTC_bf100.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fnyl9p\\CheckFunctionExists.cxx"
+          用于 x64 的 Microsoft (R) C/C++ 优化编译器 19.38.33133 版
+          版权所有(C) Microsoft Corporation。保留所有权利。
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /GR /std:c++17 /Fo"cmTC_bf100.dir\\Debug\\\\" /Fd"cmTC_bf100.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fnyl9p\\CheckFunctionExists.cxx"
+          CheckFunctionExists.cxx
+        Link:
+          D:\\软件安装\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /OUT:"E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fnyl9p\\Debug\\cmTC_bf100.exe" /INCREMENTAL /ILK:"cmTC_bf100.dir\\Debug\\cmTC_bf100.ilk" /NOLOGO pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/CMakeScratch/TryCompile-fnyl9p/Debug/cmTC_bf100.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"E:/Code/Project_grade3/SX/new/miniBase/build/CMakeFiles/CMakeScratch/TryCompile-fnyl9p/Debug/cmTC_bf100.lib" /MACHINE:X64  /machine:x64 cmTC_bf100.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: 无法打开文件“pthread.lib” [E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fnyl9p\\cmTC_bf100.vcxproj]
+        已完成生成项目“E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fnyl9p\\cmTC_bf100.vcxproj”(默认目标)的操作 - 失败。
+        
+        生成失败。
+        
+        “E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fnyl9p\\cmTC_bf100.vcxproj”(默认目标) (1) ->
+        (Link 目标) -> 
+          LINK : fatal error LNK1104: 无法打开文件“pthread.lib” [E:\\Code\\Project_grade3\\SX\\new\\miniBase\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fnyl9p\\cmTC_bf100.vcxproj]
+        
+            0 个警告
+            1 个错误
+        
+        已用时间 00:00:04.40
+        
+      exitCode: 1
+...

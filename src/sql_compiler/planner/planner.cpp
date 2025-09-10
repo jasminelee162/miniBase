@@ -1,28 +1,25 @@
 #include "planner.h"
 #include <stdexcept>
+#include <sstream>
 
-// 将表达式转换为值
-Value Planner::expressionToValue(Expression* expr) {
+// 将表达式转换为字符串值
+std::string Planner::expressionToString(Expression* expr) {
     if (!expr) {
         throw PlannerError(PlannerError::ErrorType::MISSING_SEMANTIC_INFO, "Expression is null");
     }
     
     if (auto literal = dynamic_cast<LiteralExpression*>(expr)) {
-        if (literal->getType() == LiteralExpression::LiteralType::INTEGER) {
-            return Value(std::stoi(literal->getValue()));
-        } else if (literal->getType() == LiteralExpression::LiteralType::STRING) {
-            return Value(literal->getValue());
-        }
+        return literal->getValue();
     }
     
     throw PlannerError(PlannerError::ErrorType::UNSUPPORTED_FEATURE, 
                       "Only literal expressions can be converted to values");
 }
 
-// 将表达式转换为谓词
-std::unique_ptr<Predicate> Planner::expressionToPredicate(Expression* expr) {
+// 将表达式转换为谓词字符串
+std::string Planner::expressionToPredicate(Expression* expr) {
     if (!expr) {
-        return nullptr;
+        return "";
     }
     
     auto binaryExpr = dynamic_cast<BinaryExpression*>(expr);
@@ -42,33 +39,35 @@ std::unique_ptr<Predicate> Planner::expressionToPredicate(Expression* expr) {
     }
     
     // 转换操作符
-    Predicate::Operator op;
+    std::string op;
     switch (binaryExpr->getOperator()) {
         case BinaryExpression::Operator::EQUALS:
-            op = Predicate::Operator::EQUALS;
+            op = "=";
             break;
         case BinaryExpression::Operator::LESS_THAN:
-            op = Predicate::Operator::LESS_THAN;
+            op = "<";
             break;
         case BinaryExpression::Operator::GREATER_THAN:
-            op = Predicate::Operator::GREATER_THAN;
+            op = ">";
             break;
         case BinaryExpression::Operator::LESS_EQUAL:
-            op = Predicate::Operator::LESS_EQUAL;
+            op = "<=";
             break;
         case BinaryExpression::Operator::GREATER_EQUAL:
-            op = Predicate::Operator::GREATER_EQUAL;
+            op = ">=";
             break;
         case BinaryExpression::Operator::NOT_EQUAL:
-            op = Predicate::Operator::NOT_EQUAL;
+            op = "!=";
             break;
         default:
             throw PlannerError(PlannerError::ErrorType::UNSUPPORTED_FEATURE, 
                              "Unsupported operator in predicate");
     }
     
-    // 创建谓词
-    return std::make_unique<Predicate>(identifier->getName(), op, expressionToValue(right));
+    // 创建谓词字符串
+    std::stringstream ss;
+    ss << identifier->getName() << " " << op << " " << expressionToString(right);
+    return ss.str();
 }
 
 // 访问字面量表达式
@@ -91,65 +90,99 @@ void Planner::visit(BinaryExpression& expr) {
 
 // 访问CREATE TABLE语句
 void Planner::visit(CreateTableStatement& stmt) {
-    std::vector<std::pair<std::string, ColumnInfo::DataType>> columns;
+    // 创建CREATE TABLE计划节点
+    currentPlan = std::make_unique<PlanNode>();
+    currentPlan->type = PlanType::CreateTable;
+    currentPlan->table_name = stmt.getTableName();
     
+    // 添加列信息
     for (const auto& col : stmt.getColumns()) {
-        ColumnInfo::DataType type;
-        switch (col.getType()) {
-            case ColumnDefinition::DataType::INT:
-                type = ColumnInfo::DataType::INT;
-                break;
-            case ColumnDefinition::DataType::VARCHAR:
-                type = ColumnInfo::DataType::VARCHAR;
-                break;
-            default:
-                throw PlannerError(PlannerError::ErrorType::UNSUPPORTED_FEATURE, 
-                                 "Unsupported column type");
-        }
-        columns.emplace_back(col.getName(), type);
+        currentPlan->columns.push_back(col.getName());
     }
-    
-    currentPlan = std::make_unique<CreateTablePlanNode>(stmt.getTableName(), columns);
 }
 
 // 访问INSERT语句
 void Planner::visit(InsertStatement& stmt) {
-    std::vector<std::vector<Value>> valuesList;
+    // 创建INSERT计划节点
+    currentPlan = std::make_unique<PlanNode>();
+    currentPlan->type = PlanType::Insert;
+    currentPlan->table_name = stmt.getTableName();
     
+    // 添加列名
+    currentPlan->columns = stmt.getColumnNames();
+    
+    // 添加值列表
     for (const auto& valueList : stmt.getValueLists()) {
-        std::vector<Value> values;
+        std::vector<std::string> values;
         for (const auto& expr : valueList.getValues()) {
-            values.push_back(expressionToValue(expr.get()));
+            values.push_back(expressionToString(expr.get()));
         }
-        valuesList.push_back(std::move(values));
+        currentPlan->values.push_back(std::move(values));
     }
-    
-    currentPlan = std::make_unique<InsertPlanNode>(stmt.getTableName(), 
-                                                 stmt.getColumnNames(), 
-                                                 valuesList);
 }
 
 // 访问SELECT语句
 void Planner::visit(SelectStatement& stmt) {
-    // 创建表扫描节点
-    auto scanNode = std::make_unique<SeqScanPlanNode>(
-        stmt.getTableName(), 
-        expressionToPredicate(stmt.getWhereClause())
-    );
-    
-    // 如果有投影列，创建投影节点
-    if (!stmt.getColumns().empty() && !(stmt.getColumns().size() == 1 && stmt.getColumns()[0] == "*")) {
-        currentPlan = std::make_unique<ProjectPlanNode>(std::move(scanNode), stmt.getColumns());
+    // 如果有WHERE子句，创建Filter节点
+    if (stmt.getWhereClause()) {
+        // 创建Filter计划节点
+        auto filterNode = std::make_unique<PlanNode>();
+        filterNode->type = PlanType::Filter;
+        filterNode->table_name = stmt.getTableName();
+        filterNode->predicate = expressionToPredicate(stmt.getWhereClause());
+        
+        // 创建SeqScan计划节点作为Filter的子节点
+        auto scanNode = std::make_unique<PlanNode>();
+        scanNode->type = PlanType::SeqScan;
+        scanNode->table_name = stmt.getTableName();
+        
+        // 将SeqScan添加为Filter的子节点
+        filterNode->children.push_back(std::move(scanNode));
+        
+        // 如果有投影列，创建Project节点
+        if (!stmt.getColumns().empty() && !(stmt.getColumns().size() == 1 && stmt.getColumns()[0] == "*")) {
+            // 创建Project计划节点
+            currentPlan = std::make_unique<PlanNode>();
+            currentPlan->type = PlanType::Project;
+            currentPlan->columns = stmt.getColumns();
+            
+            // 将Filter添加为Project的子节点
+            currentPlan->children.push_back(std::move(filterNode));
+        } else {
+            // 否则直接使用Filter节点
+            currentPlan = std::move(filterNode);
+        }
     } else {
-        // 否则直接使用表扫描节点
-        currentPlan = std::move(scanNode);
+        // 没有WHERE子句，直接创建SeqScan节点
+        auto scanNode = std::make_unique<PlanNode>();
+        scanNode->type = PlanType::SeqScan;
+        scanNode->table_name = stmt.getTableName();
+        
+        // 如果有投影列，创建Project节点
+        if (!stmt.getColumns().empty() && !(stmt.getColumns().size() == 1 && stmt.getColumns()[0] == "*")) {
+            // 创建Project计划节点
+            currentPlan = std::make_unique<PlanNode>();
+            currentPlan->type = PlanType::Project;
+            currentPlan->columns = stmt.getColumns();
+            
+            // 将SeqScan添加为Project的子节点
+            currentPlan->children.push_back(std::move(scanNode));
+        } else {
+            // 否则直接使用SeqScan节点
+            currentPlan = std::move(scanNode);
+        }
     }
 }
 
 // 访问DELETE语句
 void Planner::visit(DeleteStatement& stmt) {
-    currentPlan = std::make_unique<DeletePlanNode>(
-        stmt.getTableName(), 
-        expressionToPredicate(stmt.getWhereClause())
-    );
+    // 创建DELETE计划节点
+    currentPlan = std::make_unique<PlanNode>();
+    currentPlan->type = PlanType::Delete;
+    currentPlan->table_name = stmt.getTableName();
+    
+    // 如果有WHERE子句，添加谓词
+    if (stmt.getWhereClause()) {
+        currentPlan->predicate = expressionToPredicate(stmt.getWhereClause());
+    }
 }

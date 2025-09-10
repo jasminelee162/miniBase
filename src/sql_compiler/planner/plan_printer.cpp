@@ -6,35 +6,66 @@ void PlanPrinter::printIndent() {
     }
 }
 
-void PlanPrinter::visit(CreateTablePlanNode& node) {
+void PlanPrinter::printNode(const PlanNode* node) {
+    if (!node) {
+        printIndent();
+        result << "NULL" << std::endl;
+        return;
+    }
+    
+    switch (node->type) {
+        case PlanType::CreateTable:
+            printCreateTable(node);
+            break;
+        case PlanType::Insert:
+            printInsert(node);
+            break;
+        case PlanType::SeqScan:
+            printSeqScan(node);
+            break;
+        case PlanType::Project:
+            printProject(node);
+            break;
+        case PlanType::Filter:
+            printFilter(node);
+            break;
+        case PlanType::Delete:
+            printDelete(node);
+            break;
+        default:
+            printIndent();
+            result << "Unknown plan type" << std::endl;
+            break;
+    }
+}
+
+void PlanPrinter::printCreateTable(const PlanNode* node) {
     printIndent();
-    result << "CreateTable: " << node.getTableName() << std::endl;
+    result << "CreateTable: " << node->table_name << std::endl;
     
     indent();
     printIndent();
     result << "Columns: [";
-    const auto& columns = node.getColumns();
-    for (size_t i = 0; i < columns.size(); ++i) {
+    for (size_t i = 0; i < node->columns.size(); ++i) {
         if (i > 0) result << ", ";
-        result << columns[i].first << " " << ColumnInfo::dataTypeToString(columns[i].second);
+        result << node->columns[i];
     }
     result << "]" << std::endl;
     dedent();
 }
 
-void PlanPrinter::visit(InsertPlanNode& node) {
+void PlanPrinter::printInsert(const PlanNode* node) {
     printIndent();
-    result << "Insert: " << node.getTableName() << std::endl;
+    result << "Insert: " << node->table_name << std::endl;
     
     indent();
     
     // 打印列名
     printIndent();
     result << "Columns: [";
-    const auto& columns = node.getColumnNames();
-    for (size_t i = 0; i < columns.size(); ++i) {
+    for (size_t i = 0; i < node->columns.size(); ++i) {
         if (i > 0) result << ", ";
-        result << columns[i];
+        result << node->columns[i];
     }
     result << "]" << std::endl;
     
@@ -42,13 +73,12 @@ void PlanPrinter::visit(InsertPlanNode& node) {
     printIndent();
     result << "Values: [" << std::endl;
     indent();
-    const auto& valuesList = node.getValues();
-    for (size_t i = 0; i < valuesList.size(); ++i) {
+    for (size_t i = 0; i < node->values.size(); ++i) {
         printIndent();
         result << "(";
-        for (size_t j = 0; j < valuesList[i].size(); ++j) {
+        for (size_t j = 0; j < node->values[i].size(); ++j) {
             if (j > 0) result << ", ";
-            result << valuesList[i][j].toString();
+            result << node->values[i][j];
         }
         result << ")" << std::endl;
     }
@@ -59,50 +89,53 @@ void PlanPrinter::visit(InsertPlanNode& node) {
     dedent();
 }
 
-void PlanPrinter::visit(SeqScanPlanNode& node) {
+void PlanPrinter::printSeqScan(const PlanNode* node) {
     printIndent();
-    result << "SeqScan: " << node.getTableName() << std::endl;
+    result << "SeqScan: " << node->table_name << std::endl;
     
-    if (node.getPredicate()) {
+    if (!node->predicate.empty()) {
         indent();
         printIndent();
-        result << "Predicate: " << node.getPredicate()->toString() << std::endl;
+        result << "Predicate: " << node->predicate << std::endl;
         dedent();
     }
 }
 
-void PlanPrinter::visit(ProjectPlanNode& node) {
+void PlanPrinter::printProject(const PlanNode* node) {
     printIndent();
     result << "Project: [";
-    const auto& columns = node.getColumns();
-    for (size_t i = 0; i < columns.size(); ++i) {
+    for (size_t i = 0; i < node->columns.size(); ++i) {
         if (i > 0) result << ", ";
-        result << columns[i];
+        result << node->columns[i];
     }
     result << "]" << std::endl;
     
     indent();
-    node.getChild()->accept(*this);
+    if (!node->children.empty()) {
+        printNode(node->children[0].get());
+    }
     dedent();
 }
 
-void PlanPrinter::visit(FilterPlanNode& node) {
+void PlanPrinter::printFilter(const PlanNode* node) {
     printIndent();
-    result << "Filter: " << node.getPredicate()->toString() << std::endl;
+    result << "Filter: " << node->predicate << std::endl;
     
     indent();
-    node.getChild()->accept(*this);
+    if (!node->children.empty()) {
+        printNode(node->children[0].get());
+    }
     dedent();
 }
 
-void PlanPrinter::visit(DeletePlanNode& node) {
+void PlanPrinter::printDelete(const PlanNode* node) {
     printIndent();
-    result << "Delete: " << node.getTableName() << std::endl;
+    result << "Delete: " << node->table_name << std::endl;
     
-    if (node.getPredicate()) {
+    if (!node->predicate.empty()) {
         indent();
         printIndent();
-        result << "Predicate: " << node.getPredicate()->toString() << std::endl;
+        result << "Predicate: " << node->predicate << std::endl;
         dedent();
     }
 }

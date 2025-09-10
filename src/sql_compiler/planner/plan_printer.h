@@ -6,22 +6,16 @@
 #include "../../engine/operators/plan_node.h"
 
 // 计划打印器类
-class PlanPrinter : public PlanVisitor {
+class PlanPrinter {
 public:
     PlanPrinter() : indentLevel(0) {}
     
-    // 获取打印结果
-    std::string getResult() const {
+    // 打印计划节点
+    std::string print(const PlanNode* node) {
+        result.str("");
+        printNode(node);
         return result.str();
     }
-    
-    // 访问者模式实现
-    void visit(CreateTablePlanNode& node) override;
-    void visit(InsertPlanNode& node) override;
-    void visit(SeqScanPlanNode& node) override;
-    void visit(ProjectPlanNode& node) override;
-    void visit(FilterPlanNode& node) override;
-    void visit(DeletePlanNode& node) override;
     
 private:
     std::stringstream result;
@@ -31,6 +25,13 @@ private:
     void indent() { indentLevel++; }
     void dedent() { indentLevel--; }
     void printIndent();
+    void printNode(const PlanNode* node);
+    void printCreateTable(const PlanNode* node);
+    void printInsert(const PlanNode* node);
+    void printSeqScan(const PlanNode* node);
+    void printProject(const PlanNode* node);
+    void printFilter(const PlanNode* node);
+    void printDelete(const PlanNode* node);
 };
 
 #endif // MINIBASE_PLAN_PRINTER_H

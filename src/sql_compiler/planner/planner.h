@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include "../parser/ast.h"
 #include "../../engine/operators/plan_node.h"
 #include "../../catalog/catalog.h"
@@ -37,7 +38,7 @@ private:
 // 计划生成器类
 class Planner : public ASTVisitor {
 public:
-    Planner() : catalog(Catalog::getInstance()) {}
+    Planner() {}
     
     // 生成执行计划
     std::unique_ptr<PlanNode> plan(Statement* stmt) {
@@ -56,12 +57,12 @@ public:
     void visit(DeleteStatement& stmt) override;
     
 private:
-    Catalog& catalog;
     std::unique_ptr<PlanNode> currentPlan;
     
     // 辅助方法
-    Value expressionToValue(Expression* expr);
-    std::unique_ptr<Predicate> expressionToPredicate(Expression* expr);
+    std::string expressionToString(Expression* expr);
+    std::string expressionToPredicate(Expression* expr);
 };
+
 
 #endif // MINIBASE_PLANNER_H
