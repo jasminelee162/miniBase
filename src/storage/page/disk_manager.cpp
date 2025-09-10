@@ -1,16 +1,10 @@
 #include "storage/page/disk_manager.h"
-#include "util/logger.h"
+#include "storage/storage_logger.h"
 #include <cassert>
 #include <cstring>
 #include <future>
 
 namespace minidb {
-
-#ifdef PROJECT_ROOT_DIR
-static Logger g_storage_logger(std::string(PROJECT_ROOT_DIR) + "/logs/storage.log");
-#else
-static Logger g_storage_logger("storage.log");
-#endif
 
 //负责把页号映射到文件偏移，并做读写。内部用互斥锁保证线程安全。
 
@@ -77,8 +71,9 @@ Status DiskManager::ReadPage(page_id_t page_id, char* page_data) {
         return Status::IO_ERROR;
     }
     num_reads_.fetch_add(1);
-    if constexpr (ENABLE_STORAGE_LOG) {
-        g_storage_logger.log(std::string("[DM] Read page ") + std::to_string((unsigned)page_id));
+    if (g_storage_logger) {
+        g_storage_logger->logDiskOperation("READ", true);
+        g_storage_logger->logPageOperation("READ", page_id, true);
     }
     return Status::OK;
 }
@@ -99,8 +94,9 @@ Status DiskManager::WritePage(page_id_t page_id, const char* page_data) {
         return Status::IO_ERROR;
     }
     num_writes_.fetch_add(1);
-    if constexpr (ENABLE_STORAGE_LOG) {
-        g_storage_logger.log(std::string("[DM] Write page ") + std::to_string((unsigned)page_id));
+    if (g_storage_logger) {
+        g_storage_logger->logDiskOperation("WRITE", true);
+        g_storage_logger->logPageOperation("WRITE", page_id, true);
     }
     // 依据写入的页号推进下一个可用页号（0基）：next = max(next, page_id + 1)
     page_id_t expected_next = static_cast<page_id_t>(page_id + 1);
@@ -130,9 +126,9 @@ page_id_t DiskManager::AllocatePage() {
     // 检查容量
     page_id_t next = next_page_id_.load();
     if (static_cast<size_t>(next) >= max_pages_) {
-        if constexpr (ENABLE_STORAGE_LOG) {
-            g_storage_logger.log(std::string("[DM] Disk full: next=") + std::to_string((unsigned)next) +
-                                 ", max_pages=" + std::to_string(max_pages_));
+        if (g_storage_logger) {
+            g_storage_logger->warn("DISK", "Disk full: next=" + std::to_string((unsigned)next) +
+                                   ", max_pages=" + std::to_string(max_pages_));
         }
         return INVALID_PAGE_ID;
     }

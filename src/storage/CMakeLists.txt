@@ -4,7 +4,8 @@ add_subdirectory(buffer)
 add_library(storage_lib STATIC
     page/disk_manager.cpp
     buffer/buffer_pool_manager.cpp
-    ../storage/storage_engine.cpp
+    storage_engine.cpp
+    storage_logger.cpp
 )
 
 target_link_libraries(storage_lib

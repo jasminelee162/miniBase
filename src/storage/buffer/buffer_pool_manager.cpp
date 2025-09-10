@@ -1,14 +1,8 @@
 #include "storage/buffer/buffer_pool_manager.h"
-#include "util/logger.h"
+#include "storage/storage_logger.h"
 #include <cassert>
 
 namespace minidb {
-
-#ifdef PROJECT_ROOT_DIR
-static Logger g_storage_logger_bpm(std::string(PROJECT_ROOT_DIR) + "/logs/storage.log");
-#else
-static Logger g_storage_logger_bpm("storage.log");
-#endif
 
 BufferPoolManager::BufferPoolManager(size_t pool_size, DiskManager* disk_manager)
     : pool_size_(pool_size), disk_manager_(disk_manager) {
@@ -54,12 +48,9 @@ bool BufferPoolManager::FlushFrameToPages(frame_id_t frame_id) {
     if (s != Status::OK) return false;
     page.SetDirty(false);
     num_writebacks_.fetch_add(1);
-    if constexpr (ENABLE_STORAGE_LOG) {
-        g_storage_logger_bpm.log(
-            std::string("[BPM] Writeback page ") +
-            std::to_string((unsigned)frame_page_ids_[frame_id]) +
-            " from frame " + std::to_string((size_t)frame_id)
-        );
+    if (g_storage_logger) {
+        g_storage_logger->logBufferOperation("WRITEBACK", frame_id, true);
+        g_storage_logger->logPageOperation("WRITE", frame_page_ids_[frame_id], true);
     }
     return true;
 }

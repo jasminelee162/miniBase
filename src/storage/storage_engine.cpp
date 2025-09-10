@@ -1,21 +1,18 @@
 #include "storage/storage_engine.h"
-#include "util/logger.h"
+#include "storage/storage_logger.h"
 #include "util/config.h"
 #include <iostream>
 #include <sstream>
 
 namespace minidb {
 
-#ifdef PROJECT_ROOT_DIR
-static Logger g_storage_logger_engine(std::string(PROJECT_ROOT_DIR) + "/logs/storage.log");
-#else
-static Logger g_storage_logger_engine("storage.log");
-#endif
-
 StorageEngine::StorageEngine(const std::string& db_file, size_t buffer_pool_size)
     : disk_manager_(std::make_unique<DiskManager>(db_file)),
       buffer_pool_manager_(std::make_unique<BufferPoolManager>(buffer_pool_size, disk_manager_.get())),
-      db_file_(db_file) {}
+      db_file_(db_file) {
+    // 初始化storage logger
+    initStorageLogger("storage.log", LogLevel::INFO);
+}
 
 StorageEngine::~StorageEngine() {
     Shutdown();
@@ -64,8 +61,10 @@ void StorageEngine::PrintStats() const {
         << ", Writebacks=" << GetNumWritebacks();
     const std::string msg = oss.str();
     std::cout << msg << std::endl;
-    if constexpr (ENABLE_STORAGE_LOG) {
-        g_storage_logger_engine.log(msg);
+    
+    if (g_storage_logger) {
+        g_storage_logger->info("ENGINE", msg);
+        g_storage_logger->printStatistics();
     }
 }
 //缓存命中率
