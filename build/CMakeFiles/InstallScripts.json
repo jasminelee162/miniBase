@@ -3,10 +3,18 @@
 	[
 		"E:/Code/Project_grade3/SX/new/miniBase/build/cmake_install.cmake",
 		"E:/Code/Project_grade3/SX/new/miniBase/build/src/cmake_install.cmake",
+		"E:/Code/Project_grade3/SX/new/miniBase/build/src/util/cmake_install.cmake",
+		"E:/Code/Project_grade3/SX/new/miniBase/build/src/storage/cmake_install.cmake",
+		"E:/Code/Project_grade3/SX/new/miniBase/build/src/storage/buffer/cmake_install.cmake",
+		"E:/Code/Project_grade3/SX/new/miniBase/build/src/catalog/cmake_install.cmake",
 		"E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/lexer/cmake_install.cmake",
 		"E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/parser/cmake_install.cmake",
 		"E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/semantic/cmake_install.cmake",
-		"E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/planner/cmake_install.cmake"
+		"E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/planner/cmake_install.cmake",
+		"E:/Code/Project_grade3/SX/new/miniBase/build/tests/cmake_install.cmake",
+		"E:/Code/Project_grade3/SX/new/miniBase/build/_deps/googletest-build/cmake_install.cmake",
+		"E:/Code/Project_grade3/SX/new/miniBase/build/_deps/googletest-build/googlemock/cmake_install.cmake",
+		"E:/Code/Project_grade3/SX/new/miniBase/build/_deps/googletest-build/googletest/cmake_install.cmake"
 	],
 	"Parallel" : false
 }

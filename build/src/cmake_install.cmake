@@ -34,6 +34,21 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("E:/Code/Project_grade3/SX/new/miniBase/build/src/util/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("E:/Code/Project_grade3/SX/new/miniBase/build/src/storage/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("E:/Code/Project_grade3/SX/new/miniBase/build/src/catalog/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("E:/Code/Project_grade3/SX/new/miniBase/build/src/sql_compiler/lexer/cmake_install.cmake")
 endif()
 

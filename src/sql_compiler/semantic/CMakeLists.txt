@@ -10,6 +10,7 @@ add_library(semantic
 target_link_libraries(semantic
     parser
     lexer
+    catalog
 )
 
 # 添加语义分析器测试可执行文件
@@ -22,4 +23,5 @@ target_link_libraries(semantic_test
     semantic
     parser
     lexer
+    catalog
 )

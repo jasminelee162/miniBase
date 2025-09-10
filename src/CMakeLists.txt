@@ -6,6 +6,9 @@ add_subdirectory(util)
 # 存储系统（核心模块优先打通）
 add_subdirectory(storage)
 
+# 系统目录（Catalog）
+add_subdirectory(catalog)
+
 # 编译器模块
 add_subdirectory(sql_compiler/lexer)
 add_subdirectory(sql_compiler/parser)

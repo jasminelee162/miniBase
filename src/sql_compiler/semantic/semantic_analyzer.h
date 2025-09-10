@@ -7,6 +7,8 @@
 #include "../../catalog/catalog.h"
 #include "../parser/ast.h"
 
+using namespace minidb;
+
 // 语义错误类
 class SemanticError : public std::runtime_error {
 public:
@@ -47,7 +49,7 @@ private:
 // 语义分析器类
 class SemanticAnalyzer : public ASTVisitor {
 public:
-    SemanticAnalyzer() : catalog(Catalog::getInstance()) {}
+    SemanticAnalyzer() : catalog_("catalog.dat") {}
     
     // 分析AST
     void analyze(Statement* stmt) {
@@ -64,17 +66,17 @@ public:
     void visit(DeleteStatement& stmt) override;
     
 private:
-    Catalog& catalog;
+    Catalog catalog_;
     
     // 当前正在分析的表
-    std::shared_ptr<TableInfo> currentTable;
+    TableSchema currentTable_;
     
     // 辅助方法
-    ColumnInfo::DataType getExpressionType(Expression* expr);
+    std::string getExpressionType(Expression* expr);
     void checkTableExists(const std::string& tableName);
     void checkTableNotExists(const std::string& tableName);
     void checkColumnExists(const std::string& tableName, const std::string& columnName);
-    void checkTypeCompatibility(ColumnInfo::DataType expected, ColumnInfo::DataType actual, const std::string& context);
+    void checkTypeCompatibility(const std::string& expected, const std::string& actual, const std::string& context);
 };
 
 #endif // MINIBASE_SEMANTIC_ANALYZER_H

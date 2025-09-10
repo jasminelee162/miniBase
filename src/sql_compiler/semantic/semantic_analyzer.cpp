@@ -1,29 +1,40 @@
 #include "semantic_analyzer.h"
 
 // 获取表达式的数据类型
-ColumnInfo::DataType SemanticAnalyzer::getExpressionType(Expression* expr) {
+std::string SemanticAnalyzer::getExpressionType(Expression* expr) {
     if (auto literal = dynamic_cast<LiteralExpression*>(expr)) {
         if (literal->getType() == LiteralExpression::LiteralType::INTEGER) {
-            return ColumnInfo::DataType::INT;
+            return "INT";
         } else if (literal->getType() == LiteralExpression::LiteralType::STRING) {
-            return ColumnInfo::DataType::VARCHAR;
+            return "VARCHAR";
         }
     } else if (auto identifier = dynamic_cast<IdentifierExpression*>(expr)) {
-        if (!currentTable) {
+        // 检查当前表是否有效
+        if (currentTable_.table_name.empty()) {
             throw SemanticError(SemanticError::ErrorType::UNKNOWN, 
                               "No current table context for identifier: " + identifier->getName());
         }
         
-        const ColumnInfo* column = currentTable->getColumn(identifier->getName());
-        if (!column) {
+        // 查找列
+        bool found = false;
+        std::string columnType;
+        for (const auto& col : currentTable_.columns) {
+            if (col.name == identifier->getName()) {
+                found = true;
+                columnType = col.type;
+                break;
+            }
+        }
+        
+        if (!found) {
             throw SemanticError(SemanticError::ErrorType::COLUMN_NOT_EXIST, 
                               "Column does not exist: " + identifier->getName());
         }
         
-        return column->getType();
+        return columnType;
     } else if (auto binary = dynamic_cast<BinaryExpression*>(expr)) {
-        ColumnInfo::DataType leftType = getExpressionType(binary->getLeft());
-        ColumnInfo::DataType rightType = getExpressionType(binary->getRight());
+        std::string leftType = getExpressionType(binary->getLeft());
+        std::string rightType = getExpressionType(binary->getRight());
         
         // 简单类型检查：对于比较操作，返回INT类型
         BinaryExpression::Operator op = binary->getOperator();
@@ -33,12 +44,12 @@ ColumnInfo::DataType SemanticAnalyzer::getExpressionType(Expression* expr) {
             op == BinaryExpression::Operator::GREATER_THAN ||
             op == BinaryExpression::Operator::LESS_EQUAL ||
             op == BinaryExpression::Operator::GREATER_EQUAL) {
-            return ColumnInfo::DataType::INT;
+            return "INT";
         }
         
         // 对于算术操作，如果两边都是INT，则结果是INT
-        if (leftType == ColumnInfo::DataType::INT && rightType == ColumnInfo::DataType::INT) {
-            return ColumnInfo::DataType::INT;
+        if (leftType == "INT" && rightType == "INT") {
+            return "INT";
         }
         
         // 其他情况抛出类型不匹配错误
@@ -51,7 +62,7 @@ ColumnInfo::DataType SemanticAnalyzer::getExpressionType(Expression* expr) {
 
 // 检查表是否存在
 void SemanticAnalyzer::checkTableExists(const std::string& tableName) {
-    if (!catalog.hasTable(tableName)) {
+    if (!catalog_.HasTable(tableName)) {
         throw SemanticError(SemanticError::ErrorType::TABLE_NOT_EXIST, 
                           "Table does not exist: " + tableName);
     }
@@ -59,7 +70,7 @@ void SemanticAnalyzer::checkTableExists(const std::string& tableName) {
 
 // 检查表是否不存在
 void SemanticAnalyzer::checkTableNotExists(const std::string& tableName) {
-    if (catalog.hasTable(tableName)) {
+    if (catalog_.HasTable(tableName)) {
         throw SemanticError(SemanticError::ErrorType::TABLE_ALREADY_EXIST, 
                           "Table already exists: " + tableName);
     }
@@ -67,26 +78,33 @@ void SemanticAnalyzer::checkTableNotExists(const std::string& tableName) {
 
 // 检查列是否存在
 void SemanticAnalyzer::checkColumnExists(const std::string& tableName, const std::string& columnName) {
-    auto table = catalog.getTable(tableName);
-    if (!table) {
+    if (!catalog_.HasTable(tableName)) {
         throw SemanticError(SemanticError::ErrorType::TABLE_NOT_EXIST, 
                           "Table does not exist: " + tableName);
     }
     
-    if (!table->hasColumn(columnName)) {
+    auto table = catalog_.GetTable(tableName);
+    bool found = false;
+    for (const auto& col : table.columns) {
+        if (col.name == columnName) {
+            found = true;
+            break;
+        }
+    }
+    
+    if (!found) {
         throw SemanticError(SemanticError::ErrorType::COLUMN_NOT_EXIST, 
                           "Column does not exist: " + columnName + " in table " + tableName);
     }
 }
 
 // 检查类型兼容性
-void SemanticAnalyzer::checkTypeCompatibility(ColumnInfo::DataType expected, ColumnInfo::DataType actual, 
+void SemanticAnalyzer::checkTypeCompatibility(const std::string& expected, const std::string& actual, 
                                            const std::string& context) {
     if (expected != actual) {
         throw SemanticError(SemanticError::ErrorType::TYPE_MISMATCH, 
                           "Type mismatch in " + context + ": expected " + 
-                          ColumnInfo::dataTypeToString(expected) + ", got " + 
-                          ColumnInfo::dataTypeToString(actual));
+                          expected + ", got " + actual);
     }
 }
 
@@ -112,30 +130,20 @@ void SemanticAnalyzer::visit(CreateTableStatement& stmt) {
     checkTableNotExists(stmt.getTableName());
     
     // 准备列定义
-    std::vector<std::pair<std::string, ColumnInfo::DataType>> columns;
+    std::vector<std::string> columns;
     for (const auto& col : stmt.getColumns()) {
-        ColumnInfo::DataType type;
-        if (col.getType() == ColumnDefinition::DataType::INT) {
-            type = ColumnInfo::DataType::INT;
-        } else if (col.getType() == ColumnDefinition::DataType::VARCHAR) {
-            type = ColumnInfo::DataType::VARCHAR;
-        } else {
-            throw SemanticError(SemanticError::ErrorType::UNKNOWN, 
-                              "Unknown column type for column: " + col.getName());
-        }
-        
-        columns.emplace_back(col.getName(), type);
+        std::string colName = col.getName();
+        columns.push_back(colName);
     }
     
     // 创建表
-    catalog.createTable(stmt.getTableName(), columns);
+    catalog_.CreateTable(stmt.getTableName(), columns);
 }
 
 void SemanticAnalyzer::visit(InsertStatement& stmt) {
     // 检查表是否存在
     checkTableExists(stmt.getTableName());
-    auto table = catalog.getTable(stmt.getTableName());
-    currentTable = table;
+    currentTable_ = catalog_.GetTable(stmt.getTableName());
     
     // 检查列名是否存在
     for (const auto& colName : stmt.getColumnNames()) {
@@ -154,27 +162,36 @@ void SemanticAnalyzer::visit(InsertStatement& stmt) {
         // 检查每个值的类型是否与列类型匹配
         for (size_t i = 0; i < expectedColumnCount; ++i) {
             const std::string& colName = stmt.getColumnNames()[i];
-            const ColumnInfo* colInfo = table->getColumn(colName);
+            
+            // 查找列类型
+            std::string colType;
+            for (const auto& col : currentTable_.columns) {
+                if (col.name == colName) {
+                    colType = col.type;
+                    break;
+                }
+            }
+            
             Expression* valueExpr = valueList.getValues()[i].get();
             
             // 递归检查表达式
             valueExpr->accept(*this);
             
             // 检查类型兼容性
-            ColumnInfo::DataType valueType = getExpressionType(valueExpr);
-            checkTypeCompatibility(colInfo->getType(), valueType, 
+            std::string valueType = getExpressionType(valueExpr);
+            checkTypeCompatibility(colType, valueType, 
                                  "INSERT value for column " + colName);
         }
     }
     
-    currentTable = nullptr;
+    // 清空当前表
+    currentTable_ = TableSchema();
 }
 
 void SemanticAnalyzer::visit(SelectStatement& stmt) {
     // 检查表是否存在
     checkTableExists(stmt.getTableName());
-    auto table = catalog.getTable(stmt.getTableName());
-    currentTable = table;
+    currentTable_ = catalog_.GetTable(stmt.getTableName());
     
     // 检查列名是否存在
     for (const auto& colName : stmt.getColumns()) {
@@ -186,33 +203,34 @@ void SemanticAnalyzer::visit(SelectStatement& stmt) {
         stmt.getWhereClause()->accept(*this);
         
         // WHERE子句的结果应该是布尔类型（在我们的简化模型中用INT表示）
-        ColumnInfo::DataType whereType = getExpressionType(stmt.getWhereClause());
-        if (whereType != ColumnInfo::DataType::INT) {
+        std::string whereType = getExpressionType(stmt.getWhereClause());
+        if (whereType != "INT") {
             throw SemanticError(SemanticError::ErrorType::TYPE_MISMATCH, 
                               "WHERE clause must evaluate to a boolean condition");
         }
     }
     
-    currentTable = nullptr;
+    // 清空当前表
+    currentTable_ = TableSchema();
 }
 
 void SemanticAnalyzer::visit(DeleteStatement& stmt) {
     // 检查表是否存在
     checkTableExists(stmt.getTableName());
-    auto table = catalog.getTable(stmt.getTableName());
-    currentTable = table;
+    currentTable_ = catalog_.GetTable(stmt.getTableName());
     
     // 检查WHERE子句
     if (stmt.getWhereClause()) {
         stmt.getWhereClause()->accept(*this);
         
         // WHERE子句的结果应该是布尔类型（在我们的简化模型中用INT表示）
-        ColumnInfo::DataType whereType = getExpressionType(stmt.getWhereClause());
-        if (whereType != ColumnInfo::DataType::INT) {
+        std::string whereType = getExpressionType(stmt.getWhereClause());
+        if (whereType != "INT") {
             throw SemanticError(SemanticError::ErrorType::TYPE_MISMATCH, 
                               "WHERE clause must evaluate to a boolean condition");
         }
     }
     
-    currentTable = nullptr;
+    // 清空当前表
+    currentTable_ = TableSchema();
 }

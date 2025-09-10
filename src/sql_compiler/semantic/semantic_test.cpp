@@ -7,9 +7,11 @@
 #include "../parser/ast_printer.h"
 #include "semantic_analyzer.h"
 
+using namespace minidb;
+
 int main() {
-    // 清空Catalog（用于测试）
-    Catalog::getInstance().clear();
+    // 创建Catalog实例（用于测试）
+    Catalog catalog("catalog.dat");
     
     // 测试SQL语句
     std::vector<std::string> testQueries = {
