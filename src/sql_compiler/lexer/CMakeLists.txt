@@ -16,3 +16,12 @@ add_executable(lexer_test
 target_link_libraries(lexer_test
     lexer
 )
+
+# Ensure util library is linked so Logger symbols are resolved
+target_link_libraries(lexer
+    util_lib
+)
+
+target_link_libraries(lexer_test
+    util_lib
+)

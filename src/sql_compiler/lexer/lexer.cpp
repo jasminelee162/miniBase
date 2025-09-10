@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include "../../util/logger.h"
 #include "token.h"
 #include <cctype>
 #include <stdexcept>
@@ -142,11 +143,15 @@ Token Lexer::getNextToken() {
 }
 
 std::vector<Token> Lexer::tokenize() {
+    Logger logger("logs/lexer.log");
+    logger.log("[Lexer] Start tokenizing input");
     std::vector<Token> tokens;
     Token token;
     do {
         token = getNextToken();
+        logger.log(std::string("[Lexer] Token: ") + token.lexeme);
         tokens.push_back(token);
     } while (token.type != TokenType::END_OF_FILE && token.type != TokenType::INVALID);
+    logger.log("[Lexer] Tokenizing finished");
     return tokens;
 }

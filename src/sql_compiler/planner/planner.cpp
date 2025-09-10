@@ -1,9 +1,11 @@
 #include "planner.h"
 #include <stdexcept>
 #include <sstream>
+#include "../../util/logger.h"
 
 // 将表达式转换为字符串值
 std::string Planner::expressionToString(Expression* expr) {
+    Logger logger("logs/planner.log");
     if (!expr) {
         throw PlannerError(PlannerError::ErrorType::MISSING_SEMANTIC_INFO, "Expression is null");
     }
@@ -18,6 +20,7 @@ std::string Planner::expressionToString(Expression* expr) {
 
 // 将表达式转换为谓词字符串
 std::string Planner::expressionToPredicate(Expression* expr) {
+    Logger logger("logs/planner.log");
     if (!expr) {
         return "";
     }
@@ -90,6 +93,8 @@ void Planner::visit(BinaryExpression& expr) {
 
 // 访问CREATE TABLE语句
 void Planner::visit(CreateTableStatement& stmt) {
+    Logger logger("logs/planner.log");
+    logger.log(std::string("[Planner] CreateTable: ") + stmt.getTableName());
     // 创建CREATE TABLE计划节点
     currentPlan = std::make_unique<PlanNode>();
     currentPlan->type = PlanType::CreateTable;
@@ -103,6 +108,8 @@ void Planner::visit(CreateTableStatement& stmt) {
 
 // 访问INSERT语句
 void Planner::visit(InsertStatement& stmt) {
+    Logger logger("logs/planner.log");
+    logger.log(std::string("[Planner] Insert: ") + stmt.getTableName());
     // 创建INSERT计划节点
     currentPlan = std::make_unique<PlanNode>();
     currentPlan->type = PlanType::Insert;
@@ -123,6 +130,8 @@ void Planner::visit(InsertStatement& stmt) {
 
 // 访问SELECT语句
 void Planner::visit(SelectStatement& stmt) {
+    Logger logger("logs/planner.log");
+    logger.log(std::string("[Planner] Select: ") + stmt.getTableName());
     // 如果有WHERE子句，创建Filter节点
     if (stmt.getWhereClause()) {
         // 创建Filter计划节点
@@ -176,6 +185,8 @@ void Planner::visit(SelectStatement& stmt) {
 
 // 访问DELETE语句
 void Planner::visit(DeleteStatement& stmt) {
+    Logger logger("logs/planner.log");
+    logger.log(std::string("[Planner] Delete: ") + stmt.getTableName());
     // 创建DELETE计划节点
     currentPlan = std::make_unique<PlanNode>();
     currentPlan->type = PlanType::Delete;

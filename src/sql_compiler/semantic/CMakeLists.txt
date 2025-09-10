@@ -13,6 +13,11 @@ target_link_libraries(semantic
     catalog
 )
 
+# Link util for Logger
+target_link_libraries(semantic
+    util_lib
+)
+
 # 添加语义分析器测试可执行文件
 add_executable(semantic_test
     semantic_test.cpp
@@ -24,4 +29,8 @@ target_link_libraries(semantic_test
     parser
     lexer
     catalog
+)
+
+target_link_libraries(semantic_test
+    util_lib
 )

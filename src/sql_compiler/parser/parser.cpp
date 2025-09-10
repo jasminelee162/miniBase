@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "../../util/logger.h"
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), current(0) {}
 
@@ -46,6 +47,8 @@ bool Parser::isAtEnd() const {
 
 // 解析SQL语句
 std::unique_ptr<Statement> Parser::parse() {
+    Logger logger("logs/parser.log");
+    logger.log("[Parser] Begin parse");
     try {
         auto stmt = statement();
         // 确保所有输入都被消费
@@ -53,8 +56,10 @@ std::unique_ptr<Statement> Parser::parse() {
             Token token = peek();
             throw ParseError("Unexpected token after statement", token.line, token.column);
         }
+        logger.log("[Parser] Parse successful");
         return stmt;
     } catch (const ParseError& e) {
+        logger.log(std::string("[Parser][ERROR] ") + e.what());
         // 重新抛出异常，让调用者处理
         throw;
     }

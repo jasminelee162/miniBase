@@ -15,6 +15,11 @@ target_link_libraries(parser
     lexer
 )
 
+# Link util for Logger
+target_link_libraries(parser
+    util_lib
+)
+
 # 添加语法分析器测试可执行文件
 add_executable(parser_test
     parser_test.cpp
@@ -24,4 +29,8 @@ add_executable(parser_test
 target_link_libraries(parser_test
     parser
     lexer
+)
+
+target_link_libraries(parser_test
+    util_lib
 )

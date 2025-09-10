@@ -1,7 +1,9 @@
 #include "semantic_analyzer.h"
+#include "../../util/logger.h"
 
 // 获取表达式的数据类型
 std::string SemanticAnalyzer::getExpressionType(Expression* expr) {
+    Logger logger("logs/semantic.log");
     if (auto literal = dynamic_cast<LiteralExpression*>(expr)) {
         if (literal->getType() == LiteralExpression::LiteralType::INTEGER) {
             return "INT";
@@ -62,7 +64,10 @@ std::string SemanticAnalyzer::getExpressionType(Expression* expr) {
 
 // 检查表是否存在
 void SemanticAnalyzer::checkTableExists(const std::string& tableName) {
+    Logger logger("logs/semantic.log");
+    logger.log(std::string("[Semantic] checkTableExists: ") + tableName);
     if (!catalog_.HasTable(tableName)) {
+        logger.log(std::string("[Semantic][ERROR] table not found: ") + tableName);
         throw SemanticError(SemanticError::ErrorType::TABLE_NOT_EXIST, 
                           "Table does not exist: " + tableName);
     }
@@ -70,7 +75,10 @@ void SemanticAnalyzer::checkTableExists(const std::string& tableName) {
 
 // 检查表是否不存在
 void SemanticAnalyzer::checkTableNotExists(const std::string& tableName) {
+    Logger logger("logs/semantic.log");
+    logger.log(std::string("[Semantic] checkTableNotExists: ") + tableName);
     if (catalog_.HasTable(tableName)) {
+        logger.log(std::string("[Semantic][ERROR] table already exists: ") + tableName);
         throw SemanticError(SemanticError::ErrorType::TABLE_ALREADY_EXIST, 
                           "Table already exists: " + tableName);
     }
@@ -126,6 +134,8 @@ void SemanticAnalyzer::visit(BinaryExpression& expr) {
 }
 
 void SemanticAnalyzer::visit(CreateTableStatement& stmt) {
+    Logger logger("logs/semantic.log");
+    logger.log(std::string("[Semantic] CreateTable: ") + stmt.getTableName());
     // 检查表是否已存在
     checkTableNotExists(stmt.getTableName());
     
@@ -138,9 +148,12 @@ void SemanticAnalyzer::visit(CreateTableStatement& stmt) {
     
     // 创建表
     catalog_.CreateTable(stmt.getTableName(), columns);
+    logger.log(std::string("[Semantic] CreateTable finished: ") + stmt.getTableName());
 }
 
 void SemanticAnalyzer::visit(InsertStatement& stmt) {
+    Logger logger("logs/semantic.log");
+    logger.log(std::string("[Semantic] Insert into: ") + stmt.getTableName());
     // 检查表是否存在
     checkTableExists(stmt.getTableName());
     currentTable_ = catalog_.GetTable(stmt.getTableName());
@@ -186,9 +199,12 @@ void SemanticAnalyzer::visit(InsertStatement& stmt) {
     
     // 清空当前表
     currentTable_ = TableSchema();
+    logger.log(std::string("[Semantic] Insert checks passed for: ") + stmt.getTableName());
 }
 
 void SemanticAnalyzer::visit(SelectStatement& stmt) {
+    Logger logger("logs/semantic.log");
+    logger.log(std::string("[Semantic] Select from: ") + stmt.getTableName());
     // 检查表是否存在
     checkTableExists(stmt.getTableName());
     currentTable_ = catalog_.GetTable(stmt.getTableName());
@@ -212,9 +228,12 @@ void SemanticAnalyzer::visit(SelectStatement& stmt) {
     
     // 清空当前表
     currentTable_ = TableSchema();
+    logger.log(std::string("[Semantic] Select checks passed for: ") + stmt.getTableName());
 }
 
 void SemanticAnalyzer::visit(DeleteStatement& stmt) {
+    Logger logger("logs/semantic.log");
+    logger.log(std::string("[Semantic] Delete from: ") + stmt.getTableName());
     // 检查表是否存在
     checkTableExists(stmt.getTableName());
     currentTable_ = catalog_.GetTable(stmt.getTableName());
@@ -233,4 +252,5 @@ void SemanticAnalyzer::visit(DeleteStatement& stmt) {
     
     // 清空当前表
     currentTable_ = TableSchema();
+    logger.log(std::string("[Semantic] Delete checks passed for: ") + stmt.getTableName());
 }
