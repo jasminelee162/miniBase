@@ -1,1 +1,1 @@
-student id name age
+students id:TEXT name:TEXT age:TEXT
