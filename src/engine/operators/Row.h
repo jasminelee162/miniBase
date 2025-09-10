@@ -20,6 +20,7 @@ struct ColumnValue
 struct Row
 {
     std::vector<ColumnValue> columns;
+    std::vector<std::string> values;
 
     Row() = default;
 
@@ -52,5 +53,19 @@ struct Row
         }
         oss << "}";
         return oss.str();
+    }
+
+    void setValue(const std::string &col, const std::string &val)
+    {
+        for (auto &c : columns)
+        {
+            if (c.col_name == col)
+            {
+                c.value = val;
+                return;
+            }
+        }
+        // 如果没找到列，可以选择新增一列
+        columns.emplace_back(col, val);
     }
 };

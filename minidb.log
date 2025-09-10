@@ -7,3 +7,338 @@ PROJECT columns
 INSERT INTO test_table
 INSERT INTO users
 SELECT * FROM users
+INSERT INTO users
+SELECT * FROM users
+INSERT INTO users
+SELECT * FROM users
+INSERT INTO users
+SELECT * FROM users
+INSERT INTO users
+SELECT * FROM users
+INSERT INTO users
+SELECT * FROM users
+DELETE FROM users WHERE Alice
+SELECT * FROM users
+CREATE TABLE users
+INSERT INTO users
+SELECT * FROM users
+SELECT * FROM users
+SELECT * FROM users
+DELETE FROM users WHERE name = Alice
+SELECT * FROM users
+CREATE TABLE users
+INSERT INTO users
+SELECT * FROM users
+SELECT * FROM users
+SELECT * FROM users
+DELETE FROM users WHERE name = Alice
+SELECT * FROM users
+CREATE TABLE users
+INSERT INTO users
+SELECT * FROM users
+SELECT * FROM users
+SELECT * FROM users
+DELETE FROM users WHERE name = Alice
+SELECT * FROM users
+CREATE TABLE users
+INSERT INTO users
+SELECT * FROM users
+SELECT * FROM users
+SELECT * FROM users
+DELETE FROM users WHERE name = Alice
+SELECT * FROM users
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students
+CREATE TABLE students
+INSERT INTO students
+INSERT INTO students
+INSERT INTO students
+SELECT * FROM students
+FILTER on age>18
+PROJECT columns
+SELECT * FROM students
+DELETE FROM students WHERE id=2
+SELECT * FROM students

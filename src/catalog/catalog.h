@@ -20,6 +20,16 @@ namespace minidb
     {
         std::string table_name;
         std::vector<Column> columns;
+
+        int getColumnIndex(const std::string &col_name) const
+        {
+            for (size_t i = 0; i < columns.size(); i++)
+            {
+                if (columns[i].name == col_name)
+                    return static_cast<int>(i);
+            }
+            return -1;
+        }
     };
 
     class Catalog
@@ -29,6 +39,8 @@ namespace minidb
 
         // 建表
         void CreateTable(const std::string &table_name, const std::vector<std::string> &columns);
+
+        std::vector<std::string> GetTableColumns(const std::string &table_name);
 
         // 查询表
         bool HasTable(const std::string &table_name) const;
@@ -61,14 +73,14 @@ namespace minidb
 //         INT,
 //         VARCHAR
 //     };
-    
+
 //     ColumnInfo(const std::string& name, DataType type, int index)
 //         : name(name), type(type), index(index) {}
-    
+
 //     const std::string& getName() const { return name; }
 //     DataType getType() const { return type; }
 //     int getIndex() const { return index; }
-    
+
 //     static std::string dataTypeToString(DataType type) {
 //         switch (type) {
 //             case DataType::INT: return "INT";
@@ -76,13 +88,13 @@ namespace minidb
 //             default: return "UNKNOWN";
 //         }
 //     }
-    
+
 //     static DataType stringToDataType(const std::string& typeStr) {
 //         if (typeStr == "INT") return DataType::INT;
 //         if (typeStr == "VARCHAR") return DataType::VARCHAR;
 //         throw std::invalid_argument("Unknown data type: " + typeStr);
 //     }
-    
+
 // private:
 //     std::string name;
 //     DataType type;
@@ -93,18 +105,18 @@ namespace minidb
 // class TableInfo {
 // public:
 //     TableInfo(const std::string& name) : name(name) {}
-    
+
 //     const std::string& getName() const { return name; }
-    
+
 //     // 添加列
 //     void addColumn(const std::string& name, ColumnInfo::DataType type) {
 //         columns.emplace_back(name, type, static_cast<int>(columns.size()));
 //         columnMap[name] = columns.size() - 1;
 //     }
-    
+
 //     // 获取所有列
 //     const std::vector<ColumnInfo>& getColumns() const { return columns; }
-    
+
 //     // 根据名称获取列
 //     const ColumnInfo* getColumn(const std::string& name) const {
 //         auto it = columnMap.find(name);
@@ -113,15 +125,15 @@ namespace minidb
 //         }
 //         return &columns[it->second];
 //     }
-    
+
 //     // 检查列是否存在
 //     bool hasColumn(const std::string& name) const {
 //         return columnMap.find(name) != columnMap.end();
 //     }
-    
+
 //     // 获取列数
 //     size_t getColumnCount() const { return columns.size(); }
-    
+
 // private:
 //     std::string name;
 //     std::vector<ColumnInfo> columns;
@@ -136,21 +148,21 @@ namespace minidb
 //         static Catalog instance;
 //         return instance;
 //     }
-    
+
 //     // 创建表
 //     void createTable(const std::string& name, const std::vector<std::pair<std::string, ColumnInfo::DataType>>& columns) {
 //         if (hasTable(name)) {
 //             throw std::runtime_error("Table already exists: " + name);
 //         }
-        
+
 //         auto tableInfo = std::make_shared<TableInfo>(name);
 //         for (const auto& col : columns) {
 //             tableInfo->addColumn(col.first, col.second);
 //         }
-        
+
 //         tables[name] = tableInfo;
 //     }
-    
+
 //     // 获取表信息
 //     std::shared_ptr<TableInfo> getTable(const std::string& name) const {
 //         auto it = tables.find(name);
@@ -159,12 +171,12 @@ namespace minidb
 //         }
 //         return it->second;
 //     }
-    
+
 //     // 检查表是否存在
 //     bool hasTable(const std::string& name) const {
 //         return tables.find(name) != tables.end();
 //     }
-    
+
 //     // 获取所有表名
 //     std::vector<std::string> getAllTableNames() const {
 //         std::vector<std::string> names;
@@ -173,20 +185,20 @@ namespace minidb
 //         }
 //         return names;
 //     }
-    
+
 //     // 清空目录（用于测试）
 //     void clear() {
 //         tables.clear();
 //     }
-    
+
 // private:
 //     // 私有构造函数（单例模式）
 //     Catalog() {}
-    
+
 //     // 禁止拷贝和赋值（单例模式）
 //     Catalog(const Catalog&) = delete;
 //     Catalog& operator=(const Catalog&) = delete;
-    
+
 //     std::unordered_map<std::string, std::shared_ptr<TableInfo>> tables;
 // };
 

@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <map>
 
 enum class PlanType
 {
@@ -10,7 +11,8 @@ enum class PlanType
     Project,
     CreateTable,
     Insert,
-    Delete
+    Delete,
+    Update
 };
 
 struct PlanNode
@@ -20,5 +22,6 @@ struct PlanNode
     std::string table_name;
     std::vector<std::string> columns;
     std::string predicate;
-    std::vector<std::vector<std::string>> values; // 每行数据的字符串
+    std::vector<std::vector<std::string>> values;  // 每行数据的字符串
+    std::map<std::string, std::string> set_values; // Update 用
 };
