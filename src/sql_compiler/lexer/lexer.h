@@ -29,7 +29,8 @@ private:
     Token scanOperator();       // 扫描运算符
 
     // 错误处理
-    Token createErrorToken(const std::string& message);
+    // 可选传入 lexeme 以便在日志/打印时显示出错的词素
+    Token createErrorToken(const std::string& message, const std::string& lexeme = "");
 
 public:
     Lexer(const std::string& source);

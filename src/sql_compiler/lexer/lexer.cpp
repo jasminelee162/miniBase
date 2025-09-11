@@ -90,7 +90,7 @@ Token Lexer::scanString() {
         advance();
         return Token(TokenType::CONST_STRING, result, line, startColumn);
     }
-    return Token(TokenType::INVALID, result, line, startColumn, "Unclosed string literal");
+    return createErrorToken("Unclosed string literal", result);
 }
 
 Token Lexer::scanOperator() {
@@ -111,7 +111,7 @@ Token Lexer::scanOperator() {
     case '!':
         advance();
         if (currentChar == '=') { advance(); return Token(TokenType::OPERATOR_NE, "!=", line, startColumn); }
-        return Token(TokenType::INVALID, "!", line, startColumn, "Expected '=' after '!'");
+        return createErrorToken("Expected '=' after '!'", std::string(1, '!'));
     case '+': type = TokenType::OPERATOR_PLUS; break;
     case '-': type = TokenType::OPERATOR_MINUS; break;
     case '*': type = TokenType::OPERATOR_TIMES; break;
@@ -122,15 +122,15 @@ Token Lexer::scanOperator() {
     case ')': type = TokenType::DELIMITER_RPAREN; break;
     case '.': type = TokenType::DELIMITER_DOT; break;
     default:
-        return Token(TokenType::INVALID, std::string(1, op), line, startColumn, std::string("Unknown operator: ") + op);
+        return createErrorToken(std::string("Unknown operator: ") + op, std::string(1, op));
     }
 
     advance();
     return Token(type, std::string(1, op), line, startColumn);
 }
 
-Token Lexer::createErrorToken(const std::string& message) {
-    return Token(TokenType::INVALID, "", line, column, message);
+Token Lexer::createErrorToken(const std::string& message, const std::string& lexeme) {
+    return Token(TokenType::INVALID, lexeme, line, column, message);
 }
 
 Token Lexer::getNextToken() {
@@ -149,7 +149,10 @@ std::vector<Token> Lexer::tokenize() {
     Token token;
     do {
         token = getNextToken();
-        logger.log(std::string("[Lexer] Token: ") + token.lexeme);
+    // include error message if present
+    std::string logLine = std::string("[Lexer] Token: ") + token.lexeme;
+    if (!token.errorMessage.empty()) logLine += std::string(" ERROR: ") + token.errorMessage;
+    logger.log(logLine);
         tokens.push_back(token);
     } while (token.type != TokenType::END_OF_FILE && token.type != TokenType::INVALID);
     logger.log("[Lexer] Tokenizing finished");
