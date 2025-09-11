@@ -78,6 +78,9 @@ private:
     // 并发控制
     mutable std::shared_mutex latch_;  // 保护页表和空闲列表
     std::mutex free_list_mutex_;       // 保护空闲列表
+
+    // 仅用于渐进扩容时的新页数组与迁移
+    bool GrowPool(size_t new_size);
 };
 
 }

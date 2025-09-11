@@ -1,5 +1,8 @@
 # 简单的测试配置，不使用GoogleTest
-add_executable(storage_test 
+# 每个测试可执行文件只能包含一个 main，因此拆分为独立目标
+
+# 1) storage_test
+add_executable(storage_test
     unit/storage_test.cpp
     simple_test_framework.cpp
 )
@@ -19,6 +22,7 @@ add_test(NAME storage_test COMMAND storage_test)
 set_tests_properties(storage_test PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
+
 
 # End-to-end flow test: parser -> json -> translator -> executor
 add_executable(e2e_flow
@@ -41,6 +45,42 @@ target_link_libraries(e2e_flow
 
 add_test(NAME e2e_flow COMMAND e2e_flow)
 set_tests_properties(e2e_flow PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+# 2) storage_size_test（从 storage_test 中拆出，避免多个 main 冲突）
+add_executable(storage_size_test
+    unit/storage_size_test.cpp
+    simple_test_framework.cpp
+)
+
+target_link_libraries(storage_size_test
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+
+add_test(NAME storage_size_test COMMAND storage_size_test)
+
+set_tests_properties(storage_size_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 3) page_linking_test（页链接专用用例）
+add_executable(page_linking_test
+    unit/page_linking_test.cpp
+    simple_test_framework.cpp
+)
+
+target_link_libraries(page_linking_test
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+
+add_test(NAME page_linking_test COMMAND page_linking_test)
+
+set_tests_properties(page_linking_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
 
 # 如需为 CLI/Executor 建独立目标，请在它们模块就绪后启用：
 # add_executable(cli_test unit/CliTest.cpp)

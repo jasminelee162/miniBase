@@ -11,9 +11,9 @@ class StorageEngineTest {
 public:
     void setUp() {
         #ifdef PROJECT_ROOT_DIR
-        test_db_file_ = std::string(PROJECT_ROOT_DIR) + "/data/test_storage.bin";
+        test_db_file_ = std::string(PROJECT_ROOT_DIR) + "/data/test_storage_size.bin";
         #else
-        test_db_file_ = "test_storage.bin";
+        test_db_file_ = "test_storage_size.bin";
         #endif
         // std::filesystem::remove(test_db_file_);  //不同用例写入不删除文件
         storage_engine_ = std::make_unique<StorageEngine>(test_db_file_, 64);  //调用diskmanager构造函数，缓冲池大小64页
@@ -39,7 +39,7 @@ void testBasicPageOperations() {
     ASSERT_NOT_NULL(page);
     
     // 写入数据
-    const char* test_data = "Hello MiniDB adb Storage Niceeeeeee!";
+    const char* test_data = "Hello MiniDB aaa Storage Niceee!";
     std::memcpy(page->GetData(), test_data, strlen(test_data));
     EXPECT_TRUE(test.storage_engine_->PutPage(page_id, true));
     
@@ -191,7 +191,7 @@ void testStorageLoggerFeatures() {
         ASSERT_NOT_NULL(page);
         
         // 写入不同数据
-        std::string data = "Test data " + std::to_string(i);
+        std::string data = "Test dadada " + std::to_string(i);
         std::memcpy(page->GetData(), data.c_str(), data.length());
         EXPECT_TRUE(test.storage_engine_->PutPage(page_id, true));
         page_ids.push_back(page_id);

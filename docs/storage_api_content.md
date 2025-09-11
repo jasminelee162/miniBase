@@ -8,7 +8,11 @@
 - StorageEngine 是入口：负责创建/获取/归还页面，刷盘，统计。
 - Page 是 4KB 固定块（默认），通过 `GetData()` 直接读写字节。
 - BufferPool 是内存缓存（单位是“页数”），避免频繁磁盘 I/O。
-- 文件会按 `DEFAULT_DISK_SIZE_BYTES` 预分配（默认 128KB → 32 页）。
+- 文件会按 `DEFAULT_DISK_SIZE_BYTES` 预分配（参见 `util/config.h`）。例如设置为 160KB，则约等于 40 页（`DEFAULT_MAX_PAGES = DEFAULT_DISK_SIZE_BYTES / PAGE_SIZE`）。
+
+文件布局（.bin 单文件表空间）：
+- 第 0 页：Meta Superblock，含魔数/版本/页大小/`next_page_id`/`catalog_root` 等；`page_type = METADATA_PAGE`。
+- 第 1..N 页：数据/索引/系统页（由 `page_type` 区分），支持页链 `next_page_id`。
 
 ---
 
@@ -54,6 +58,9 @@ void quick_start() {
 - 刷盘：`void Checkpoint()`；关闭：`void Shutdown()`
 - 统计：`double GetCacheHitRate() const`、`size_t GetNumReplacements() const`、`size_t GetNumWritebacks() const`
 - 策略：`void SetReplacementPolicy(ReplacementPolicy)`（默认 LRU，可切 FIFO）
+- 扩容：`bool AdjustBufferPoolSize(size_t new_size)`（当前支持增大）
+- 后台刷盘：`StartBackgroundFlush(interval_ms)` / `StopBackgroundFlush()`
+- 预取：`PrefetchPageChain(first_page_id, max_pages=8)`
 
 Page（页）：
 - `char* GetData()` 取 4KB 数据缓冲
@@ -63,11 +70,14 @@ Page（页）：
 ---
 
 ## 4. 容量与常见坑
-- 每页 4096B（默认）。文件默认预分配 128KB，最多 32 页（见 `util/config.h`）。
-- 超过最大页数：`CreatePage` 返回 `nullptr`。并发/压力测试请用：
+- 每页 4096B（默认）。文件预分配大小由 `DEFAULT_DISK_SIZE_BYTES` 决定（见 `util/config.h`），最大页数为 `DEFAULT_MAX_PAGES = DEFAULT_DISK_SIZE_BYTES / PAGE_SIZE`。
+- 超过最大页数：`CreatePage` 返回 `nullptr`。并发/压力测试请优先基于配置计算：
   - `size_t cap = DEFAULT_MAX_PAGES;`
   - 规模或断言用 `min(期望页数, cap)`，避免配置变化导致失败。
-- 缓冲池大小的单位是“页数”：128 表示最多缓存 128 页。
+- 缓冲池大小的单位是“页数”：例如 128 表示最多缓存 128 页。
+- 页 0 是元数据页（`METADATA_PAGE`），不要当作数据页遍历；数据页从 1 开始。
+- 若切换/重启：`Checkpoint()` 会持久化页 0 的 `next_page_id` 等，避免“扫描推断”误差。
+- `GetPage(id)` 对未分配页（`id >= GetNumPages()`）会返回 `nullptr`；遍历链请处理空指针与环路。
 
 ---
 
@@ -100,6 +110,10 @@ for (page_id_t id = table.first_page_id; id != INVALID_PAGE_ID; id = next_of(id)
     engine.PutPage(id);
 }
 ```
+- 顺序扫描前预取（可选）：
+```cpp
+engine.PrefetchPageChain(table.first_page_id, 16);
+```
 
 ---
 
@@ -118,8 +132,23 @@ target_link_libraries(myexec PRIVATE storage_lib util_lib)
 - 设计页内结构（页头、槽目录、记录序列化）
 - 用 `CreatePage/GetPage/PutPage` 完成写入/读取
 - 并发/批量按 `DEFAULT_MAX_PAGES` 控制规模
-- 关键路径后调用 `Checkpoint()`；结束 `Shutdown()`
+- 关键路径后调用 `Checkpoint()`；或开启 `StartBackgroundFlush(..)`；结束 `Shutdown()`
 - 用 `PrintStats()`/`GetCacheHitRate()` 观察命中与写回
+
+---
+
+## 8. 文件与元数据（Meta Superblock）
+- 单库单文件：建议放在 `data/<db>.bin`。页 0 为 Superblock：
+  - `magic, version, page_size, next_page_id, catalog_root`（预留）
+  - 程序启动读取；`Checkpoint/Shutdown` 持久化；`next_page_id` 从 1 起（保留页 0）。
+- 数据/索引/系统页类型通过 `PageHeader.page_type` 区分；数据页支持 `next_page_id` 链式遍历。
+
+---
+
+## 9. 可靠性与健壮性
+- 脏页管理：页头/记录写入会置脏；`Checkpoint` 与后台线程负责刷盘。
+- 链路安全：`GetPageChain` 内建环路保护；非法页返回空。
+- 重启恢复：依赖页 0 的 meta，避免误判容量/已用页数。
 
 
 ## 附：可直接拷贝的页内布局与工具（最小版）
