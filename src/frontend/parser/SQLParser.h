@@ -3,7 +3,7 @@
  */
 
 #pragma once
-#include "../../engine/operators/planNode.h"
+#include "../../engine/operators/plan_node.h"
 #include <string>
 
 class SQLParser
