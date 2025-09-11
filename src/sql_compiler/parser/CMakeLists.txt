@@ -33,14 +33,20 @@ target_link_libraries(parser_test
     lexer
 )
 
+# parser_export 可执行文件 - 支持完整的编译到执行流程
 add_executable(parser_export
     parser_export.cpp
 )
 
+# 链接所有必要的库以支持完整流程
 target_link_libraries(parser_export
     parser
     lexer
     util_lib
+    storage_lib
+    executor_lib
+    translator_lib
+    catalog_lib
 )
 
 target_link_libraries(parser_test
