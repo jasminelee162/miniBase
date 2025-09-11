@@ -1,1 +1,2 @@
 students id:TEXT name:TEXT age:TEXT
+users id:TEXT name:TEXT age:TEXT

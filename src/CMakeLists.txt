@@ -14,6 +14,9 @@ add_subdirectory(sql_compiler/lexer)
 add_subdirectory(sql_compiler/parser)
 add_subdirectory(sql_compiler/semantic)
 add_subdirectory(sql_compiler/planner)
+# Add engine and frontend translator directories so their libraries are built
+add_subdirectory(engine)
+add_subdirectory(frontend/translator)
 
 # 临时仅链接 util 与 storage，其他模块待实现后再启用
 add_library(minidb_core INTERFACE)

@@ -20,6 +20,28 @@ set_tests_properties(storage_test PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
+# End-to-end flow test: parser -> json -> translator -> executor
+add_executable(e2e_flow
+    unit/e2e_flow.cpp
+)
+
+target_link_libraries(e2e_flow
+    parser
+    lexer
+    util_lib
+    storage_lib
+)
+target_link_libraries(e2e_flow
+    semantic
+)
+target_link_libraries(e2e_flow
+    translator_lib
+    executor_lib
+)
+
+add_test(NAME e2e_flow COMMAND e2e_flow)
+set_tests_properties(e2e_flow PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 # 如需为 CLI/Executor 建独立目标，请在它们模块就绪后启用：
 # add_executable(cli_test unit/CliTest.cpp)
 # target_link_libraries(cli_test cli_lib)  # 或者链接对应核心/依赖库

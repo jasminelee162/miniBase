@@ -8,6 +8,8 @@ add_library(parser
     parser.h
     ast_printer.cpp
     ast_printer.h
+    ast_json_serializer.cpp
+    ast_json_serializer.h
 )
 
 # 链接词法分析器库
@@ -29,6 +31,16 @@ add_executable(parser_test
 target_link_libraries(parser_test
     parser
     lexer
+)
+
+add_executable(parser_export
+    parser_export.cpp
+)
+
+target_link_libraries(parser_export
+    parser
+    lexer
+    util_lib
 )
 
 target_link_libraries(parser_test
