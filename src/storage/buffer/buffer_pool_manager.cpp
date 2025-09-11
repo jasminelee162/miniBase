@@ -1,8 +1,14 @@
 #include "storage/buffer/buffer_pool_manager.h"
-#include "storage/storage_logger.h"
+#include "util/logger.h"
 #include <cassert>
 
 namespace minidb {
+
+#ifdef PROJECT_ROOT_DIR
+static Logger g_storage_logger_bpm(std::string(PROJECT_ROOT_DIR) + "/logs/storage.log");
+#else
+static Logger g_storage_logger_bpm("storage.log");
+#endif
 
 BufferPoolManager::BufferPoolManager(size_t pool_size, DiskManager* disk_manager)
     : pool_size_(pool_size), disk_manager_(disk_manager) {
@@ -48,15 +54,22 @@ bool BufferPoolManager::FlushFrameToPages(frame_id_t frame_id) {
     if (s != Status::OK) return false;
     page.SetDirty(false);
     num_writebacks_.fetch_add(1);
-    if (g_storage_logger) {
-        g_storage_logger->logBufferOperation("WRITEBACK", frame_id, true);
-        g_storage_logger->logPageOperation("WRITE", frame_page_ids_[frame_id], true);
+    if constexpr (ENABLE_STORAGE_LOG) {
+        g_storage_logger_bpm.log(
+            std::string("[BPM] Writeback page ") +
+            std::to_string((unsigned)frame_page_ids_[frame_id]) +
+            " from frame " + std::to_string((size_t)frame_id)
+        );
     }
     return true;
 }
 //从缓存池里获取一页
 Page* BufferPoolManager::FetchPage(page_id_t page_id) {
     std::unique_lock<std::shared_mutex> lock(latch_);
+    // Guard: reject fetching pages beyond allocated range
+    if (page_id == INVALID_PAGE_ID || static_cast<size_t>(page_id) >= disk_manager_->GetNumPages()) {
+        return nullptr;
+    }
     num_accesses_.fetch_add(1);
     auto it = page_table_.find(page_id);
     if (it != page_table_.end()) {
@@ -93,6 +106,7 @@ Page* BufferPoolManager::FetchPage(page_id_t page_id) {
         return nullptr;
     }
     frame_page.SetDirty(false);
+    frame_page.SetPageId(page_id);
     page_table_[page_id] = fid;
     frame_page_ids_[fid] = page_id;
     // 初始化元信息
@@ -133,6 +147,7 @@ Page* BufferPoolManager::NewPage(page_id_t* page_id) {
         return nullptr;
     }
     std::memset(frame_page.GetData(), 0, PAGE_SIZE);
+    frame_page.SetPageId(*page_id);
     page_table_[*page_id] = fid;
     frame_page_ids_[fid] = *page_id;
     frame_page.SetDirty(false);
@@ -217,9 +232,45 @@ size_t BufferPoolManager::GetFreeFramesCount() const {
     return free_list_.size();
 }
 
-bool BufferPoolManager::ResizePool(size_t /*new_size*/) {
-    // 非必要特性：暂不实现动态调整
-    return false;
+bool BufferPoolManager::GrowPool(size_t new_size) {
+    if (new_size <= pool_size_) return false;
+    // 简化策略：先刷盘，丢弃现有缓存内容，重建更大的池
+    // 注意：这会清空 page_table_，但磁盘上数据仍然一致
+    for (auto& kv : page_table_) {
+        frame_id_t fid = kv.second;
+        Page& page = pages_[fid];
+        if (frame_page_ids_[fid] != INVALID_PAGE_ID && page.IsDirty()) {
+            disk_manager_->WritePage(frame_page_ids_[fid], page.GetData());
+            page.SetDirty(false);
+        }
+    }
+    disk_manager_->FlushAllPages();
+
+    // 释放旧数组并创建新数组
+    delete[] pages_;
+    pages_ = new Page[new_size];
+    pool_size_ = new_size;
+
+    // 重置元数据结构
+    page_table_.clear();
+    frame_page_ids_.assign(new_size, INVALID_PAGE_ID);
+    {
+        std::lock_guard<std::mutex> guard(free_list_mutex_);
+        free_list_.clear();
+        for (frame_id_t i = 0; i < new_size; ++i) {
+            free_list_.push_back(i);
+        }
+    }
+    lru_replacer_ = std::make_unique<LRUReplacer>(new_size);
+    fifo_replacer_ = std::make_unique<FIFOReplacer>(new_size);
+    return true;
+}
+
+bool BufferPoolManager::ResizePool(size_t new_size) {
+    std::unique_lock<std::shared_mutex> lock(latch_);
+    // 简化实现：仅支持增大，不支持收缩
+    if (new_size <= pool_size_) return false;
+    return GrowPool(new_size);
 }
 
 } // namespace minidb

@@ -1,18 +1,19 @@
 #include "storage/page/disk_manager.h"
-#include "util/logger.h" ////
-#include "storage/storage_logger.h"
+#include "util/logger.h"
 #include <cassert>
 #include <cstring>
 #include <future>
+#include <algorithm>
+#include "storage/page/page_header.h"
+#include "util/config.h"
 
-namespace minidb
-{
+namespace minidb {
 
-    // #ifdef PROJECT_ROOT_DIR
-    //     static Logger g_storage_logger(std::string(PROJECT_ROOT_DIR) + "/logs/storage.log");
-    // #else
-    //     static Logger g_storage_logger("storage.log");
-    // #endif
+#ifdef PROJECT_ROOT_DIR
+static Logger g_storage_logger(std::string(PROJECT_ROOT_DIR) + "/logs/storage.log");
+#else
+static Logger g_storage_logger("storage.log");
+#endif
 
     // 负责把页号映射到文件偏移，并做读写。内部用互斥锁保证线程安全。
 
@@ -40,18 +41,19 @@ namespace minidb
         }
         file_stream_.seekg(0, std::ios::end);
         std::streamoff size = file_stream_.tellg();
-        // 依据文件大小设置最大页数（若文件比默认大，则放大容量上限）
+        size_t file_pages = 0;
         if (size > 0)
         {
-            size_t file_pages = static_cast<size_t>(size) / PAGE_SIZE;
+            file_pages = static_cast<size_t>(size) / PAGE_SIZE;
             if (file_pages > 0)
             {
                 max_pages_ = std::max(max_pages_, file_pages);
             }
         }
-        // 注意：当前实现未持久化“已分配页数”元数据，因此无论新旧文件，均从 0 开始计数。
-        // 如果需要跨进程恢复，可在文件头加入元信息记录 used_pages，再在此处读取。
-        next_page_id_.store(0);
+        // 使用超级块（page 0）加载或初始化元数据
+        if (!LoadOrRecoverMeta()) {
+            next_page_id_.store(0);
+        }
     }
 
     DiskManager::~DiskManager()
@@ -92,10 +94,8 @@ namespace minidb
             return Status::IO_ERROR;
         }
         num_reads_.fetch_add(1);
-        if (g_storage_logger)
-        {
-            g_storage_logger->logDiskOperation("READ", true);
-            g_storage_logger->logPageOperation("READ", page_id, true);
+        if constexpr (ENABLE_STORAGE_LOG) {
+            g_storage_logger.log(std::string("[DM] Read page ") + std::to_string((unsigned)page_id));
         }
         return Status::OK;
     }
@@ -120,10 +120,8 @@ namespace minidb
             return Status::IO_ERROR;
         }
         num_writes_.fetch_add(1);
-        if (g_storage_logger)
-        {
-            g_storage_logger->logDiskOperation("WRITE", true);
-            g_storage_logger->logPageOperation("WRITE", page_id, true);
+        if constexpr (ENABLE_STORAGE_LOG) {
+            g_storage_logger.log(std::string("[DM] Write page ") + std::to_string((unsigned)page_id));
         }
         // 依据写入的页号推进下一个可用页号（0基）：next = max(next, page_id + 1)
         page_id_t expected_next = static_cast<page_id_t>(page_id + 1);
@@ -159,12 +157,10 @@ namespace minidb
         }
         // 检查容量
         page_id_t next = next_page_id_.load();
-        if (static_cast<size_t>(next) >= max_pages_)
-        {
-            if (g_storage_logger)
-            {
-                g_storage_logger->warn("DISK", "Disk full: next=" + std::to_string((unsigned)next) +
-                                                   ", max_pages=" + std::to_string(max_pages_));
+        if (static_cast<size_t>(next) >= max_pages_) {
+            if constexpr (ENABLE_STORAGE_LOG) {
+                g_storage_logger.log(Logger::Level::WARN, std::string("[DM] Disk full: next=") + std::to_string((unsigned)next) +
+                                   ", max_pages=" + std::to_string(max_pages_));
             }
             return INVALID_PAGE_ID;
         }
@@ -193,10 +189,86 @@ namespace minidb
         {
             return;
         }
+        PersistMeta();
         if (file_stream_.is_open())
         {
             file_stream_.flush();
             file_stream_.close();
         }
+    }
+
+    bool DiskManager::ReadMeta(MetaPageData& out)
+    {
+        if (!file_stream_.is_open()) return false;
+        std::vector<char> buf(PAGE_SIZE);
+        file_stream_.seekg(0, std::ios::beg);
+        file_stream_.read(buf.data(), PAGE_SIZE);
+        if (!file_stream_) return false;
+        // Validate header
+        const PageHeader* hdr = reinterpret_cast<const PageHeader*>(buf.data());
+        // Accept either METADATA_PAGE or legacy zeroed header
+        if (!(hdr->slot_count == 0 && hdr->free_space_offset >= PAGE_HEADER_SIZE)) {
+            // If header malformed, still try to read meta region
+        }
+        std::memcpy(&out, buf.data() + PAGE_HEADER_SIZE, sizeof(MetaPageData));
+        if (out.magic != META_MAGIC) return false;
+        if (out.version != META_VERSION) return false;
+        if (out.page_size != PAGE_SIZE) return false;
+        return true;
+    }
+
+    bool DiskManager::WriteMeta(const MetaPageData& m)
+    {
+        if (!file_stream_.is_open()) return false;
+        std::vector<char> buf(PAGE_SIZE);
+        std::memset(buf.data(), 0, buf.size());
+        // Fill header as METADATA_PAGE with zero slots
+        PageHeader* hdr = reinterpret_cast<PageHeader*>(buf.data());
+        hdr->slot_count = 0;
+        hdr->free_space_offset = PAGE_HEADER_SIZE;
+        hdr->next_page_id = INVALID_PAGE_ID;
+        hdr->page_type = static_cast<uint32_t>(PageType::METADATA_PAGE);
+        hdr->reserved = 0;
+        // Copy meta payload after header
+        std::memcpy(buf.data() + PAGE_HEADER_SIZE, &m, sizeof(MetaPageData));
+        file_stream_.seekp(0, std::ios::beg);
+        file_stream_.write(buf.data(), PAGE_SIZE);
+        file_stream_.flush();
+        return static_cast<bool>(file_stream_);
+    }
+
+    bool DiskManager::InitNewMeta()
+    {
+        MetaPageData m{};
+        std::memset(&m, 0, sizeof(m));
+        m.magic = META_MAGIC;
+        m.version = META_VERSION;
+        m.page_size = static_cast<uint32_t>(PAGE_SIZE);
+        m.next_page_id = 1; // 预留页0
+        m.catalog_root = INVALID_PAGE_ID;
+        if (!WriteMeta(m)) return false;
+        next_page_id_.store(m.next_page_id);
+        return true;
+    }
+
+    bool DiskManager::LoadOrRecoverMeta()
+    {
+        MetaPageData m{};
+        if (ReadMeta(m)) {
+            next_page_id_.store(m.next_page_id);
+            return true;
+        }
+        return InitNewMeta();
+    }
+
+    bool DiskManager::PersistMeta()
+    {
+        MetaPageData m{};
+        m.magic = META_MAGIC;
+        m.version = META_VERSION;
+        m.page_size = static_cast<uint32_t>(PAGE_SIZE);
+        m.next_page_id = next_page_id_.load();
+        m.catalog_root = INVALID_PAGE_ID;
+        return WriteMeta(m);
     }
 } // namespace minidb

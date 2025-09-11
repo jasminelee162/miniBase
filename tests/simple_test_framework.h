@@ -57,9 +57,9 @@ public:
         std::cout << "Tests failed: " << TestCase::getFailed() << std::endl;
         
         if (TestCase::getFailed() == 0) {
-            std::cout << "All tests passed! ✅" << std::endl;
+            std::cout << "All tests passed! [ok]" << std::endl;
         } else {
-            std::cout << "Some tests failed! ❌" << std::endl;
+            std::cout << "Some tests failed! " << std::endl;
         }
     }
     

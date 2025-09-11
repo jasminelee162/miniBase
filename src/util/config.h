@@ -12,7 +12,7 @@ namespace minidb
     constexpr size_t MAX_PAGES = 1000000;
     // 默认虚拟磁盘大小（用于新建时预分配），可按需调整
     // constexpr size_t DEFAULT_DISK_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
-    constexpr size_t DEFAULT_DISK_SIZE_BYTES = 128 * 1024;   //128KB
+    constexpr size_t DEFAULT_DISK_SIZE_BYTES = 160 * 1024;   //128KB
     constexpr size_t DEFAULT_MAX_PAGES = DEFAULT_DISK_SIZE_BYTES / PAGE_SIZE;
 
     // 可选：是否输出存储层日志
