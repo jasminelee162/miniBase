@@ -1,6 +1,7 @@
 #include "ast_json_serializer.h"
 #include "ast.h"
 #include <stdexcept>
+#include "../common/error_messages.h"
 
 using json = nlohmann::json;
 
@@ -66,7 +67,7 @@ json ASTJson::toJson(const Statement* stmt)
         return j;
     }
 
-    throw std::runtime_error("Unsupported statement type for JSON serialization");
+    throw std::runtime_error(SqlErrors::UNSUPPORTED_STMT_JSON);
 }
 
 static json exprToJson(const Expression* e)

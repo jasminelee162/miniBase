@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "../../util/logger.h"
+#include "../common/error_messages.h"
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), current(0) {}
 
@@ -54,7 +55,7 @@ std::unique_ptr<Statement> Parser::parse() {
         // 确保所有输入都被消费
         if (!isAtEnd()) {
             Token token = peek();
-            throw ParseError("Unexpected token after statement", token.line, token.column);
+            throw ParseError(SqlErrors::UNEXPECTED_AFTER_STATEMENT, token.line, token.column);
         }
         logger.log("[Parser] Parse successful");
         return stmt;
@@ -79,24 +80,24 @@ std::unique_ptr<Statement> Parser::statement() {
         return deleteStatement();
     }
     
-    throw ParseError("Expected statement", token.line, token.column);
+    throw ParseError(SqlErrors::EXPECT_STATEMENT, token.line, token.column);
 }
 
 // 解析CREATE TABLE语句
 std::unique_ptr<CreateTableStatement> Parser::createStatement() {
     // CREATE TABLE tableName ( columnDef, columnDef, ... )
-    consume(TokenType::KEYWORD_CREATE, "Expected 'CREATE'");
-    consume(TokenType::KEYWORD_TABLE, "Expected 'TABLE' after 'CREATE'");
+    consume(TokenType::KEYWORD_CREATE, SqlErrors::EXPECT_CREATE);
+    consume(TokenType::KEYWORD_TABLE, SqlErrors::EXPECT_TABLE_AFTER_CREATE);
     
-    Token tableNameToken = consume(TokenType::IDENTIFIER, "Expected table name");
+    Token tableNameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
     std::string tableName = tableNameToken.lexeme;
     
-    consume(TokenType::DELIMITER_LPAREN, "Expected '(' after table name");
+    consume(TokenType::DELIMITER_LPAREN, SqlErrors::EXPECT_LPAREN_AFTER_TABLE);
     
     auto columns = columnDefinitions();
     
-    consume(TokenType::DELIMITER_RPAREN, "Expected ')' after column definitions");
-    consume(TokenType::DELIMITER_SEMICOLON, "Expected ';' after CREATE TABLE statement");
+    consume(TokenType::DELIMITER_RPAREN, SqlErrors::EXPECT_RPAREN_AFTER_COLUMNS);
+    consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_CREATE);
     
     return std::make_unique<CreateTableStatement>(tableName, std::move(columns));
 }
@@ -111,7 +112,7 @@ std::vector<ColumnDefinition> Parser::columnDefinitions() {
         }
         
         // columnName dataType
-        Token nameToken = consume(TokenType::IDENTIFIER, "Expected column name");
+        Token nameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
         std::string columnName = nameToken.lexeme;
         
         ColumnDefinition::DataType dataType;
@@ -120,7 +121,7 @@ std::vector<ColumnDefinition> Parser::columnDefinitions() {
         } else if (match(TokenType::KEYWORD_VARCHAR)) {
             dataType = ColumnDefinition::DataType::VARCHAR;
         } else {
-            throw ParseError("Expected data type", peek().line, peek().column);
+            throw ParseError(SqlErrors::EXPECT_DATA_TYPE, peek().line, peek().column);
         }
         
         columns.emplace_back(columnName, dataType);
@@ -133,22 +134,22 @@ std::vector<ColumnDefinition> Parser::columnDefinitions() {
 // 解析INSERT语句
 std::unique_ptr<InsertStatement> Parser::insertStatement() {
     // INSERT INTO tableName (col1, col2, ...) VALUES (val1, val2, ...), (val1, val2, ...)
-    consume(TokenType::KEYWORD_INSERT, "Expected 'INSERT'");
-    consume(TokenType::KEYWORD_INTO, "Expected 'INTO' after 'INSERT'");
+    consume(TokenType::KEYWORD_INSERT, SqlErrors::EXPECT_INSERT);
+    consume(TokenType::KEYWORD_INTO, SqlErrors::EXPECT_INTO_AFTER_INSERT);
     
-    Token tableNameToken = consume(TokenType::IDENTIFIER, "Expected table name");
+    Token tableNameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
     std::string tableName = tableNameToken.lexeme;
     
     // 解析列名列表
-    consume(TokenType::DELIMITER_LPAREN, "Expected '(' after table name");
+    consume(TokenType::DELIMITER_LPAREN, SqlErrors::EXPECT_LPAREN);
     auto columns = columnNames();
-    consume(TokenType::DELIMITER_RPAREN, "Expected ')' after column names");
+    consume(TokenType::DELIMITER_RPAREN, SqlErrors::EXPECT_RPAREN_AFTER_COLS);
     
     // 解析VALUES子句
-    consume(TokenType::KEYWORD_VALUES, "Expected 'VALUES'");
+    consume(TokenType::KEYWORD_VALUES, SqlErrors::EXPECT_VALUES);
     auto values = valueLists();
     
-    consume(TokenType::DELIMITER_SEMICOLON, "Expected ';' after INSERT statement");
+    consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_INSERT);
     
     return std::make_unique<InsertStatement>(tableName, std::move(columns), std::move(values));
 }
@@ -162,7 +163,7 @@ std::vector<std::string> Parser::columnNames() {
             break;
         }
         
-        Token nameToken = consume(TokenType::IDENTIFIER, "Expected column name");
+        Token nameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
         columns.push_back(nameToken.lexeme);
         
     } while (match(TokenType::DELIMITER_COMMA));
@@ -175,7 +176,7 @@ std::vector<ValueList> Parser::valueLists() {
     std::vector<ValueList> valueLists;
     
     do {
-        consume(TokenType::DELIMITER_LPAREN, "Expected '('");
+        consume(TokenType::DELIMITER_LPAREN, SqlErrors::EXPECT_LPAREN);
         
         std::vector<std::unique_ptr<Expression>> values;
         do {
@@ -187,7 +188,7 @@ std::vector<ValueList> Parser::valueLists() {
             
         } while (match(TokenType::DELIMITER_COMMA));
         
-        consume(TokenType::DELIMITER_RPAREN, "Expected ')'");
+        consume(TokenType::DELIMITER_RPAREN, SqlErrors::EXPECT_RPAREN);
         
         valueLists.emplace_back(std::move(values));
         
@@ -199,18 +200,18 @@ std::vector<ValueList> Parser::valueLists() {
 // 解析SELECT语句
 std::unique_ptr<SelectStatement> Parser::selectStatement() {
     // SELECT col1, col2, ... FROM tableName WHERE condition
-    consume(TokenType::KEYWORD_SELECT, "Expected 'SELECT'");
+    consume(TokenType::KEYWORD_SELECT, SqlErrors::EXPECT_SELECT);
     
     // 解析列名列表
     std::vector<std::string> columns;
     do {
-        Token nameToken = consume(TokenType::IDENTIFIER, "Expected column name");
+        Token nameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
         columns.push_back(nameToken.lexeme);
     } while (match(TokenType::DELIMITER_COMMA));
     
-    consume(TokenType::KEYWORD_FROM, "Expected 'FROM' after columns");
+    consume(TokenType::KEYWORD_FROM, SqlErrors::EXPECT_FROM_AFTER_COLS);
     
-    Token tableNameToken = consume(TokenType::IDENTIFIER, "Expected table name");
+    Token tableNameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
     std::string tableName = tableNameToken.lexeme;
     
     // 可选的WHERE子句
@@ -219,7 +220,7 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
         whereClause = expression();
     }
     
-    consume(TokenType::DELIMITER_SEMICOLON, "Expected ';' after SELECT statement");
+    consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_SELECT);
     
     return std::make_unique<SelectStatement>(std::move(columns), tableName, std::move(whereClause));
 }
@@ -227,10 +228,10 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
 // 解析DELETE语句
 std::unique_ptr<DeleteStatement> Parser::deleteStatement() {
     // DELETE FROM tableName WHERE condition
-    consume(TokenType::KEYWORD_DELETE, "Expected 'DELETE'");
-    consume(TokenType::KEYWORD_FROM, "Expected 'FROM' after 'DELETE'");
+    consume(TokenType::KEYWORD_DELETE, SqlErrors::EXPECT_DELETE);
+    consume(TokenType::KEYWORD_FROM, SqlErrors::EXPECT_FROM_AFTER_DELETE);
     
-    Token tableNameToken = consume(TokenType::IDENTIFIER, "Expected table name");
+    Token tableNameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
     std::string tableName = tableNameToken.lexeme;
     
     // 可选的WHERE子句
@@ -239,7 +240,7 @@ std::unique_ptr<DeleteStatement> Parser::deleteStatement() {
         whereClause = expression();
     }
     
-    consume(TokenType::DELIMITER_SEMICOLON, "Expected ';' after DELETE statement");
+    consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_DELETE);
     
     return std::make_unique<DeleteStatement>(tableName, std::move(whereClause));
 }
@@ -335,9 +336,9 @@ std::unique_ptr<Expression> Parser::primary() {
     
     if (match(TokenType::DELIMITER_LPAREN)) {
         auto expr = expression();
-        consume(TokenType::DELIMITER_RPAREN, "Expected ')' after expression");
+        consume(TokenType::DELIMITER_RPAREN, SqlErrors::EXPECT_RPAREN_AFTER_EXPR);
         return expr;
     }
     
-    throw ParseError("Expected expression", peek().line, peek().column);
+    throw ParseError(SqlErrors::EXPECT_EXPRESSION, peek().line, peek().column);
 }

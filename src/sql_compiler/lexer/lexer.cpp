@@ -3,6 +3,7 @@
 #include "token.h"
 #include <cctype>
 #include <stdexcept>
+#include "../common/error_messages.h"
 
 Lexer::Lexer(const std::string& source)
     : input(source), position(0), line(1), column(1), currentChar('\0') {
@@ -90,7 +91,7 @@ Token Lexer::scanString() {
         advance();
         return Token(TokenType::CONST_STRING, result, line, startColumn);
     }
-    return createErrorToken("Unclosed string literal", result);
+    return createErrorToken(SqlErrors::UNCLOSED_STRING, result);
 }
 
 Token Lexer::scanOperator() {
@@ -111,7 +112,7 @@ Token Lexer::scanOperator() {
     case '!':
         advance();
         if (currentChar == '=') { advance(); return Token(TokenType::OPERATOR_NE, "!=", line, startColumn); }
-        return createErrorToken("Expected '=' after '!'", std::string(1, '!'));
+        return createErrorToken(SqlErrors::EXPECT_EQ_AFTER_BANG, std::string(1, '!'));
     case '+': type = TokenType::OPERATOR_PLUS; break;
     case '-': type = TokenType::OPERATOR_MINUS; break;
     case '*': type = TokenType::OPERATOR_TIMES; break;
@@ -122,7 +123,7 @@ Token Lexer::scanOperator() {
     case ')': type = TokenType::DELIMITER_RPAREN; break;
     case '.': type = TokenType::DELIMITER_DOT; break;
     default:
-        return createErrorToken(std::string("Unknown operator: ") + op, std::string(1, op));
+        return createErrorToken(SqlErrors::unknownOperator(op), std::string(1, op));
     }
 
     advance();

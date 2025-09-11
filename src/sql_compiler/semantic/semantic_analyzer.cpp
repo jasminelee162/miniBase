@@ -1,5 +1,6 @@
 #include "semantic_analyzer.h"
 #include "../../util/logger.h"
+#include "../common/error_messages.h"
 
 // 获取表达式的数据类型
 std::string SemanticAnalyzer::getExpressionType(Expression* expr) {
@@ -14,7 +15,7 @@ std::string SemanticAnalyzer::getExpressionType(Expression* expr) {
         // 检查当前表是否有效
         if (currentTable_.table_name.empty()) {
             throw SemanticError(SemanticError::ErrorType::UNKNOWN, 
-                              "No current table context for identifier: " + identifier->getName());
+                              SqlErrors::noCurrentTableForIdentifier(identifier->getName()));
         }
         
         // 查找列
@@ -30,7 +31,7 @@ std::string SemanticAnalyzer::getExpressionType(Expression* expr) {
         
         if (!found) {
             throw SemanticError(SemanticError::ErrorType::COLUMN_NOT_EXIST, 
-                              "Column does not exist: " + identifier->getName());
+                              SqlErrors::columnNotExist(identifier->getName()));
         }
         
         return columnType;
@@ -56,10 +57,10 @@ std::string SemanticAnalyzer::getExpressionType(Expression* expr) {
         
         // 其他情况抛出类型不匹配错误
         throw SemanticError(SemanticError::ErrorType::TYPE_MISMATCH, 
-                          "Type mismatch in binary expression");
+                          SqlErrors::TYPE_MISMATCH_BINARY);
     }
     
-    throw SemanticError(SemanticError::ErrorType::UNKNOWN, "Unknown expression type");
+    throw SemanticError(SemanticError::ErrorType::UNKNOWN, SqlErrors::UNKNOWN_EXPR_TYPE);
 }
 
 // 检查表是否存在
@@ -69,7 +70,7 @@ void SemanticAnalyzer::checkTableExists(const std::string& tableName) {
     if (!catalog_.HasTable(tableName)) {
         logger.log(std::string("[Semantic][ERROR] table not found: ") + tableName);
         throw SemanticError(SemanticError::ErrorType::TABLE_NOT_EXIST, 
-                          "Table does not exist: " + tableName);
+                          SqlErrors::tableNotExist(tableName));
     }
 }
 
@@ -80,7 +81,7 @@ void SemanticAnalyzer::checkTableNotExists(const std::string& tableName) {
     if (catalog_.HasTable(tableName)) {
         logger.log(std::string("[Semantic][ERROR] table already exists: ") + tableName);
         throw SemanticError(SemanticError::ErrorType::TABLE_ALREADY_EXIST, 
-                          "Table already exists: " + tableName);
+                          SqlErrors::tableAlreadyExist(tableName));
     }
 }
 
@@ -88,7 +89,7 @@ void SemanticAnalyzer::checkTableNotExists(const std::string& tableName) {
 void SemanticAnalyzer::checkColumnExists(const std::string& tableName, const std::string& columnName) {
     if (!catalog_.HasTable(tableName)) {
         throw SemanticError(SemanticError::ErrorType::TABLE_NOT_EXIST, 
-                          "Table does not exist: " + tableName);
+                          SqlErrors::tableNotExist(tableName));
     }
     
     auto table = catalog_.GetTable(tableName);
@@ -102,7 +103,7 @@ void SemanticAnalyzer::checkColumnExists(const std::string& tableName, const std
     
     if (!found) {
         throw SemanticError(SemanticError::ErrorType::COLUMN_NOT_EXIST, 
-                          "Column does not exist: " + columnName + " in table " + tableName);
+                          SqlErrors::columnNotExistInTable(columnName, tableName));
     }
 }
 
@@ -111,7 +112,7 @@ void SemanticAnalyzer::checkTypeCompatibility(const std::string& expected, const
                                            const std::string& context) {
     if (expected != actual) {
         throw SemanticError(SemanticError::ErrorType::TYPE_MISMATCH, 
-                          "Type mismatch in " + context + ": expected " + 
+                          std::string("Type mismatch in ") + context + ": expected " + 
                           expected + ", got " + actual);
     }
 }
@@ -168,8 +169,7 @@ void SemanticAnalyzer::visit(InsertStatement& stmt) {
     for (const auto& valueList : stmt.getValueLists()) {
         if (valueList.getValues().size() != expectedColumnCount) {
             throw SemanticError(SemanticError::ErrorType::COLUMN_COUNT_MISMATCH, 
-                              "Column count mismatch: expected " + std::to_string(expectedColumnCount) + 
-                              ", got " + std::to_string(valueList.getValues().size()));
+                              SqlErrors::columnCountMismatch(expectedColumnCount, valueList.getValues().size()));
         }
         
         // 检查每个值的类型是否与列类型匹配
