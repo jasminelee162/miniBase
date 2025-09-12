@@ -4,6 +4,7 @@ add_subdirectory(buffer)
 add_library(storage_lib STATIC
     page/disk_manager.cpp
     buffer/buffer_pool_manager.cpp
+    index/bplus_tree.cpp
     storage_engine.cpp
 )
 
