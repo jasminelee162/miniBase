@@ -1,9 +1,16 @@
 #pragma once
-#include "../../catalog/catalog.h" // Column
+// #include "../../catalog/catalog.h" // Column
+#include "catalog/catalog.h"
+
 #include <string>
 #include <vector>
 #include <memory>
 #include <map>
+
+namespace minidb
+{
+    struct Column;
+} // 前向声明
 
 enum class PlanType
 {
