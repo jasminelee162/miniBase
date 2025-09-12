@@ -5,62 +5,65 @@
 namespace SqlErrors {
 
 // Lexer errors
-inline constexpr const char* UNCLOSED_STRING = "Unclosed string literal";
-inline constexpr const char* EXPECT_EQ_AFTER_BANG = "Expected '=' after '!'";
-inline std::string unknownOperator(char op) { return std::string("Unknown operator: ") + op; }
+inline constexpr const char* UNCLOSED_STRING = "字符串字面量未闭合";
+inline constexpr const char* EXPECT_EQ_AFTER_BANG = "在 '!' 之后期望出现 '='";
+inline std::string unknownOperator(char op) { return std::string("未知运算符: ") + op; }
 
 // Parser generic
-inline constexpr const char* UNEXPECTED_AFTER_STATEMENT = "Unexpected token after statement";
-inline constexpr const char* EXPECT_STATEMENT = "Expected statement";
-inline constexpr const char* EXPECT_CREATE = "Expected 'CREATE'";
-inline constexpr const char* EXPECT_TABLE_AFTER_CREATE = "Expected 'TABLE' after 'CREATE'";
-inline constexpr const char* EXPECT_TABLE_NAME = "Expected table name";
-inline constexpr const char* EXPECT_LPAREN_AFTER_TABLE = "Expected '(' after table name";
-inline constexpr const char* EXPECT_RPAREN_AFTER_COLUMNS = "Expected ')' after column definitions";
-inline constexpr const char* EXPECT_SEMI_AFTER_CREATE = "Expected ';' after CREATE TABLE statement";
-inline constexpr const char* EXPECT_COLUMN_NAME = "Expected column name";
-inline constexpr const char* EXPECT_DATA_TYPE = "Expected data type";
-inline constexpr const char* EXPECT_INSERT = "Expected 'INSERT'";
-inline constexpr const char* EXPECT_INTO_AFTER_INSERT = "Expected 'INTO' after 'INSERT'";
-inline constexpr const char* EXPECT_RPAREN_AFTER_COLS = "Expected ')' after column names";
-inline constexpr const char* EXPECT_VALUES = "Expected 'VALUES'";
-inline constexpr const char* EXPECT_SEMI_AFTER_INSERT = "Expected ';' after INSERT statement";
-inline constexpr const char* EXPECT_LPAREN = "Expected '('";
-inline constexpr const char* EXPECT_RPAREN = "Expected ')'";
-inline constexpr const char* EXPECT_SELECT = "Expected 'SELECT'";
-inline constexpr const char* EXPECT_FROM_AFTER_COLS = "Expected 'FROM' after columns";
-inline constexpr const char* EXPECT_SEMI_AFTER_SELECT = "Expected ';' after SELECT statement";
-inline constexpr const char* EXPECT_DELETE = "Expected 'DELETE'";
-inline constexpr const char* EXPECT_FROM_AFTER_DELETE = "Expected 'FROM' after 'DELETE'";
-inline constexpr const char* EXPECT_SEMI_AFTER_DELETE = "Expected ';' after DELETE statement";
-inline constexpr const char* EXPECT_RPAREN_AFTER_EXPR = "Expected ')' after expression";
-inline constexpr const char* EXPECT_EXPRESSION = "Expected expression";
+inline constexpr const char* UNEXPECTED_AFTER_STATEMENT = "在语句结束后存在多余的内容";
+inline constexpr const char* EXPECT_STATEMENT = "期望一条有效的语句";
+inline constexpr const char* EXPECT_CREATE = "期望关键字 'CREATE'";
+inline constexpr const char* EXPECT_TABLE_AFTER_CREATE = "在 'CREATE' 之后期望关键字 'TABLE'";
+inline constexpr const char* EXPECT_TABLE_NAME = "期望表名";
+inline constexpr const char* EXPECT_LPAREN_AFTER_TABLE = "在表名之后期望出现 '('";
+inline constexpr const char* EXPECT_RPAREN_AFTER_COLUMNS = "在列定义之后期望出现 ')'";
+inline constexpr const char* EXPECT_SEMI_AFTER_CREATE = "在 CREATE TABLE 语句末尾期望出现 ';'";
+inline constexpr const char* EXPECT_COLUMN_NAME = "期望列名";
+inline constexpr const char* EXPECT_DATA_TYPE = "期望数据类型";
+inline constexpr const char* EXPECT_INSERT = "期望关键字 'INSERT'";
+inline constexpr const char* EXPECT_INTO_AFTER_INSERT = "在 'INSERT' 之后期望关键字 'INTO'";
+inline constexpr const char* EXPECT_RPAREN_AFTER_COLS = "在列名列表之后期望出现 ')'";
+inline constexpr const char* EXPECT_VALUES = "期望关键字 'VALUES'";
+inline constexpr const char* EXPECT_SEMI_AFTER_INSERT = "在 INSERT 语句末尾期望出现 ';'";
+inline constexpr const char* EXPECT_LPAREN = "期望出现 '('";
+inline constexpr const char* EXPECT_RPAREN = "期望出现 ')'";
+inline constexpr const char* EXPECT_SELECT = "期望关键字 'SELECT'";
+inline constexpr const char* EXPECT_FROM_AFTER_COLS = "在列名之后期望关键字 'FROM'";
+inline constexpr const char* EXPECT_SEMI_AFTER_SELECT = "在 SELECT 语句末尾期望出现 ';'";
+inline constexpr const char* EXPECT_DELETE = "期望关键字 'DELETE'";
+inline constexpr const char* EXPECT_FROM_AFTER_DELETE = "在 'DELETE' 之后期望关键字 'FROM'";
+inline constexpr const char* EXPECT_SEMI_AFTER_DELETE = "在 DELETE 语句末尾期望出现 ';'";
+inline constexpr const char* EXPECT_RPAREN_AFTER_EXPR = "在表达式之后期望出现 ')'";
+inline constexpr const char* EXPECT_EXPRESSION = "期望一个表达式";
+// VARCHAR length specific
+inline constexpr const char* EXPECT_VARCHAR_LENGTH = "在 'VARCHAR(' 之后期望长度";
+inline constexpr const char* EXPECT_RPAREN_AFTER_VARCHAR_LEN = "在 VARCHAR 长度之后期望出现 ')'";
 
 // AST/JSON
-inline constexpr const char* UNSUPPORTED_STMT_JSON = "Unsupported statement type for JSON serialization";
+inline constexpr const char* UNSUPPORTED_STMT_JSON = "该语句类型暂不支持生成 JSON";
 
 // Semantic analyzer
 inline std::string noCurrentTableForIdentifier(const std::string& name) {
-    return std::string("No current table context for identifier: ") + name;
+    return std::string("无当前表上下文，无法解析标识符: ") + name;
 }
 inline std::string columnNotExist(const std::string& name) {
-    return std::string("Column does not exist: ") + name;
+    return std::string("列不存在: ") + name;
 }
 inline std::string columnNotExistInTable(const std::string& col, const std::string& tbl) {
-    return std::string("Column does not exist: ") + col + " in table " + tbl;
+    return std::string("列不存在: ") + col + "，所在表: " + tbl;
 }
-inline constexpr const char* TYPE_MISMATCH_BINARY = "Type mismatch in binary expression";
-inline constexpr const char* UNKNOWN_EXPR_TYPE = "Unknown expression type";
+inline constexpr const char* TYPE_MISMATCH_BINARY = "二元表达式类型不匹配";
+inline constexpr const char* UNKNOWN_EXPR_TYPE = "未知的表达式类型";
 inline std::string tableNotExist(const std::string& name) {
-    return std::string("Table does not exist: ") + name;
+    return std::string("表不存在: ") + name;
 }
 inline std::string tableAlreadyExist(const std::string& name) {
-    return std::string("Table already exists: ") + name;
+    return std::string("表已存在: ") + name;
 }
 inline std::string columnCountMismatch(size_t expected, size_t got) {
-    return std::string("Column count mismatch: expected ") + std::to_string(expected) +
-           ", got " + std::to_string(got);
+    return std::string("列数不匹配: 期望 ") + std::to_string(expected) +
+           "，实际 " + std::to_string(got);
 }
-inline constexpr const char* WHERE_MUST_BE_BOOL = "WHERE clause must evaluate to a boolean condition";
+inline constexpr const char* WHERE_MUST_BE_BOOL = "WHERE 子句必须为布尔条件";
 
 } // namespace SqlErrors 

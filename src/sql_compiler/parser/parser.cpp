@@ -120,6 +120,17 @@ std::vector<ColumnDefinition> Parser::columnDefinitions() {
             dataType = ColumnDefinition::DataType::INT;
         } else if (match(TokenType::KEYWORD_VARCHAR)) {
             dataType = ColumnDefinition::DataType::VARCHAR;
+            // Optional: VARCHAR(length)
+            if (match(TokenType::DELIMITER_LPAREN)) {
+                // allow a simple integer literal as length
+                if (match(TokenType::CONST_INT)) {
+                    // ignore the actual length value; it's not stored in current schema
+                } else {
+                    Token t = peek();
+                    throw ParseError(SqlErrors::EXPECT_VARCHAR_LENGTH, t.line, t.column);
+                }
+                consume(TokenType::DELIMITER_RPAREN, SqlErrors::EXPECT_RPAREN_AFTER_VARCHAR_LEN);
+            }
         } else {
             throw ParseError(SqlErrors::EXPECT_DATA_TYPE, peek().line, peek().column);
         }
