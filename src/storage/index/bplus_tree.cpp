@@ -254,6 +254,8 @@ std::vector<RID> BPlusTree::Range(int32_t low, int32_t high) {
     return out;
 }
 
+<<<<<<< HEAD
+=======
 // ===== 增强操作实现 =====
 
 bool BPlusTree::Delete(int32_t key) {
@@ -394,6 +396,7 @@ template bool BPlusTree::InsertGeneric<std::string>(const std::string& key, cons
 template std::optional<RID> BPlusTree::SearchGeneric<std::string>(const std::string& key);
 template bool BPlusTree::DeleteGeneric<std::string>(const std::string& key);
 
+>>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
 } // namespace minidb
 
 

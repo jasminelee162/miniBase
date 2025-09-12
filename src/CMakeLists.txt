@@ -18,6 +18,9 @@ add_subdirectory(sql_compiler/planner)
 add_subdirectory(engine)
 add_subdirectory(frontend/translator)
 
+# CLI
+add_subdirectory(cli)
+
 # 临时仅链接 util 与 storage，其他模块待实现后再启用
 add_library(minidb_core INTERFACE)
 target_link_libraries(minidb_core INTERFACE
