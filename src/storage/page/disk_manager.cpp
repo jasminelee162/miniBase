@@ -323,4 +323,23 @@ static Logger g_storage_logger("storage.log");
         meta.catalog_root = catalog_root;
         return SetMetaInfo(meta);
     }
+
+    // 为简化：把 index_root 存放到 reserved[0..3]（little-endian 32bit）
+    page_id_t DiskManager::GetIndexRoot() const
+    {
+        MetaPageData meta;
+        if (!GetMetaInfo(meta)) return INVALID_PAGE_ID;
+        uint32_t v = 0;
+        std::memcpy(&v, meta.reserved + 0, sizeof(uint32_t));
+        return static_cast<page_id_t>(v);
+    }
+
+    bool DiskManager::SetIndexRoot(page_id_t index_root)
+    {
+        MetaPageData meta;
+        if (!GetMetaInfo(meta)) return false;
+        uint32_t v = static_cast<uint32_t>(index_root);
+        std::memcpy(meta.reserved + 0, &v, sizeof(uint32_t));
+        return SetMetaInfo(meta);
+    }
 } // namespace minidb

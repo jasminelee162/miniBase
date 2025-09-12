@@ -10,6 +10,12 @@ install_manifest.txt
 DependInfo.cmake
 Makefile
 
+# 忽略所有 .bin 文件
+*.bin
+
+# 忽略 data/ 目录下的所有内容
+/data/
+
 # 常见二进制/中间文件
 *.o
 *.obj

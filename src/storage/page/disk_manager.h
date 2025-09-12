@@ -65,6 +65,10 @@ namespace minidb
         page_id_t GetCatalogRoot() const;
         bool SetCatalogRoot(page_id_t catalog_root);
 
+        // 索引根页号持久化（使用 Meta.reserved 字节区存放）
+        page_id_t GetIndexRoot() const;
+        bool SetIndexRoot(page_id_t index_root);
+
         // 容量信息
         size_t GetMaxPageCount() const { return max_pages_; }
         double GetUsage() const { return GetMaxPageCount() == 0 ? 0.0 : static_cast<double>(next_page_id_.load()) / static_cast<double>(GetMaxPageCount()); }

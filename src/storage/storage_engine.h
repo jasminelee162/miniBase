@@ -115,6 +115,10 @@ namespace minidb
         page_id_t GetNextPageId() const;
         bool SetNextPageId(page_id_t next_page_id);
 
+        // 索引根页号持久化代理
+        page_id_t GetIndexRoot() const { return disk_manager_ ? const_cast<DiskManager*>(disk_manager_.get())->GetIndexRoot() : INVALID_PAGE_ID; }
+        bool SetIndexRoot(page_id_t index_root) { return disk_manager_ ? disk_manager_->SetIndexRoot(index_root) : false; }
+
     private:
         std::unique_ptr<DiskManager> disk_manager_;
         std::unique_ptr<BufferPoolManager> buffer_pool_manager_;

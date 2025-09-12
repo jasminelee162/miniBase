@@ -165,6 +165,24 @@ set_tests_properties(page_types_api_test PROPERTIES
 )
 
 
+# 9) bplus_tree_split_stress_test（多层分裂压力用例）
+add_executable(bplus_tree_split_stress_test
+    unit/bplus_tree_split_stress_test.cpp
+    simple_test_framework.cpp
+)
+
+target_link_libraries(bplus_tree_split_stress_test
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+
+add_test(NAME bplus_tree_split_stress_test COMMAND bplus_tree_split_stress_test)
+set_tests_properties(bplus_tree_split_stress_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+
 # 如需为 CLI/Executor 建独立目标，请在它们模块就绪后启用：
 # add_executable(cli_test unit/CliTest.cpp)
 # target_link_libraries(cli_test cli_lib)  # 或者链接对应核心/依赖库
