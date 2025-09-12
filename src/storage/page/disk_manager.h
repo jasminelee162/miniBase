@@ -15,6 +15,20 @@
 namespace minidb
 {
 
+    // ===== Meta superblock (page 0) =====
+    struct MetaPageData
+    {
+        uint64_t magic;        // identify valid database file
+        uint32_t version;      // meta layout version
+        uint32_t page_size;    // sanity check
+        uint32_t next_page_id; // allocated pages count (data pages start from 1)
+        uint32_t catalog_root; // reserved for future catalog root
+        uint8_t reserved[64];  // small padding for future use
+    };
+    static_assert(PAGE_HEADER_SIZE + sizeof(MetaPageData) <= PAGE_SIZE, "Meta payload exceeds page size");
+    static constexpr uint64_t META_MAGIC = 0x4D696E6944425F4DULL; // "MiniDB_M"
+    static constexpr uint32_t META_VERSION = 1;
+
     class DiskManager
     {
     public:
@@ -45,24 +59,17 @@ namespace minidb
         // Meta superblock persistence (page 0)
         bool PersistMeta();
 
+        // 元数据访问接口（与StorageEngine配合）
+        bool GetMetaInfo(MetaPageData& out) const;
+        bool SetMetaInfo(const MetaPageData& meta);
+        page_id_t GetCatalogRoot() const;
+        bool SetCatalogRoot(page_id_t catalog_root);
+
         // 容量信息
         size_t GetMaxPageCount() const { return max_pages_; }
         double GetUsage() const { return GetMaxPageCount() == 0 ? 0.0 : static_cast<double>(next_page_id_.load()) / static_cast<double>(GetMaxPageCount()); }
 
     private:
-        // ===== Meta superblock (page 0) =====
-        struct MetaPageData
-        {
-            uint64_t magic;        // identify valid database file
-            uint32_t version;      // meta layout version
-            uint32_t page_size;    // sanity check
-            uint32_t next_page_id; // allocated pages count (data pages start from 1)
-            uint32_t catalog_root; // reserved for future catalog root
-            uint8_t reserved[64];  // small padding for future use
-        };
-        static_assert(PAGE_HEADER_SIZE + sizeof(MetaPageData) <= PAGE_SIZE, "Meta payload exceeds page size");
-        static constexpr uint64_t META_MAGIC = 0x4D696E6944425F4DULL; // "MiniDB_M"
-        static constexpr uint32_t META_VERSION = 1;
         bool ReadMeta(MetaPageData &out);
         bool WriteMeta(const MetaPageData &m);
         bool InitNewMeta();
@@ -77,6 +84,10 @@ namespace minidb
         std::atomic<page_id_t> next_page_id_{0}; // 页面ID从0开始，值即为当前总页数/下一个可用页号
         // 简单空闲页管理：释放的页可复用
         std::queue<page_id_t> free_page_ids_;
+        
+        // 元数据缓存
+        mutable MetaPageData cached_meta_;
+        mutable std::atomic<bool> meta_cached_{false};
 
         // 统计信息
         std::atomic<size_t> num_reads_{0};

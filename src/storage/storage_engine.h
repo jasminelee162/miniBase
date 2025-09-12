@@ -15,6 +15,26 @@
 namespace minidb
 {
 
+    // 元数据信息结构体
+    struct MetaInfo {
+        uint64_t magic;           // 魔数标识
+        uint32_t version;         // 版本号
+        uint32_t page_size;       // 页大小
+        page_id_t next_page_id;   // 下一个可分配页号
+        page_id_t catalog_root;   // 目录页根页号
+        
+        MetaInfo() : magic(0), version(0), page_size(0), 
+                    next_page_id(INVALID_PAGE_ID), catalog_root(INVALID_PAGE_ID) {}
+    };
+
+    // 目录数据结构体（用于序列化到目录页）
+    struct CatalogData {
+        std::vector<char> data;   // 序列化的目录数据
+        
+        CatalogData() = default;
+        CatalogData(const std::vector<char>& d) : data(d) {}
+    };
+
     class StorageEngine
     {
     public:
@@ -68,6 +88,24 @@ namespace minidb
         
         // 页初始化工具
         void InitializeDataPage(Page* page);
+
+        // ===== 元数据管理接口 =====
+        // 元数据页操作
+        Page* GetMetaPage();
+        bool InitializeMetaPage();
+        MetaInfo GetMetaInfo() const;
+        bool UpdateMetaInfo(const MetaInfo& meta_info);
+        
+        // 目录页操作
+        Page* GetCatalogPage();
+        Page* CreateCatalogPage();
+        bool UpdateCatalogData(const CatalogData& catalog_data);
+        
+        // 元数据字段访问
+        page_id_t GetCatalogRoot() const;
+        bool SetCatalogRoot(page_id_t catalog_root);
+        page_id_t GetNextPageId() const;
+        bool SetNextPageId(page_id_t next_page_id);
 
     private:
         std::unique_ptr<DiskManager> disk_manager_;

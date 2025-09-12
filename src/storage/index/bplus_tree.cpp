@@ -254,6 +254,146 @@ std::vector<RID> BPlusTree::Range(int32_t low, int32_t high) {
     return out;
 }
 
+// ===== 增强操作实现 =====
+
+bool BPlusTree::Delete(int32_t key) {
+    if (root_page_id_ == INVALID_PAGE_ID) return false;
+    Page* leaf = DescendToLeaf(key);
+    if (!leaf) return false;
+    return DeleteFromLeaf(leaf, key);
+}
+
+bool BPlusTree::Update(int32_t key, const RID& new_rid) {
+    if (root_page_id_ == INVALID_PAGE_ID) return false;
+    Page* leaf = DescendToLeaf(key);
+    if (!leaf) return false;
+    return UpdateInLeaf(leaf, key, new_rid);
+}
+
+bool BPlusTree::HasKey(int32_t key) {
+    return Search(key).has_value();
+}
+
+size_t BPlusTree::GetKeyCount() const {
+    if (root_page_id_ == INVALID_PAGE_ID) return 0;
+    Page* p = engine_->GetPage(root_page_id_);
+    if (!p) return 0;
+    const NodeHeader* nh = GetNodeHeaderConst(p);
+    size_t count = nh->key_count;
+    engine_->PutPage(root_page_id_, false);
+    return count;
+}
+
+// ===== 辅助方法实现 =====
+
+bool BPlusTree::DeleteFromLeaf(Page* leaf, int32_t key) {
+    NodeHeader* nh = GetNodeHeader(leaf);
+    LeafEntry* arr = GetLeafEntries(leaf);
+    uint16_t n = nh->key_count;
+    
+    // 查找要删除的键
+    int32_t index = FindKeyIndex(arr, n, key);
+    if (index == -1) {
+        engine_->PutPage(leaf->GetPageId(), false);
+        return false;  // 键不存在
+    }
+    
+    // 移动后续元素
+    for (uint16_t i = index; i < n - 1; ++i) {
+        arr[i] = arr[i + 1];
+    }
+    nh->key_count--;
+    
+    engine_->PutPage(leaf->GetPageId(), true);
+    return true;
+}
+
+bool BPlusTree::UpdateInLeaf(Page* leaf, int32_t key, const RID& new_rid) {
+    NodeHeader* nh = GetNodeHeader(leaf);
+    LeafEntry* arr = GetLeafEntries(leaf);
+    uint16_t n = nh->key_count;
+    
+    // 查找要更新的键
+    int32_t index = FindKeyIndex(arr, n, key);
+    if (index == -1) {
+        engine_->PutPage(leaf->GetPageId(), false);
+        return false;  // 键不存在
+    }
+    
+    // 更新RID
+    arr[index].rid_page = new_rid.page_id;
+    arr[index].rid_slot = new_rid.slot;
+    
+    engine_->PutPage(leaf->GetPageId(), true);
+    return true;
+}
+
+int32_t BPlusTree::FindKeyIndex(const LeafEntry* entries, uint16_t count, int32_t key) {
+    for (uint16_t i = 0; i < count; ++i) {
+        if (entries[i].key == key) {
+            return static_cast<int32_t>(i);
+        }
+    }
+    return -1;  // 未找到
+}
+
+// ===== 模板化操作实现 =====
+
+template<typename KeyType>
+bool BPlusTree::InsertGeneric(const KeyType& key, const RID& rid) {
+    int32_t int_key = ConvertToInt32(key);
+    return Insert(int_key, rid);
+}
+
+template<typename KeyType>
+std::optional<RID> BPlusTree::SearchGeneric(const KeyType& key) {
+    int32_t int_key = ConvertToInt32(key);
+    return Search(int_key);
+}
+
+template<typename KeyType>
+bool BPlusTree::DeleteGeneric(const KeyType& key) {
+    int32_t int_key = ConvertToInt32(key);
+    return Delete(int_key);
+}
+
+// ===== 键类型转换实现 =====
+
+template<typename KeyType>
+int32_t BPlusTree::ConvertToInt32(const KeyType& key) {
+    // 默认实现：直接转换
+    return static_cast<int32_t>(key);
+}
+
+template<>
+int32_t BPlusTree::ConvertToInt32<std::string>(const std::string& key) {
+    // 字符串转int32：使用哈希
+    std::hash<std::string> hasher;
+    return static_cast<int32_t>(hasher(key));
+}
+
+template<typename KeyType>
+KeyType BPlusTree::ConvertFromInt32(int32_t value) {
+    // 默认实现：直接转换
+    return static_cast<KeyType>(value);
+}
+
+template<>
+std::string BPlusTree::ConvertFromInt32<std::string>(int32_t value) {
+    // int32转字符串：简单转换（实际应用中需要更复杂的映射）
+    return std::to_string(value);
+}
+
+// ===== 显式模板实例化 =====
+
+template bool BPlusTree::InsertGeneric<int32_t>(const int32_t& key, const RID& rid);
+template std::optional<RID> BPlusTree::SearchGeneric<int32_t>(const int32_t& key);
+template bool BPlusTree::DeleteGeneric<int32_t>(const int32_t& key);
+
+template bool BPlusTree::InsertGeneric<std::string>(const std::string& key, const RID& rid);
+template std::optional<RID> BPlusTree::SearchGeneric<std::string>(const std::string& key);
+template bool BPlusTree::DeleteGeneric<std::string>(const std::string& key);
+
 } // namespace minidb
 
 

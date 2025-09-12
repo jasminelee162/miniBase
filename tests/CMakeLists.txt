@@ -114,6 +114,38 @@ set_tests_properties(bplus_tree_test PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
+# 6) test_storage_enhancements（Storage模块增强功能测试）
+add_executable(test_storage_enhancements
+    unit/test_storage_enhancements.cpp
+)
+
+target_link_libraries(test_storage_enhancements
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+
+add_test(NAME test_storage_enhancements COMMAND test_storage_enhancements)
+set_tests_properties(test_storage_enhancements PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 7) test_bplus_tree_enhancements（B+树增强功能测试）
+add_executable(test_bplus_tree_enhancements
+    unit/test_bplus_tree_enhancements.cpp
+)
+
+target_link_libraries(test_bplus_tree_enhancements
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+
+add_test(NAME test_bplus_tree_enhancements COMMAND test_bplus_tree_enhancements)
+set_tests_properties(test_bplus_tree_enhancements PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 
 # 如需为 CLI/Executor 建独立目标，请在它们模块就绪后启用：
 # add_executable(cli_test unit/CliTest.cpp)

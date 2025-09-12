@@ -36,7 +36,12 @@ namespace minidb
     // 申请新页
     Page *StorageEngine::CreatePage(page_id_t *page_id)
     {
-        return buffer_pool_manager_->NewPage(page_id);
+        Page* page = buffer_pool_manager_->NewPage(page_id);
+        if (page) {
+            // 确保新页面被正确初始化
+            page->InitializePage(PageType::DATA_PAGE);
+        }
+        return page;
     }
     // 用完页后归还缓存，标记脏否
     bool StorageEngine::PutPage(page_id_t page_id, bool is_dirty)
@@ -242,6 +247,141 @@ namespace minidb
     {
         if (!page) return;
         page->InitializePage(PageType::DATA_PAGE);
+    }
+
+    // ===== 元数据管理接口实现 =====
+    
+    // 获取元数据页（第0页）
+    Page* StorageEngine::GetMetaPage()
+    {
+        return GetPage(0);  // 第0页是元数据页
+    }
+    
+    // 初始化元数据页
+    bool StorageEngine::InitializeMetaPage()
+    {
+        MetaPageData disk_meta;
+        disk_meta.magic = 0x4D696E6944425F4DULL; // "MiniDB_M"
+        disk_meta.version = 1;
+        disk_meta.page_size = PAGE_SIZE;
+        disk_meta.next_page_id = 1;  // 从第1页开始分配数据页
+        disk_meta.catalog_root = INVALID_PAGE_ID;
+        
+        return disk_manager_->SetMetaInfo(disk_meta);
+    }
+    
+    // 获取元数据信息
+    MetaInfo StorageEngine::GetMetaInfo() const
+    {
+        MetaInfo meta_info;
+        MetaPageData disk_meta;
+        
+        if (disk_manager_->GetMetaInfo(disk_meta)) {
+            meta_info.magic = disk_meta.magic;
+            meta_info.version = disk_meta.version;
+            meta_info.page_size = disk_meta.page_size;
+            meta_info.next_page_id = disk_meta.next_page_id;
+            meta_info.catalog_root = disk_meta.catalog_root;
+        }
+        
+        return meta_info;
+    }
+    
+    // 更新元数据信息
+    bool StorageEngine::UpdateMetaInfo(const MetaInfo& meta_info)
+    {
+        MetaPageData disk_meta;
+        disk_meta.magic = meta_info.magic;
+        disk_meta.version = meta_info.version;
+        disk_meta.page_size = meta_info.page_size;
+        disk_meta.next_page_id = meta_info.next_page_id;
+        disk_meta.catalog_root = meta_info.catalog_root;
+        
+        return disk_manager_->SetMetaInfo(disk_meta);
+    }
+    
+    // 获取目录页
+    Page* StorageEngine::GetCatalogPage()
+    {
+        MetaInfo meta_info = GetMetaInfo();
+        if (meta_info.catalog_root == INVALID_PAGE_ID) return nullptr;
+        return GetPage(meta_info.catalog_root);
+    }
+    
+    // 创建目录页
+    Page* StorageEngine::CreateCatalogPage()
+    {
+        page_id_t catalog_page_id = INVALID_PAGE_ID;
+        Page* catalog_page = CreatePage(&catalog_page_id);
+        if (!catalog_page) return nullptr;
+        
+        // 初始化目录页
+        catalog_page->InitializePage(PageType::CATALOG_PAGE);
+        
+        // 更新元数据中的catalog_root
+        MetaInfo meta_info;
+        meta_info.magic = 0x4D696E6944425F4DULL; // "MiniDB_M"
+        meta_info.version = 1;
+        meta_info.page_size = PAGE_SIZE;
+        meta_info.next_page_id = static_cast<page_id_t>(disk_manager_->GetNumPages()); // 使用当前的next_page_id
+        meta_info.catalog_root = catalog_page_id;
+        UpdateMetaInfo(meta_info);
+        
+        // 确保页面被写入磁盘
+        PutPage(catalog_page_id, true);
+        
+        return catalog_page;
+    }
+    
+    // 更新目录数据
+    bool StorageEngine::UpdateCatalogData(const CatalogData& catalog_data)
+    {
+        Page* catalog_page = GetCatalogPage();
+        if (!catalog_page) return false;
+        
+        // 清空页内容
+        catalog_page->InitializePage(PageType::CATALOG_PAGE);
+        
+        // 将目录数据写入页中
+        if (!catalog_data.data.empty()) {
+            char* data = catalog_page->GetData() + PAGE_HEADER_SIZE;
+            size_t copy_size = std::min(catalog_data.data.size(), 
+                                      static_cast<size_t>(PAGE_SIZE - PAGE_HEADER_SIZE));
+            std::memcpy(data, catalog_data.data.data(), copy_size);
+        }
+        
+        PutPage(catalog_page->GetPageId(), true);
+        return true;
+    }
+    
+    // 获取目录根页号
+    page_id_t StorageEngine::GetCatalogRoot() const
+    {
+        MetaInfo meta_info = GetMetaInfo();
+        return meta_info.catalog_root;
+    }
+    
+    // 设置目录根页号
+    bool StorageEngine::SetCatalogRoot(page_id_t catalog_root)
+    {
+        MetaInfo meta_info = GetMetaInfo();
+        meta_info.catalog_root = catalog_root;
+        return UpdateMetaInfo(meta_info);
+    }
+    
+    // 获取下一个页号
+    page_id_t StorageEngine::GetNextPageId() const
+    {
+        MetaInfo meta_info = GetMetaInfo();
+        return meta_info.next_page_id;
+    }
+    
+    // 设置下一个页号
+    bool StorageEngine::SetNextPageId(page_id_t next_page_id)
+    {
+        MetaInfo meta_info = GetMetaInfo();
+        meta_info.next_page_id = next_page_id;
+        return UpdateMetaInfo(meta_info);
     }
 
 } // namespace minidb
