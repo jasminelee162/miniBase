@@ -16,12 +16,15 @@ namespace minidb
     }
 
     void Catalog::CreateTable(const std::string &table_name,
-                              const std::vector<std::string> &columns)
+                              const std::vector<Column> &columns)
     {
         if (!quiet_) std::cout << "[CreateTable] 开始创建表: " << table_name << std::endl;
 
         std::lock_guard<std::recursive_mutex> lock(latch_);
+<<<<<<< HEAD
         if (!quiet_) std::cout << "[CreateTable] 拿到锁" << std::endl;
+=======
+>>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
 
         if (tables_.find(table_name) != tables_.end())
         {
@@ -29,12 +32,15 @@ namespace minidb
             return;
         }
 
+<<<<<<< HEAD
         if (!quiet_) std::cout << "[CreateTable] 构建 schema..." << std::endl;
+=======
+>>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
         TableSchema schema;
         schema.table_name = table_name;
-        for (const auto &col : columns)
-            schema.columns.push_back(Column{col, "TEXT"});
+        schema.columns = columns; // 直接保存完整列定义
 
+<<<<<<< HEAD
         if (!quiet_) std::cout << "[CreateTable] 插入 tables_ 映射" << std::endl;
         tables_[table_name] = schema;
 
@@ -46,6 +52,10 @@ namespace minidb
         if (!quiet_) std::cout << "[CreateTable] 开始 Save..." << std::endl;
         Save();
         if (!quiet_) std::cout << "[CreateTable] Save 完成" << std::endl;
+=======
+        tables_[table_name] = schema;
+        Save();
+>>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
     }
 
     bool Catalog::HasTable(const std::string &table_name) const
@@ -97,22 +107,37 @@ namespace minidb
             while (iss >> coldef)
             {
                 Column c;
-                size_t pos = coldef.find(':');
-                if (pos != std::string::npos)
+                // 格式: name:type:length
+                size_t pos1 = coldef.find(':');
+                size_t pos2 = coldef.find(':', pos1 + 1);
+
+                if (pos1 != std::string::npos)
                 {
-                    c.name = coldef.substr(0, pos);
-                    c.type = coldef.substr(pos + 1);
+                    c.name = coldef.substr(0, pos1);
+                    if (pos2 != std::string::npos)
+                    {
+                        c.type = coldef.substr(pos1 + 1, pos2 - pos1 - 1);
+                        c.length = std::stoi(coldef.substr(pos2 + 1));
+                    }
+                    else
+                    {
+                        c.type = coldef.substr(pos1 + 1);
+                        c.length = 0;
+                    }
                 }
                 else
                 {
                     // 兼容旧格式（只有列名）
                     c.name = coldef;
                     c.type = "TEXT";
+                    c.length = 0;
                 }
+
                 schema.columns.push_back(c);
             }
 
             tables_[schema.table_name] = schema;
+<<<<<<< HEAD
             if (!quiet_) {
                 std::cout << "[Load] 读取行: " << schema.table_name
                           << " cols=" << schema.columns.size() << std::endl;
@@ -122,6 +147,13 @@ namespace minidb
                 {
                     std::cout << "   列: " << c.name << ":" << c.type << std::endl;
                 }
+=======
+            std::cout << "[Load] 表: " << schema.table_name
+                      << " -> 列数=" << schema.columns.size() << std::endl;
+            for (auto &c : schema.columns)
+            {
+                std::cout << "   列: " << c.name << " " << c.type << "(" << c.length << ")" << std::endl;
+>>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
             }
         }
 
@@ -143,13 +175,16 @@ namespace minidb
         for (const auto &kv : tables_)
         {
             const TableSchema &schema = kv.second;
+<<<<<<< HEAD
             if (!quiet_) std::cout << "[SSSSSSSSSave] 写表: " << schema.table_name
                       << " 列数=" << schema.columns.size() << std::endl;
+=======
+>>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
             fout << schema.table_name;
             for (const auto &col : schema.columns)
             {
-                // 保存列名和类型
-                fout << " " << col.name << ":" << col.type;
+                // 保存格式: name:type:length
+                fout << " " << col.name << ":" << col.type << ":" << col.length;
             }
             fout << "\n";
         }

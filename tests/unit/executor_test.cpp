@@ -21,7 +21,10 @@ int main()
         PlanNode create;
         create.type = PlanType::CreateTable;
         create.table_name = "students";
-        create.columns = {"id", "name", "age"}; // ✅ 指定表的列
+        create.table_columns = {
+            {"id", "INT", -1},
+            {"name", "VARCHAR", 50},
+            {"age", "INT", -1}}; // ✅ 用 table_columns，而不是 columns
         exec.execute(&create);
     }
 
@@ -30,9 +33,9 @@ int main()
         PlanNode insert;
         insert.type = PlanType::Insert;
         insert.table_name = "students";
-        insert.columns = {"id", "name", "age"};
+        insert.columns = {"id", "name", "age"}; // ✅ 插入的列
 
-        insert.values = {{"1", "Alice", "20"}};
+        insert.values = {{"1", "Alice", "20"}}; // ✅ 插入的数据
         exec.execute(&insert);
 
         insert.values = {{"2", "Bob", "25"}};

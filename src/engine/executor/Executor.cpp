@@ -258,17 +258,22 @@ namespace minidb
 
         switch (node->type)
         {
+
         case PlanType::CreateTable:
+        {
             logger.log("CREATE TABLE " + node->table_name);
             std::cout << "[Executor] 创建表: " << node->table_name << std::endl;
 
             if (catalog_)
             {
-                catalog_->CreateTable(node->table_name, node->columns);
+                // 直接使用 PlanNode 保存的完整列信息
+                catalog_->CreateTable(node->table_name, node->table_columns);
             }
             break;
+        }
 
         case PlanType::Insert:
+        {
             logger.log("INSERT INTO " + node->table_name);
             std::cout << "[Executor] 插入到表: " << node->table_name << std::endl;
 
@@ -278,18 +283,21 @@ namespace minidb
                 break;
             }
 
+            // 取表的 schema（这里要保证 catalog_ 已经有表的定义）
+            TableSchema schema = catalog_->GetTable(node->table_name);
+
             for (size_t row_idx = 0; row_idx < node->values.size(); ++row_idx)
             {
                 Row row;
                 for (size_t i = 0; i < node->columns.size(); ++i)
                 {
                     ColumnValue col;
-                    col.col_name = node->columns[i];
+                    col.col_name = node->columns[i]; // ✅ Insert.columns 是 string
                     col.value = node->values[row_idx][i];
                     row.columns.push_back(col);
                 }
 
-                std::cout << "[!!!!!DEBUG] Insert row: " << row.toString() << std::endl;
+                std::cout << "[DEBUG] Insert row: " << row.toString() << std::endl;
 
                 page_id_t pid;
                 Page *p = storage_engine_->CreatePage(&pid);
@@ -307,21 +315,51 @@ namespace minidb
                 std::memcpy(data + offset, &col_count, sizeof(int32_t));
                 offset += sizeof(int32_t);
 
-                const size_t FIELD_SIZE = 64;
-                for (auto &col : row.columns)
+                // 遍历 schema 来存储每一列
+                for (size_t i = 0; i < schema.columns.size(); i++)
                 {
-                    std::string val = col.value;
-                    if (val.size() > FIELD_SIZE)
-                        val = val.substr(0, FIELD_SIZE);
-                    std::memset(data + offset, 0, FIELD_SIZE);
-                    std::memcpy(data + offset, val.data(), val.size());
-                    offset += FIELD_SIZE;
+                    const auto &col_schema = schema.columns[i];
+                    std::string val = (i < row.columns.size()) ? row.columns[i].value : "";
+
+                    if (col_schema.type == "INT")
+                    {
+                        int32_t num = std::stoi(val);
+                        std::memcpy(data + offset, &num, sizeof(int32_t));
+                        offset += sizeof(int32_t);
+                    }
+                    else if (col_schema.type == "DOUBLE")
+                    {
+                        double num = std::stod(val);
+                        std::memcpy(data + offset, &num, sizeof(double));
+                        offset += sizeof(double);
+                    }
+                    else if (col_schema.type == "VARCHAR" || col_schema.type == "CHAR")
+                    {
+                        size_t field_size = (col_schema.length > 0) ? col_schema.length : 64;
+                        if (val.size() > field_size)
+                            val = val.substr(0, field_size);
+                        std::memset(data + offset, 0, field_size);
+                        std::memcpy(data + offset, val.data(), val.size());
+                        offset += field_size;
+                    }
+                    else
+                    {
+                        // fallback: 未知类型，当成字符串存 64 字节
+                        size_t field_size = 64;
+                        if (val.size() > field_size)
+                            val = val.substr(0, field_size);
+                        std::memset(data + offset, 0, field_size);
+                        std::memcpy(data + offset, val.data(), val.size());
+                        offset += field_size;
+                    }
                 }
 
                 storage_engine_->PutPage(pid, true);
-                std::cout << "[Executor] 写页成功，page_id=" << pid << std::endl;
+                std::cout << "[Executor] 写页成功，page_id=" << pid
+                          << " 行大小=" << offset << " 字节" << std::endl;
             }
             break;
+        }
 
         case PlanType::SeqScan:
         {
@@ -407,7 +445,7 @@ namespace minidb
             logger.log("PROJECT columns");
             std::cout << "[Executor] 投影列: ";
             for (auto &col : node->columns)
-                std::cout << col << " ";
+                std::cout << col << " "; // ✅ 只打印列名
             std::cout << std::endl;
 
             auto rows = SeqScanAll(node->table_name);
@@ -415,11 +453,11 @@ namespace minidb
             for (auto &row : rows)
             {
                 Row r;
-                for (auto &col_name : node->columns)
+                for (auto &col_def : node->columns) // ✅ 用 col_def.name
                 {
                     for (auto &col : row.columns)
                     {
-                        if (col.col_name == col_name)
+                        if (col.col_name == col_def)
                         {
                             r.columns.push_back(col);
                             break;
@@ -663,10 +701,8 @@ namespace minidb
             return;
         }
 
-        // 获取表 schema
         TableSchema schema = catalog_->GetTable(plan.table_name);
 
-        // 扫描所有页并解析成 Row
         auto rows = SeqScanAll(plan.table_name);
         int count = 0;
 
@@ -681,7 +717,7 @@ namespace minidb
             {
                 std::string val;
                 for (auto &c : row.columns)
-                    if (c.col_name == plan.columns[i])
+                    if (c.col_name == plan.columns[i]) // ✅ 用 name
                     {
                         val = c.value;
                         break;

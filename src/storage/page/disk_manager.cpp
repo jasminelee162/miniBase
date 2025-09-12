@@ -271,4 +271,56 @@ static Logger g_storage_logger("storage.log");
         m.catalog_root = INVALID_PAGE_ID;
         return WriteMeta(m);
     }
+
+    // ===== 元数据访问接口实现 =====
+    
+    bool DiskManager::GetMetaInfo(MetaPageData& out) const
+    {
+        if (meta_cached_.load()) {
+            out = cached_meta_;
+            return true;
+        }
+        
+        // 从磁盘读取
+        MetaPageData temp;
+        if (const_cast<DiskManager*>(this)->ReadMeta(temp)) {
+            const_cast<DiskManager*>(this)->cached_meta_ = temp;
+            const_cast<DiskManager*>(this)->meta_cached_.store(true);
+            out = temp;
+            return true;
+        }
+        return false;
+    }
+    
+    bool DiskManager::SetMetaInfo(const MetaPageData& meta)
+    {
+        if (!WriteMeta(meta)) return false;
+        
+        // 更新缓存
+        cached_meta_ = meta;
+        meta_cached_.store(true);
+        
+        // 同步next_page_id
+        next_page_id_.store(meta.next_page_id);
+        
+        return true;
+    }
+    
+    page_id_t DiskManager::GetCatalogRoot() const
+    {
+        MetaPageData meta;
+        if (GetMetaInfo(meta)) {
+            return meta.catalog_root;
+        }
+        return INVALID_PAGE_ID;
+    }
+    
+    bool DiskManager::SetCatalogRoot(page_id_t catalog_root)
+    {
+        MetaPageData meta;
+        if (!GetMetaInfo(meta)) return false;
+        
+        meta.catalog_root = catalog_root;
+        return SetMetaInfo(meta);
+    }
 } // namespace minidb

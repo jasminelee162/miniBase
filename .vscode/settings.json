@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
     "files.associations": {
         "unordered_map": "cpp",
         "memory": "cpp",
@@ -87,4 +88,13 @@
         "xtree": "cpp",
         "xutility": "cpp"
     }
+=======
+  "files.associations": {
+    "unordered_map": "cpp",
+    "memory": "cpp",
+    "vector": "cpp",
+    "iostream": "cpp",
+    "stdexcept": "cpp"
+  }
+>>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
 }

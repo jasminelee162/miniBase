@@ -97,6 +97,56 @@ target_link_libraries(compiler_errors_test
 add_test(NAME compiler_errors_test COMMAND compiler_errors_test)
 set_tests_properties(compiler_errors_test PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+# 5) bplus_tree_test（最小版 B+Tree 索引用例）
+add_executable(bplus_tree_test
+    unit/bplus_tree_test.cpp
+    simple_test_framework.cpp
+)
+
+target_link_libraries(bplus_tree_test
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+
+add_test(NAME bplus_tree_test COMMAND bplus_tree_test)
+set_tests_properties(bplus_tree_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 6) test_storage_enhancements（Storage模块增强功能测试）
+add_executable(test_storage_enhancements
+    unit/test_storage_enhancements.cpp
+)
+
+target_link_libraries(test_storage_enhancements
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+
+add_test(NAME test_storage_enhancements COMMAND test_storage_enhancements)
+set_tests_properties(test_storage_enhancements PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 7) test_bplus_tree_enhancements（B+树增强功能测试）
+add_executable(test_bplus_tree_enhancements
+    unit/test_bplus_tree_enhancements.cpp
+)
+
+target_link_libraries(test_bplus_tree_enhancements
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+
+add_test(NAME test_bplus_tree_enhancements COMMAND test_bplus_tree_enhancements)
+set_tests_properties(test_bplus_tree_enhancements PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+
 # 如需为 CLI/Executor 建独立目标，请在它们模块就绪后启用：
 # add_executable(cli_test unit/CliTest.cpp)
 # target_link_libraries(cli_test cli_lib)  # 或者链接对应核心/依赖库
