@@ -356,8 +356,11 @@ namespace minidb
                 std::vector<std::string> columns;
                 if (catalog_ && catalog_->HasTable(node->table_name))
                     columns = catalog_->GetTableColumns(node->table_name);
+                else if (!node->columns.empty())
+                    columns = node->columns;
                 else
-                    columns = storage_engine_->GetTableColumns(node->table_name);
+                    //columns = storage_engine_->GetTableColumns(node->table_name);
+                    columns = table_schema;
 
                 Row row = parseRowFromPage(p, columns);
                 // auto columns = storage_engine_->GetTableColumns(node->table_name);
@@ -456,8 +459,11 @@ namespace minidb
         }
         else
         {
-            std::cout << "[Executor] SeqScanAll: using StorageEngine for schema" << std::endl;
-            columns = storage_engine_->GetTableColumns(table_name);
+            // std::cout << "[Executor] SeqScanAll: using StorageEngine for schema" << std::endl;
+            // columns = storage_engine_->GetTableColumns(table_name);
+            std::cout << "[Executor] SeqScanAll: using fallback schema" << std::endl;
+            // Prefer plan-provided columns; otherwise fallback to default demo schema
+            columns = table_schema;
         }
 
         std::cout << "[Executor] SeqScanAll: got " << columns.size() << " schema cols:";

@@ -18,40 +18,41 @@ namespace minidb
     void Catalog::CreateTable(const std::string &table_name,
                               const std::vector<std::string> &columns)
     {
-        std::cout << "[CreateTable] 开始创建表: " << table_name << std::endl;
+        if (!quiet_) std::cout << "[CreateTable] 开始创建表: " << table_name << std::endl;
 
         std::lock_guard<std::recursive_mutex> lock(latch_);
-        std::cout << "[CreateTable] 拿到锁" << std::endl;
+        if (!quiet_) std::cout << "[CreateTable] 拿到锁" << std::endl;
 
         if (tables_.find(table_name) != tables_.end())
         {
-            std::cerr << "[Catalog] 表已存在: " << table_name << std::endl;
+            if (!quiet_) std::cerr << "[Catalog] 表已存在: " << table_name << std::endl;
             return;
         }
 
-        std::cout << "[CreateTable] 构建 schema..." << std::endl;
+        if (!quiet_) std::cout << "[CreateTable] 构建 schema..." << std::endl;
         TableSchema schema;
         schema.table_name = table_name;
         for (const auto &col : columns)
             schema.columns.push_back(Column{col, "TEXT"});
 
-        std::cout << "[CreateTable] 插入 tables_ 映射" << std::endl;
+        if (!quiet_) std::cout << "[CreateTable] 插入 tables_ 映射" << std::endl;
         tables_[table_name] = schema;
 
-        std::cout << "[[[[[[[[[[[[[[[[[[[CreateTable] columns.size=" << schema.columns.size() << std::endl;
-        std::cout << "[CreateTable] columns.size=" << schema.columns.size() << std::endl
-                  << std::flush;
+        if (!quiet_) {
+            std::cout << "[CreateTable] columns.size=" << schema.columns.size() << std::endl
+                      << std::flush;
+        }
 
-        std::cout << "[CreateTable] 开始 Save..." << std::endl;
+        if (!quiet_) std::cout << "[CreateTable] 开始 Save..." << std::endl;
         Save();
-        std::cout << "[CreateTable] Save 完成" << std::endl;
+        if (!quiet_) std::cout << "[CreateTable] Save 完成" << std::endl;
     }
 
     bool Catalog::HasTable(const std::string &table_name) const
     {
         std::lock_guard<std::recursive_mutex> guard(latch_);
         bool found = (tables_.find(table_name) != tables_.end());
-        std::cout << "[Catalog::HasTable] table=" << table_name << " found=" << (found ? "yes" : "no") << std::endl;
+        if (!quiet_) std::cout << "[Catalog::HasTable] table=" << table_name << " found=" << (found ? "yes" : "no") << std::endl;
         return found;
     }
     TableSchema Catalog::GetTable(const std::string &table_name) const
@@ -68,13 +69,15 @@ namespace minidb
     void Catalog::Load()
     {
         std::lock_guard<std::recursive_mutex> guard(latch_);
+        if (loaded_) return; // 避免重复加载
         std::ifstream fin(catalog_file_);
         if (!fin.is_open())
         {
-            std::cout << "[Load] 文件不存在，跳过加载" << std::endl;
+            if (!quiet_) std::cout << "[Load] 文件不存在，跳过加载" << std::endl;
+            loaded_ = true;
             return;
         }
-        std::cout << "[Load] 文件打开成功，开始读取..." << std::endl;
+        if (!quiet_) std::cout << "[Load] 文件打开成功，开始读取..." << std::endl;
 
         std::string line;
         while (std::getline(fin, line))
@@ -110,19 +113,21 @@ namespace minidb
             }
 
             tables_[schema.table_name] = schema;
-            std::cout << "[Load] 读取行: " << schema.table_name
-                      << " cols=" << schema.columns.size() << std::endl;
-
-            std::cout << "[LLLLLLLoad] 读取表: " << schema.table_name
-                      << " -> 列数=" << schema.columns.size() << std::endl;
-            for (auto &c : schema.columns)
-            {
-                std::cout << "   列: " << c.name << ":" << c.type << std::endl;
+            if (!quiet_) {
+                std::cout << "[Load] 读取行: " << schema.table_name
+                          << " cols=" << schema.columns.size() << std::endl;
+                std::cout << "[LLLLLLLoad] 读取表: " << schema.table_name
+                          << " -> 列数=" << schema.columns.size() << std::endl;
+                for (auto &c : schema.columns)
+                {
+                    std::cout << "   列: " << c.name << ":" << c.type << std::endl;
+                }
             }
         }
 
         fin.close();
-        std::cout << "[Load] 文件读取完成" << std::endl;
+        if (!quiet_) std::cout << "[Load] 文件读取完成" << std::endl;
+        loaded_ = true;
     }
 
     void Catalog::Save()
@@ -138,7 +143,7 @@ namespace minidb
         for (const auto &kv : tables_)
         {
             const TableSchema &schema = kv.second;
-            std::cout << "[SSSSSSSSSave] 写表: " << schema.table_name
+            if (!quiet_) std::cout << "[SSSSSSSSSave] 写表: " << schema.table_name
                       << " 列数=" << schema.columns.size() << std::endl;
             fout << schema.table_name;
             for (const auto &col : schema.columns)
@@ -153,19 +158,19 @@ namespace minidb
     std::vector<std::string> Catalog::GetTableColumns(const std::string &table_name)
     {
         std::lock_guard<std::recursive_mutex> guard(latch_);
-        std::cout << "[Catalog::GetTableColumns] tables_.size=" << tables_.size() << " looking for: " << table_name << std::endl;
+        if (!quiet_) std::cout << "[Catalog::GetTableColumns] tables_.size=" << tables_.size() << " looking for: " << table_name << std::endl;
         auto it = tables_.find(table_name);
         if (it != tables_.end())
         {
             std::vector<std::string> cols;
             for (auto &c : it->second.columns)
             {
-                std::cout << "[Catalog::GetTableColumns] col=" << c.name << std::endl;
+                if (!quiet_) std::cout << "[Catalog::GetTableColumns] col=" << c.name << std::endl;
                 cols.push_back(c.name);
             }
             return cols;
         }
-        std::cout << "[Catalog::GetTableColumns] table not found: " << table_name << std::endl;
+        if (!quiet_) std::cout << "[Catalog::GetTableColumns] table not found: " << table_name << std::endl;
         return {};
     }
 

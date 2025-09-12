@@ -37,6 +37,9 @@ namespace minidb
     public:
         Catalog(const std::string &catalog_file);
 
+        // 可选：静默模式开关
+        void SetQuiet(bool q) { quiet_ = q; }
+
         // 建表
         void CreateTable(const std::string &table_name, const std::vector<std::string> &columns);
 
@@ -54,6 +57,8 @@ namespace minidb
         std::string catalog_file_;
         std::unordered_map<std::string, TableSchema> tables_;
         mutable std::recursive_mutex latch_; // ← 改成递归锁
+        bool quiet_ { false };
+        bool loaded_ { false };
     };
 
 } // namespace minidb
