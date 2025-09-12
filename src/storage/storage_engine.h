@@ -88,6 +88,14 @@ namespace minidb
         
         // 页初始化工具
         void InitializeDataPage(Page* page);
+        // 便捷：创建/获取数据页
+        Page* CreateDataPage(page_id_t* page_id);
+        Page* GetDataPage(page_id_t page_id);
+
+        // 索引页便捷接口
+        void InitializeIndexPage(Page* page);
+        Page* CreateIndexPage(page_id_t* page_id);
+        Page* GetIndexPage(page_id_t page_id);
 
         // ===== 元数据管理接口 =====
         // 元数据页操作

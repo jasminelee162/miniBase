@@ -147,6 +147,24 @@ set_tests_properties(test_bplus_tree_enhancements PROPERTIES
 )
 
 
+# 8) page_types_api_test（四类页接口连通性测试）
+add_executable(page_types_api_test
+    unit/page_types_api_test.cpp
+    simple_test_framework.cpp
+)
+
+target_link_libraries(page_types_api_test
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+
+add_test(NAME page_types_api_test COMMAND page_types_api_test)
+set_tests_properties(page_types_api_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+
 # 如需为 CLI/Executor 建独立目标，请在它们模块就绪后启用：
 # add_executable(cli_test unit/CliTest.cpp)
 # target_link_libraries(cli_test cli_lib)  # 或者链接对应核心/依赖库

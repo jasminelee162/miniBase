@@ -249,6 +249,61 @@ namespace minidb
         page->InitializePage(PageType::DATA_PAGE);
     }
 
+    // 便捷：创建数据页并初始化
+    Page* StorageEngine::CreateDataPage(page_id_t* page_id)
+    {
+        Page* p = CreatePage(page_id);
+        if (p) {
+            InitializeDataPage(p);
+            PutPage(*page_id, true);
+            p = GetPage(*page_id);
+        }
+        return p;
+    }
+
+    // 便捷：按ID获取数据页（校验类型）
+    Page* StorageEngine::GetDataPage(page_id_t page_id)
+    {
+        Page* p = GetPage(page_id);
+        if (!p) return nullptr;
+        if (p->GetPageType() != PageType::DATA_PAGE) {
+            PutPage(page_id, false);
+            return nullptr;
+        }
+        return p;
+    }
+
+    // 初始化索引页
+    void StorageEngine::InitializeIndexPage(Page* page)
+    {
+        if (!page) return;
+        page->InitializePage(PageType::INDEX_PAGE);
+    }
+
+    // 创建索引页
+    Page* StorageEngine::CreateIndexPage(page_id_t* page_id)
+    {
+        Page* p = CreatePage(page_id);
+        if (p) {
+            InitializeIndexPage(p);
+            PutPage(*page_id, true);
+            p = GetPage(*page_id);
+        }
+        return p;
+    }
+
+    // 获取索引页
+    Page* StorageEngine::GetIndexPage(page_id_t page_id)
+    {
+        Page* p = GetPage(page_id);
+        if (!p) return nullptr;
+        if (p->GetPageType() != PageType::INDEX_PAGE) {
+            PutPage(page_id, false);
+            return nullptr;
+        }
+        return p;
+    }
+
     // ===== 元数据管理接口实现 =====
     
     // 获取元数据页（第0页）
