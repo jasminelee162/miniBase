@@ -183,6 +183,24 @@ set_tests_properties(bplus_tree_split_stress_test PROPERTIES
 )
 
 
+# 10) storage_end_to_end_demo（.bin创建→meta→catalog→data读写演示）
+add_executable(storage_end_to_end_demo
+    unit/storage_end_to_end_demo.cpp
+    simple_test_framework.cpp
+)
+
+target_link_libraries(storage_end_to_end_demo
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+
+add_test(NAME storage_end_to_end_demo COMMAND storage_end_to_end_demo)
+set_tests_properties(storage_end_to_end_demo PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+
 # 如需为 CLI/Executor 建独立目标，请在它们模块就绪后启用：
 # add_executable(cli_test unit/CliTest.cpp)
 # target_link_libraries(cli_test cli_lib)  # 或者链接对应核心/依赖库
