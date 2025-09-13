@@ -86,6 +86,8 @@ namespace minidb
         IndexSchema GetIndex(const std::string &index_name) const;
         std::vector<IndexSchema> GetTableIndexes(const std::string &table_name) const;
 
+        std::string FindIndexByColumn(const std::string &table_name, const std::string &col) const;
+
         // ===== 元数据持久化（到 StorageEngine 页 0）=====
         // engine 参数若为空则使用内部 storage_engine_
         void LoadFromStorage(StorageEngine *engine = nullptr);
