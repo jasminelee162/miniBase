@@ -15,28 +15,37 @@ json ASTJson::toJson(const Statement* stmt)
     if (auto ct = dynamic_cast<const CreateTableStatement*>(stmt)) {
         json j;
         j["type"] = "CreateTable";
-        j["table"] = ct->getTableName();
-        json schema = json::array();
+        j["table_name"] = ct->getTableName();
+        // columns: array of objects {name,type,length}
+        json cols = json::array();
         for (auto &c : ct->getColumns()) {
-            schema.push_back({{"name", c.getName()}, {"type", c.getType() == ColumnDefinition::DataType::INT ? "int" : "varchar"}});
+            json cobj;
+            cobj["name"] = c.getName();
+            cobj["type"] = (c.getType() == ColumnDefinition::DataType::INT) ? "INT" : "VARCHAR";
+            // 当前 AST 未保存长度信息，这里默认 0（VARCHAR(n) 可在后续扩展写入）
+            cobj["length"] = 0;
+            cols.push_back(cobj);
         }
-        j["schema"] = schema;
+        j["columns"] = cols;
         return j;
     }
 
     if (auto ins = dynamic_cast<const InsertStatement*>(stmt)) {
         json j;
         j["type"] = "Insert";
-        j["table"] = ins->getTableName();
-        // flatten first value list into simple array of strings (DB expects single-row values array)
+        j["table_name"] = ins->getTableName();
+        // 列名列表
+        j["columns"] = ins->getColumnNames();
+        // values: flatten first value list into array-of-arrays (single-row)
         json vals = json::array();
         if (!ins->getValueLists().empty()) {
             auto &vl = ins->getValueLists().front();
+            json row = json::array();
             for (auto &v : vl.getValues()) {
                 auto je = exprToJson(v.get());
-                if (je.is_string()) vals.push_back(je.get<std::string>());
-                else vals.push_back(je.dump());
+                row.push_back(je.is_string() ? je.get<std::string>() : je.dump());
             }
+            vals.push_back(row);
         }
         j["values"] = vals;
         return j;
@@ -45,13 +54,11 @@ json ASTJson::toJson(const Statement* stmt)
     if (auto sel = dynamic_cast<const SelectStatement*>(stmt)) {
         json j;
         j["type"] = "Select";
-        j["table"] = sel->getTableName();
+        j["table_name"] = sel->getTableName();
         j["columns"] = sel->getColumns();
         if (sel->getWhereClause()) {
             auto p = exprToJson(sel->getWhereClause());
             j["predicate"] = p.is_string() ? p.get<std::string>() : p.dump();
-        } else {
-            j["predicate"] = json();
         }
         return j;
     }
@@ -59,7 +66,7 @@ json ASTJson::toJson(const Statement* stmt)
     if (auto del = dynamic_cast<const DeleteStatement*>(stmt)) {
         json j;
         j["type"] = "Delete";
-        j["table"] = del->getTableName();
+        j["table_name"] = del->getTableName();
         if (del->getWhereClause()) {
             auto p = exprToJson(del->getWhereClause());
             j["predicate"] = p.is_string() ? p.get<std::string>() : p.dump();

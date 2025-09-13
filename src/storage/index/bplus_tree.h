@@ -26,9 +26,7 @@ public:
     bool Insert(int32_t key, const RID& rid);
     std::optional<RID> Search(int32_t key);
     std::vector<RID> Range(int32_t low, int32_t high);
-<<<<<<< HEAD
-=======
-    
+
     // 增强操作
     bool Delete(int32_t key);
     bool Update(int32_t key, const RID& new_rid);
@@ -44,7 +42,7 @@ public:
     
     template<typename KeyType>
     bool DeleteGeneric(const KeyType& key);
->>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
+
 
 private:
     // 节点页内布局（存放在 Page 的数据区内，紧随 PageHeader 之后）
@@ -92,9 +90,7 @@ private:
     bool InsertIntoLeafAndSplitIfNeeded(Page* leaf, int32_t key, const RID& rid);
     // 根从单叶提升为内节点，挂接两个叶子
     void PromoteNewRoot(Page* left_leaf, Page* right_leaf, int32_t separator_key);
-<<<<<<< HEAD
-=======
-    
+
     // 删除相关辅助方法
     bool DeleteFromLeaf(Page* leaf, int32_t key);
     bool UpdateInLeaf(Page* leaf, int32_t key, const RID& new_rid);
@@ -106,7 +102,7 @@ private:
     
     template<typename KeyType>
     KeyType ConvertFromInt32(int32_t value);
->>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
+
 
     StorageEngine* engine_;
     page_id_t root_page_id_{INVALID_PAGE_ID};

@@ -39,7 +39,7 @@ namespace minidb
         void SetCatalog(std::shared_ptr<minidb::Catalog> catalog)
         {
             catalog_ = catalog;
-            std::cout << "[Executor] SetCatalog called, catalog ptr=" << catalog_.get() << std::endl;
+            // std::cout << "[Executor] SetCatalog called, catalog ptr=" << catalog_.get() << std::endl;
         }
 
     private:

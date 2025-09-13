@@ -43,8 +43,12 @@ namespace minidb
 
         // 建表
         // void CreateTable(const std::string &table_name, const std::vector<std::string> &columns);
+        // 建表（新接口：完整列定义）
         void CreateTable(const std::string &table_name,
                          const std::vector<Column> &columns);
+        // 兼容接口：仅列名，类型默认 TEXT，长度 0
+        void CreateTable(const std::string &table_name,
+                         const std::vector<std::string> &columns);
         std::vector<std::string> GetTableColumns(const std::string &table_name);
 
         // 查询表
@@ -59,7 +63,7 @@ namespace minidb
         std::string catalog_file_;
         std::unordered_map<std::string, TableSchema> tables_;
         mutable std::recursive_mutex latch_; // ← 改成递归锁
-        bool quiet_ { false };
+        bool quiet_ { true };
         bool loaded_ { false };
     };
 

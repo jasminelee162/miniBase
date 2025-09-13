@@ -21,10 +21,7 @@ namespace minidb
         if (!quiet_) std::cout << "[CreateTable] 开始创建表: " << table_name << std::endl;
 
         std::lock_guard<std::recursive_mutex> lock(latch_);
-<<<<<<< HEAD
         if (!quiet_) std::cout << "[CreateTable] 拿到锁" << std::endl;
-=======
->>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
 
         if (tables_.find(table_name) != tables_.end())
         {
@@ -32,15 +29,11 @@ namespace minidb
             return;
         }
 
-<<<<<<< HEAD
         if (!quiet_) std::cout << "[CreateTable] 构建 schema..." << std::endl;
-=======
->>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
         TableSchema schema;
         schema.table_name = table_name;
         schema.columns = columns; // 直接保存完整列定义
 
-<<<<<<< HEAD
         if (!quiet_) std::cout << "[CreateTable] 插入 tables_ 映射" << std::endl;
         tables_[table_name] = schema;
 
@@ -52,10 +45,18 @@ namespace minidb
         if (!quiet_) std::cout << "[CreateTable] 开始 Save..." << std::endl;
         Save();
         if (!quiet_) std::cout << "[CreateTable] Save 完成" << std::endl;
-=======
-        tables_[table_name] = schema;
-        Save();
->>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
+    }
+    void Catalog::CreateTable(const std::string &table_name,
+                              const std::vector<std::string> &columns)
+    {
+        // 转换为 Column 列表，默认类型 TEXT，长度 0（兼容旧接口）
+        std::vector<Column> cols;
+        cols.reserve(columns.size());
+        for (const auto &name : columns)
+        {
+            cols.push_back(Column{name, "TEXT", 0});
+        }
+        CreateTable(table_name, cols);
     }
 
     bool Catalog::HasTable(const std::string &table_name) const
@@ -109,7 +110,7 @@ namespace minidb
                 Column c;
                 // 格式: name:type:length
                 size_t pos1 = coldef.find(':');
-                size_t pos2 = coldef.find(':', pos1 + 1);
+                size_t pos2 = (pos1 == std::string::npos) ? std::string::npos : coldef.find(':', pos1 + 1);
 
                 if (pos1 != std::string::npos)
                 {
@@ -117,7 +118,11 @@ namespace minidb
                     if (pos2 != std::string::npos)
                     {
                         c.type = coldef.substr(pos1 + 1, pos2 - pos1 - 1);
-                        c.length = std::stoi(coldef.substr(pos2 + 1));
+                        try {
+                            c.length = std::stoi(coldef.substr(pos2 + 1));
+                        } catch (...) {
+                            c.length = 0;
+                        }
                     }
                     else
                     {
@@ -137,23 +142,14 @@ namespace minidb
             }
 
             tables_[schema.table_name] = schema;
-<<<<<<< HEAD
             if (!quiet_) {
-                std::cout << "[Load] 读取行: " << schema.table_name
-                          << " cols=" << schema.columns.size() << std::endl;
-                std::cout << "[LLLLLLLoad] 读取表: " << schema.table_name
-                          << " -> 列数=" << schema.columns.size() << std::endl;
-                for (auto &c : schema.columns)
-                {
-                    std::cout << "   列: " << c.name << ":" << c.type << std::endl;
-                }
-=======
-            std::cout << "[Load] 表: " << schema.table_name
-                      << " -> 列数=" << schema.columns.size() << std::endl;
-            for (auto &c : schema.columns)
-            {
-                std::cout << "   列: " << c.name << " " << c.type << "(" << c.length << ")" << std::endl;
->>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
+                // 调试输出已默认关闭，仅在非静默模式下显示简要信息
+                // std::cout << "[Load] 读取行: " << schema.table_name
+                //           << " cols=" << schema.columns.size() << std::endl;
+                // for (auto &c : schema.columns)
+                // {
+                //     std::cout << "   列: " << c.name << ":" << c.type << std::endl;
+                // }
             }
         }
 
@@ -175,11 +171,8 @@ namespace minidb
         for (const auto &kv : tables_)
         {
             const TableSchema &schema = kv.second;
-<<<<<<< HEAD
             if (!quiet_) std::cout << "[SSSSSSSSSave] 写表: " << schema.table_name
                       << " 列数=" << schema.columns.size() << std::endl;
-=======
->>>>>>> bed7e0f996312fcff4e65fda70d6f4b977f276cb
             fout << schema.table_name;
             for (const auto &col : schema.columns)
             {
