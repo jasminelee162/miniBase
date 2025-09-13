@@ -23,21 +23,21 @@
   - **next_page_id**：下一个可分配页号。
   - **catalog_root**：目录页（Catalog Page）的页号入口。
   - 其他元数据字段。
-- `page_type` 通常为 `METADATA_PAGE`。
+- `page_type` 为 `METADATA_PAGE`。
 
 ### 2. 目录页（Catalog Page）
 
 - 由第 0 页的 `catalog_root` 字段指向。
 - 作用：保存所有表的元数据（表名、字段名、字段类型等）。
-- 本质上也是一个普通页，只是 `page_type` 为 `CATALOG_PAGE`。
 - 典型结构体如 `TableMeta` 可序列化到目录页中，描述表结构。
+- `page_type` 为 `CATALOG_PAGE`。
 
 ### 3. 数据页（Data Page）
 
 - 从第 1 页开始，或由目录页分配。
 - 作用：保存表的实际数据行。
-- `page_type` 为 `DATA_PAGE`。
 - 只存储数据，不保存表结构信息。
+- `page_type` 为 `DATA_PAGE`。
 
 ### 4. 索引页（Index Page）
 
