@@ -113,7 +113,7 @@ namespace minidb
         if (predicate.empty())
             return true;
 
-        // 只去掉左右空格，不去掉中间空格
+        // 去掉左右空格辅助函数
         auto trim = [](const std::string &s) -> std::string
         {
             size_t start = s.find_first_not_of(" \t\n\r");
@@ -138,9 +138,11 @@ namespace minidb
         {
             std::string col = trim(trimmed.substr(0, pos_gt));
             std::string val = trim(trimmed.substr(pos_gt + 1));
+
+            std::string row_val_str = trim(row.getValue(col)); // 数值比较时去掉首尾空格
             try
             {
-                int row_val = std::stoi(row.getValue(col));
+                int row_val = std::stoi(row_val_str);
                 int cmp_val = std::stoi(val);
                 return row_val > cmp_val;
             }
@@ -156,9 +158,11 @@ namespace minidb
         {
             std::string col = trim(trimmed.substr(0, pos_lt));
             std::string val = trim(trimmed.substr(pos_lt + 1));
+
+            std::string row_val_str = trim(row.getValue(col)); // 数值比较时去掉首尾空格
             try
             {
-                int row_val = std::stoi(row.getValue(col));
+                int row_val = std::stoi(row_val_str);
                 int cmp_val = std::stoi(val);
                 return row_val < cmp_val;
             }
@@ -310,12 +314,12 @@ namespace minidb
      * EXECUTOR the given plan node
      * Note: This is a simplified implementation and does not cover all edge cases or optimizations
      */
-    void Executor::execute(PlanNode *node)
+    std::vector<Row> Executor::execute(PlanNode *node)
     {
         if (!node)
         {
             std::cerr << "[Executor] Null PlanNode" << std::endl;
-            return;
+            return {};
         }
 
         switch (node->type)
@@ -331,7 +335,7 @@ namespace minidb
                 // 直接使用 PlanNode 保存的完整列信息
                 catalog_->CreateTable(node->table_name, node->table_columns);
             }
-            break;
+            return {};
         }
 
         case PlanType::Insert:
@@ -342,12 +346,12 @@ namespace minidb
             if (!storage_engine_)
             {
                 std::cerr << "[Executor] StorageEngine 未初始化！" << std::endl;
-                break;
+                return {};
             }
             if (!catalog_ || !catalog_->HasTable(node->table_name))
             {
                 std::cerr << "[Executor] Table not found in catalog: " << node->table_name << std::endl;
-                break;
+                return {};
             }
 
             // 获取表 schema 和首页
@@ -363,7 +367,7 @@ namespace minidb
                 if (!cur_page)
                 {
                     std::cerr << "[Executor] 无法创建表数据页" << std::endl;
-                    break;
+                    return {};
                 }
                 first_page_id = new_pid;
                 // 更新 catalog 内存，再持久化到页0（稍后统一保存）
@@ -383,7 +387,7 @@ namespace minidb
                     if (!cur_page)
                     {
                         std::cerr << "[Executor] 无法获得或创建首页" << std::endl;
-                        break;
+                        return {};
                     }
                     first_page_id = new_pid;
                     schema.first_page_id = first_page_id;
@@ -421,7 +425,7 @@ namespace minidb
                     if (!new_page)
                     {
                         std::cerr << "[Executor] 无法分配新数据页" << std::endl;
-                        break;
+                        return {};
                     }
                     // 链接旧页 -> 新页
                     storage_engine_->LinkPages(cur_page->GetPageId(), new_pid);
@@ -434,7 +438,7 @@ namespace minidb
                     {
                         std::cerr << "[Executor] 单条记录太大，无法写入空页，跳过或报错" << std::endl;
                         // 选择：跳过这条或中止整个插入；这里中止
-                        break;
+                        return {};
                     }
                 }
 
@@ -489,7 +493,7 @@ namespace minidb
             // 最后把 catalog（包含更新后的 index.root_page_id）写回页0
             catalog_->SaveToStorage(storage_engine_.get());
 
-            break;
+            return {};
         }
 
         case PlanType::SeqScan:
@@ -501,7 +505,7 @@ namespace minidb
             std::cout << "[SeqScan] 读取到 " << rows.size() << " 行:" << std::endl;
             for (auto &row : rows)
                 std::cout << "[Row] " << row.toString() << std::endl;
-            break;
+            return rows;
         }
 
         case PlanType::Delete:
@@ -511,7 +515,7 @@ namespace minidb
                       << " WHERE " << node->predicate << std::endl;
 
             if (!storage_engine_ || !catalog_)
-                break;
+                return {};
 
             const auto &schema = catalog_->GetTable(node->table_name);
             size_t deleted = 0;
@@ -573,7 +577,7 @@ namespace minidb
                         }
 
                         std::cout << "[Delete] 使用索引共删除 " << deleted << " 行" << std::endl;
-                        break; // ✅ 用索引删除完直接返回
+                        return {}; // ✅ 用索引删除完直接返回
                     }
                 }
             }
@@ -618,7 +622,7 @@ namespace minidb
             }
 
             std::cout << "[Delete] 共删除 " << deleted << " 行" << std::endl;
-            break;
+            return {};
         }
 
         // ===== Filter =====
@@ -628,7 +632,7 @@ namespace minidb
             std::cout << "[Executor] 过滤条件: " << node->predicate << std::endl;
 
             if (!catalog_ || !catalog_->HasTable(node->table_name))
-                break;
+                return {};
 
             const auto &schema = catalog_->GetTable(node->table_name);
             std::vector<Row> filtered;
@@ -693,7 +697,7 @@ namespace minidb
             for (auto &row : filtered)
                 std::cout << "[Row] " << row.toString() << std::endl;
 
-            break;
+            return filtered;
         }
 
         // ===== Project =====
@@ -781,16 +785,145 @@ namespace minidb
             for (auto &row : projected)
                 std::cout << "[Row] " << row.toString() << std::endl;
 
-            break;
+            return projected;
         }
 
         case PlanType::Update:
             Update(*node);
-            break;
+            return {};
+
+        case PlanType::GroupBy:
+        {
+            logger.log("GROUP BY on " + node->table_name);
+            std::cout << "[Executor] GroupBy 执行，表: " << node->table_name << std::endl;
+
+            if (!catalog_ || !catalog_->HasTable(node->table_name))
+                break;
+
+            // Step1: 先从子节点拿数据
+            std::vector<Row> rows;
+            if (!node->children.empty())
+                rows = execute(node->children[0].get());
+            else
+                rows = SeqScanAll(node->table_name);
+
+            // Step2: 按 group_keys 分组
+            std::map<std::string, std::vector<Row>> groups;
+            for (auto &row : rows)
+            {
+                std::string key;
+                for (auto &col : node->group_keys)
+                    key += row.getValue(col) + "|";
+                groups[key].push_back(row);
+            }
+
+            // Step3: 聚合
+            std::vector<Row> result_rows;
+            for (auto &[gkey, grows] : groups)
+            {
+                Row out;
+
+                // 分组键
+                for (auto &col : node->group_keys)
+                {
+                    ColumnValue cv;
+                    cv.col_name = col;
+                    cv.value = grows[0].getValue(col);
+                    out.columns.push_back(cv);
+                }
+
+                // 聚合函数
+                for (auto &agg : node->aggregates)
+                {
+                    std::string val;
+
+                    if (agg.func == "COUNT")
+                        val = std::to_string(grows.size());
+                    else if (agg.func == "SUM")
+                    {
+                        long long sum = 0;
+                        for (auto &r : grows)
+                            sum += std::stoll(r.getValue(agg.column));
+                        val = std::to_string(sum);
+                    }
+                    else if (agg.func == "AVG")
+                    {
+                        long long sum = 0;
+                        for (auto &r : grows)
+                            sum += std::stoll(r.getValue(agg.column));
+                        double avg = grows.empty() ? 0.0 : (double)sum / grows.size();
+                        val = std::to_string(avg);
+                    }
+                    else if (agg.func == "MIN")
+                    {
+                        long long m = LLONG_MAX;
+                        for (auto &r : grows)
+                            m = std::min(m, std::stoll(r.getValue(agg.column)));
+                        val = std::to_string(m);
+                    }
+                    else if (agg.func == "MAX")
+                    {
+                        long long m = LLONG_MIN;
+                        for (auto &r : grows)
+                            m = std::max(m, std::stoll(r.getValue(agg.column)));
+                        val = std::to_string(m);
+                    }
+
+                    ColumnValue cv;
+                    cv.col_name = agg.as_name.empty() ? agg.func + "(" + agg.column + ")" : agg.as_name;
+                    cv.value = val;
+                    out.columns.push_back(cv);
+                }
+
+                result_rows.push_back(out);
+            }
+
+            // Step4: 如果有 HAVING 条件，统一过滤
+            if (!node->having_predicate.empty())
+            {
+                std::vector<Row> filtered;
+                for (auto &row : result_rows)
+                {
+                    if (matchesPredicate(row, node->having_predicate))
+                        filtered.push_back(row);
+                }
+                result_rows = std::move(filtered);
+            }
+
+            return result_rows;
+        }
+
+        case PlanType::Having:
+        {
+            logger.log("HAVING " + node->predicate);
+            std::cout << "[Executor] Having 执行，条件: " << node->predicate << std::endl;
+
+            if (node->children.empty())
+                return {}; // 没有子节点直接返回空
+
+            // 执行子节点（通常是 GroupBy）
+            auto rows = execute(node->children[0].get());
+            std::vector<Row> result_rows;
+
+            // 过滤每一行，使用你的 matchesPredicate
+            for (auto &row : rows)
+            {
+                if (matchesPredicate(row, node->predicate))
+                    result_rows.push_back(row);
+            }
+
+            std::cout << "[Having] 过滤后结果: " << result_rows.size() << " 行" << std::endl;
+            for (auto &r : result_rows)
+                std::cout << r.toString() << std::endl;
+
+            return result_rows;
+        }
 
         default:
             std::cerr << "[Executor] 未知 PlanNode 类型" << std::endl;
+            return {};
         }
+        return {};
     }
 
     // Helper: 从 RID 定位并反序列化一行（返回 optional）
