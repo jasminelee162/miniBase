@@ -71,6 +71,10 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
                 node->aggregates.push_back(expr);
             }
         }
+
+        // 添加 having_predicate 支持
+        if (j.contains("having_predicate"))
+            node->having_predicate = j["having_predicate"].get<std::string>();
     }
     else if (type == "Having")
     {
