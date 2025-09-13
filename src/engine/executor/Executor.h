@@ -19,15 +19,16 @@ namespace minidb
     public:
         Executor(std::shared_ptr<StorageEngine> se) : storage_engine_(se) {} // ✅ 改构造函数
 
+        std::string parseColumnFromBuffer(const void *data, size_t &offset, const std::string &col_name, const std::string &table_name);
+        Row parseRowFromPage(Page *page, const std::vector<std::string> &columns, const std::string &table_name);
+
         void execute(PlanNode *node);
         void SetStorageEngine(std::shared_ptr<StorageEngine> se) { storage_engine_ = se; }
         Executor() = default;
 
         // 扫描算子
-        // std::vector<Row> SeqScan(page_id_t page_id); // 单页
-        // std::vector<Row> SeqScanAll(); // 所有页
         std::vector<Row> SeqScanAll(const std::string &table_name);
-        std::vector<Row> SeqScan(page_id_t page_id, const std::vector<std::string> &columns);
+        std::vector<Row> SeqScan(Page *page, const minidb::TableSchema &schema);
 
         // 其他算子
         std::vector<Row> Filter(const std::vector<Row> &rows, const std::string &predicate);
