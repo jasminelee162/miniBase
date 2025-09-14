@@ -41,18 +41,6 @@ namespace minidb
             return;
         }
 
-        // // ===== 确保 MetaPage 存在 =====
-        // Page *meta_page = storage_engine_->GetMetaPage();
-        // if (!meta_page)
-        // {
-        //     if (!storage_engine_->InitializeMetaPage())
-        //     {
-        //         throw std::runtime_error("CreateTable failed: cannot create MetaPage");
-        //     }
-        //     meta_page = storage_engine_->GetMetaPage();
-        //     std::cout << "[Catalog] 自动创建 MetaPage (pid=0)" << std::endl;
-        // }
-
         // ===== 确保 CatalogPage 存在 =====
         Page *catalog_page = storage_engine_->GetCatalogPage();
         if (!catalog_page)
@@ -193,28 +181,35 @@ namespace minidb
         if (!engine)
             throw std::runtime_error("[Catalog] LoadFromStorage: StorageEngine 未设置");
 
-        // 尝试获取页 0；如果不存在就创建一页（CreatePage 返回的 pid 可能不是 0，但通常第一次创建是 0）
-        page_id_t pid = 0;
-        Page *page0 = engine->GetPage(0);
-        if (!page0)
+        // ---------- 1. 读取 Meta 页 (page0) ----------
+        page_id_t meta_pid = 0;
+        Page *meta_page = engine->GetPage(meta_pid);
+        if (!meta_page)
+            throw std::runtime_error("[Catalog::LoadFromStorage] meta page0 不存在，数据库文件可能未初始化");
+
+        // 从 meta_page 读取 catalog_root
+        page_id_t catalog_pid;
+        std::memcpy(&catalog_pid, meta_page->GetData() + 16, sizeof(page_id_t)); // 约定 offset=16 存 catalog_root
+
+        if (catalog_pid == INVALID_PAGE_ID)
         {
-            page0 = engine->CreatePage(&pid);
-            if (!page0)
-            {
-                std::cerr << "[Catalog::LoadFromStorage] 不能创建 page0" << std::endl;
-                return;
-            }
-            // 如果 created pid != 0，我们仍然使用该页来存 catalog（不过建议 StorageEngine 在创建数据库时保证 page0 可用）
-            if (pid != 0)
-                std::cerr << "[Catalog::LoadFromStorage] warning: created catalog page pid=" << pid << " (not 0)" << std::endl;
-        }
-        else
-        {
-            pid = 0;
+            // 数据库刚初始化，没有目录
+            tables_.clear();
+            indexes_.clear();
+            engine->PutPage(meta_pid, false);
+            return;
         }
 
-        // 读取并解析内容（可能为空）
-        std::string content(page0->GetData(), PAGE_SIZE);
+        // ---------- 2. 读取 Catalog 页 ----------
+        Page *catalog_page = engine->GetPage(catalog_pid);
+        if (!catalog_page)
+        {
+            std::cerr << "[Catalog::LoadFromStorage] catalog 页 " << catalog_pid << " 不存在" << std::endl;
+            engine->PutPage(meta_pid, false);
+            return;
+        }
+
+        std::string content(catalog_page->GetData(), PAGE_SIZE);
         std::istringstream iss(content);
         std::string line;
 
@@ -249,7 +244,6 @@ namespace minidb
                     }
                     else
                     {
-                        // 兼容旧格式（仅列名）
                         col.name = coldef;
                         col.type = "TEXT";
                         col.length = 0;
@@ -262,18 +256,16 @@ namespace minidb
             {
                 IndexSchema idx;
                 ls >> idx.index_name >> idx.table_name >> idx.type >> idx.root_page_id;
-
                 std::string colname;
                 while (ls >> colname)
-                {
                     idx.cols.push_back(colname);
-                }
                 indexes_[idx.index_name] = idx;
             }
         }
 
-        // 读取完成，解除对页的占用（不标脏）
-        engine->PutPage(pid, false);
+        // ---------- 3. 释放页 ----------
+        engine->PutPage(catalog_pid, false);
+        engine->PutPage(meta_pid, false);
     }
 
     void Catalog::SaveToStorage(StorageEngine *engine)
@@ -284,62 +276,67 @@ namespace minidb
         if (!engine)
             throw std::runtime_error("[Catalog] SaveToStorage: StorageEngine 未设置");
 
-        // 获取或创建 page0
-        page_id_t pid = 0;
-        Page *page0 = engine->GetPage(0);
-        if (!page0)
+        // ---------- 1. 获取 meta 页 ----------
+        page_id_t meta_pid = 0;
+        Page *meta_page = engine->GetPage(meta_pid);
+        if (!meta_page)
+            throw std::runtime_error("[Catalog::SaveToStorage] meta page0 不存在");
+
+        // 从 meta_page 读取 catalog_root
+        page_id_t catalog_pid;
+        std::memcpy(&catalog_pid, meta_page->GetData() + 16, sizeof(page_id_t));
+
+        // 如果还没分配 catalog 页，就创建一个
+        if (catalog_pid == INVALID_PAGE_ID)
         {
-            page0 = engine->CreatePage(&pid);
-            if (!page0)
-            {
-                std::cerr << "[Catalog::SaveToStorage] 无法创建 page0" << std::endl;
-                return;
-            }
-            if (pid != 0)
-                std::cerr << "[Catalog::SaveToStorage] warning: created catalog page pid=" << pid << " (not 0)" << std::endl;
+            Page *catalog_page_new = engine->CreatePage(&catalog_pid);
+            if (!catalog_page_new)
+                throw std::runtime_error("[Catalog::SaveToStorage] 无法创建 catalog 页");
+            engine->PutPage(catalog_pid, false);
+
+            // 更新 meta_page 中的 catalog_root
+            std::memcpy(meta_page->GetData() + 16, &catalog_pid, sizeof(page_id_t));
+            engine->PutPage(meta_pid, true); // 标脏
         }
         else
         {
-            pid = 0;
+            engine->PutPage(meta_pid, false); // 用完 meta_page
         }
 
-        std::ostringstream oss;
+        // ---------- 2. 获取 catalog 页 ----------
+        Page *catalog_page = engine->GetPage(catalog_pid);
+        if (!catalog_page)
+            throw std::runtime_error("[Catalog::SaveToStorage] catalog 页获取失败");
 
+        std::ostringstream oss;
         for (const auto &kv : tables_)
         {
             const TableSchema &schema = kv.second;
             oss << "#TABLE " << schema.table_name;
             for (const auto &col : schema.columns)
-            {
                 oss << " " << col.name << ":" << col.type << ":" << col.length;
-            }
             oss << "\n";
         }
-
         for (const auto &kv : indexes_)
         {
             const IndexSchema &idx = kv.second;
             oss << "#INDEX " << idx.index_name << " " << idx.table_name
                 << " " << idx.type << " " << idx.root_page_id;
             for (const auto &col : idx.cols)
-            {
                 oss << " " << col;
-            }
             oss << "\n";
         }
 
         std::string s = oss.str();
         if (s.size() > PAGE_SIZE)
-        {
             throw std::runtime_error("[Catalog::SaveToStorage] 元数据超出 PAGE_SIZE");
-        }
 
-        // 清空旧内容并写入新内容
-        std::memset(page0->GetData(), 0, PAGE_SIZE);
-        std::memcpy(page0->GetData(), s.data(), s.size());
+        // 清空旧内容并写入
+        std::memset(catalog_page->GetData(), 0, PAGE_SIZE);
+        std::memcpy(catalog_page->GetData(), s.data(), s.size());
 
-        // 标脏并解除 pin
-        engine->PutPage(pid, true);
+        // ---------- 3. 标脏并释放 ----------
+        engine->PutPage(catalog_pid, true);
     }
 
     std::vector<std::string> Catalog::GetTableColumns(const std::string &table_name)
