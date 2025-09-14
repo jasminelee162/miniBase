@@ -17,7 +17,7 @@
 #include "../../util/config.h"     // PAGE_SIZE, DEFAULT_MAX_PAGES (如果有)
 #include "../../util/status.h"     // Status
 #include "../../catalog/catalog.h" // Catalog
-
+#include "../../util/table_utils.h" // TableUtils
 namespace minidb
 {
 
@@ -553,7 +553,8 @@ namespace minidb
             {
                 std::cout << "[SeqScan] ... 还有 " << (rows.size() - show_count) << " 行" << std::endl;
             }
-
+            // ===== 添加表格输出 =====
+            TablePrinter::printResults(rows, "SELECT");
             return rows;
         }
 
@@ -707,7 +708,8 @@ namespace minidb
             std::cout << "[Filter] 过滤后 " << filtered.size() << " 行:" << std::endl;
             for (auto &row : filtered)
                 std::cout << "[Row] " << row.toString() << std::endl;
-
+            // ===== 添加表格输出 =====
+            TablePrinter::printResults(filtered, "SELECT");
             return filtered;
         }
 
@@ -801,7 +803,8 @@ namespace minidb
             std::cout << "[Project] 投影后 " << projected.size() << " 行:" << std::endl;
             for (auto &row : projected)
                 std::cout << "[Row] " << row.toString() << std::endl;
-
+            // ===== 添加表格输出 =====
+            TablePrinter::printResults(projected, "SELECT");
             return projected;
         }
 
@@ -907,11 +910,16 @@ namespace minidb
                 result_rows = std::move(filtered);
 
             }
-            std::cout << "[GroupBy] 结果: " << result_rows.size() << " 行" << std::endl;
-            for (auto &r : result_rows){
-                std::cout <<  "[Row] " << r.toString() << std::endl;
+            // std::cout << "[GroupBy] 结果: " << result_rows.size() << " 行" << std::endl;
+            // for (auto &r : result_rows){
+            //     std::cout <<  "[Row] " << r.toString() << std::endl;
+            // }
+            // ===== 新增：输出结果 =====
+            if (!node->having_predicate.empty()) {
+                TablePrinter::printResults(result_rows, "GROUP BY with HAVING");
+            } else {
+                TablePrinter::printResults(result_rows, "GROUP BY");
             }
-
             return result_rows;
         }
 
