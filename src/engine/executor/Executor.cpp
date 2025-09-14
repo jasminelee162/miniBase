@@ -537,14 +537,6 @@ namespace minidb
         // SeqScan（修复）
         case PlanType::SeqScan:
         {
-            // logger.log("SELECT * FROM " + node->table_name);
-            // std::cout << "[Executor] 查询表: " << node->table_name << std::endl;
-
-            // auto rows = SeqScanAll(node->table_name);
-            // std::cout << "[SeqScan] 读取到 " << rows.size() << " 行:" << std::endl;
-            // for (auto &row : rows)
-            //     std::cout << "[Row] " << row.toString() << std::endl;
-            // return rows;
             logger.log("SEQSCAN " + node->table_name);
             std::cout << "[Executor] 顺序扫描表: " << node->table_name << std::endl;
 
@@ -717,73 +709,6 @@ namespace minidb
                 std::cout << "[Row] " << row.toString() << std::endl;
 
             return filtered;
-            // if (!catalog_ || !catalog_->HasTable(node->table_name))
-            //     return {};
-
-            // const auto &schema = catalog_->GetTable(node->table_name);
-            // std::vector<Row> filtered;
-
-            // // 尝试使用索引
-            // std::string col, value;
-            // bool use_index = false;
-            // if (parsePredicate(node->predicate, col, value))
-            // {
-            //     auto idx_name = catalog_->FindIndexByColumn(node->table_name, col);
-            //     if (!idx_name.empty())
-            //     {
-            //         const auto &idx_schema = catalog_->GetIndex(idx_name);
-            //         if (idx_schema.type == "BPLUS")
-            //         {
-            //             use_index = true;
-            //             BPlusTree bpt(storage_engine_.get()); // 只传 engine
-            //             bpt.SetRoot(idx_schema.root_page_id); // 设置已有根页
-
-            //             int64_t key = std::stoll(value);
-            //             auto rid_opt = bpt.Search(static_cast<int32_t>(key));
-            //             if (rid_opt.has_value())
-            //             {
-            //                 RID rid = rid_opt.value();
-            //                 Page *p = storage_engine_->GetDataPage(rid.page_id);
-            //                 if (p)
-            //                 {
-            //                     auto records = storage_engine_->GetPageRecords(p);
-            //                     for (auto &rec : records)
-            //                     {
-            //                         auto row = Row::Deserialize(
-            //                             reinterpret_cast<const unsigned char *>(rec.first),
-            //                             rec.second,
-            //                             schema);
-            //                         if (matchesPredicate(row, node->predicate))
-            //                             filtered.push_back(row);
-            //                     }
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-
-            // // fallback 全表扫描
-            // if (!use_index)
-            // {
-            //     auto pages = storage_engine_->GetPageChain(schema.first_page_id);
-            //     for (auto *p : pages)
-            //     {
-            //         auto records = storage_engine_->GetPageRecords(p);
-            //         for (auto &rec : records)
-            //         {
-            //             auto row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first),
-            //                                         rec.second, schema);
-            //             if (matchesPredicate(row, node->predicate))
-            //                 filtered.push_back(row);
-            //         }
-            //     }
-            // }
-
-            // std::cout << "[Filter] 过滤后 " << filtered.size() << " 行:" << std::endl;
-            // for (auto &row : filtered)
-            //     std::cout << "[Row] " << row.toString() << std::endl;
-
-            // return filtered;
         }
 
         // ===== Project =====（修复）
@@ -1094,6 +1019,125 @@ namespace minidb
                 std::cout << "[Row] " << row.toString() << std::endl;
 
             return joined_rows;
+        }
+
+        case PlanType::OrderBy:
+        {
+            logger.log("ORDER BY");
+
+            if (node->children.empty())
+            {
+                std::cerr << "[OrderBy] 缺少子节点" << std::endl;
+                return {};
+            }
+
+            std::vector<Row> rows = execute(node->children[0].get());
+            if (rows.empty() || node->order_by_cols.empty())
+                return rows;
+
+            TableSchema schema = catalog_->GetTable(node->children[0]->table_name);
+
+            // 单列索引优化
+            bool use_index = false;
+            std::string index_name;
+            int order_col_idx = -1;
+
+            if (node->order_by_cols.size() == 1)
+            {
+                index_name = catalog_->FindIndexByColumn(schema.table_name, node->order_by_cols[0]);
+                order_col_idx = schema.getColumnIndex(node->order_by_cols[0]);
+                use_index = (!index_name.empty() && order_col_idx != -1);
+            }
+
+            if (use_index)
+            {
+                logger.log("[OrderBy] 使用 B+ 树索引");
+
+                BPlusTree tree(storage_engine_.get());
+                // 索引 root 已经在 IndexSchema 中
+                IndexSchema idx = catalog_->GetIndex(index_name);
+                tree.SetRoot(idx.root_page_id);
+
+                // 获取按索引顺序的 RID
+                std::vector<RID> rids = tree.Range(INT32_MIN, INT32_MAX);
+
+                rows.clear();
+                for (auto &rid : rids)
+                {
+                    Page *p = storage_engine_->GetDataPage(rid.page_id);
+                    if (!p)
+                        continue;
+
+                    auto records = storage_engine_->GetPageRecords(p);
+
+                    // 用 slot 直接访问记录
+                    if (rid.slot < records.size())
+                    {
+                        const auto &rec = records[rid.slot];
+                        Row row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first), rec.second, schema);
+                        rows.push_back(row);
+                    }
+                }
+
+                if (node->order_by_desc)
+                    std::reverse(rows.begin(), rows.end());
+            }
+            else
+            {
+                // 普通内存排序
+                std::vector<int> order_col_idxs;
+                std::vector<std::string> order_col_types;
+                for (auto &col : node->order_by_cols)
+                {
+                    int idx = schema.getColumnIndex(col);
+                    if (idx == -1)
+                    {
+                        std::cerr << "[OrderBy] 列不存在: " << col << std::endl;
+                        return {};
+                    }
+                    order_col_idxs.push_back(idx);
+                    order_col_types.push_back(schema.columns[idx].type);
+                }
+
+                std::sort(rows.begin(), rows.end(), [&](const Row &a, const Row &b)
+                          {
+                              for (size_t i = 0; i < order_col_idxs.size(); ++i)
+                              {
+                                  const std::string &aval_str = a.columns[order_col_idxs[i]].value;
+                                  const std::string &bval_str = b.columns[order_col_idxs[i]].value;
+                                  const std::string &type = order_col_types[i];
+
+                                  bool cmp_result = false;
+
+                                  if (type == "INT")
+                                  {
+                                      int aval = aval_str.empty() ? 0 : std::stoi(aval_str);
+                                      int bval = bval_str.empty() ? 0 : std::stoi(bval_str);
+                                      cmp_result = node->order_by_desc ? aval > bval : aval < bval;
+                                      if (aval != bval)
+                                          return cmp_result;
+                                  }
+                                  else if (type == "DOUBLE")
+                                  {
+                                      double aval = aval_str.empty() ? 0.0 : std::stod(aval_str);
+                                      double bval = bval_str.empty() ? 0.0 : std::stod(bval_str);
+                                      cmp_result = node->order_by_desc ? aval > bval : aval < bval;
+                                      if (aval != bval)
+                                          return cmp_result;
+                                  }
+                                  else // 字符串类型
+                                  {
+                                      cmp_result = node->order_by_desc ? aval_str > bval_str : aval_str < bval_str;
+                                      if (aval_str != bval_str)
+                                          return cmp_result;
+                                  }
+                              }
+                              return false; // 所有排序列相等
+                          });
+            }
+
+            std::cout << "[OrderBy] 排序后 " << rows.size() << " 行" << std::endl;
+            return rows;
         }
 
         default:

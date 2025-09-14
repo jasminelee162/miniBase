@@ -41,11 +41,20 @@ int main()
         exec.execute(&ct);
     }
 
-    /* 2. 插入 2 行即可 */
+    /* 2. 插入多行数据 */
     {
         std::vector<std::vector<std::string>> vals = {
             {"201", "Alice Smith", "Math", "5"},
-            {"202", "Bob Johnson", "English", "8"}};
+            {"202", "Bob Johnson", "English", "8"},
+            {"203", "Charlie Lee", "Math", "3"},
+            {"204", "Diana King", "English", "7"},
+            {"205", "Eve Adams", "Math", "10"},
+            {"206", "Frank Green", "Math", "12"},
+            {"207", "Grace White", "English", "15"},
+            {"208", "Hannah Brown", "Physics", "6"},
+            {"209", "Ian Kim", "History", "10"},
+            {"210", "Jack Davis", "Chemistry", "5"}};
+
         for (auto &v : vals)
         {
             PlanNode ins;
@@ -96,6 +105,7 @@ int main()
         u.set_values = {{"experience", "9"}};
         exec.execute(&u);
     }
+
     std::cout << "\n== After Update ==\n";
     {
         PlanNode s;
@@ -113,6 +123,7 @@ int main()
         d.predicate = "teacher_id=201";
         exec.execute(&d);
     }
+
     std::cout << "\n== After Delete ==\n";
     {
         PlanNode s;
@@ -131,6 +142,7 @@ int main()
         g.aggregates = {{"SUM", "experience", "total_exp"}};
         printResult(exec.execute(&g));
     }
+
     std::cout << "\n== Having total_exp>5 ==\n";
     {
         PlanNode g;
@@ -150,10 +162,15 @@ int main()
         ct.table_columns = {{"dept_id", "INT", -1}, {"dept_name", "VARCHAR", 50}};
         exec.execute(&ct);
     }
+
     {
         std::vector<std::vector<std::string>> d = {
             {"1", "Math"},
-            {"2", "English"}};
+            {"2", "English"},
+            {"3", "Physics"},
+            {"4", "History"},
+            {"5", "Chemistry"}};
+
         for (auto &v : d)
         {
             PlanNode ins;
@@ -168,14 +185,35 @@ int main()
     /* 10. 两表连接 */
     std::cout << "\n== Join teachers.subject = departments.dept_name ==\n";
     {
-        auto j = std::make_unique<PlanNode>(); // 用 unique_ptr 管理
+        auto j = std::make_unique<PlanNode>();
         j->type = PlanType::Join;
         j->from_tables = {"teachers", "departments"};
         j->columns = {"*"};
         j->predicate = "teachers.subject=departments.dept_name";
-
         printResult(exec.execute(j.get()));
     }
+
+    /* 11. OrderBy 测试 */
+    auto orderByTest = [&](const std::string &col, bool desc)
+    {
+        std::cout << "\n== OrderBy " << col << (desc ? " DESC" : " ASC") << " ==\n";
+
+        auto scan = std::make_unique<PlanNode>();
+        scan->type = PlanType::SeqScan;
+        scan->table_name = "teachers";
+
+        PlanNode ob;
+        ob.type = PlanType::OrderBy;
+        ob.order_by_cols = {col};
+        ob.order_by_desc = desc;
+        ob.children.push_back(std::move(scan));
+
+        printResult(exec.execute(&ob));
+    };
+
+    orderByTest("experience", false); // 升序
+    orderByTest("full_name", true);   // 降序
+    orderByTest("teacher_id", false); // 升序
 
     return 0;
 }

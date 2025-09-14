@@ -20,9 +20,10 @@ enum class PlanType
     Insert,
     Delete,
     Update,
-    GroupBy, // 新增
-    Having,  // 新增
-    Join
+    GroupBy,
+    Having,
+    Join,
+    OrderBy // 新增
 };
 
 struct AggregateExpr
@@ -35,21 +36,21 @@ struct AggregateExpr
 struct PlanNode
 {
     PlanType type;
-    std::vector<std::unique_ptr<PlanNode>> children; // 子节点
+    std::vector<std::unique_ptr<PlanNode>> children;
     std::string table_name;
-    std::vector<std::string> from_tables; // 多表 FROM
-    // 统一：所有节点只保存列名
+    std::vector<std::string> from_tables;
     std::vector<std::string> columns;
-
-    // 新增：用于建表，保存列完整信息
     std::vector<minidb::Column> table_columns;
 
-    std::string predicate;                         // where 条件
-    std::vector<std::vector<std::string>> values;  // Insert 用：每行数据
-    std::map<std::string, std::string> set_values; // Update 用：列=值
+    std::string predicate;
+    std::vector<std::vector<std::string>> values;
+    std::map<std::string, std::string> set_values;
 
-    // 新增字段
-    std::vector<std::string> group_keys;   // Group By 的列
-    std::vector<AggregateExpr> aggregates; // 聚合表达式
-    std::string having_predicate;          // Having 条件
+    std::vector<std::string> group_keys;
+    std::vector<AggregateExpr> aggregates;
+    std::string having_predicate;
+
+    // 新增字段：OrderBy
+    std::vector<std::string> order_by_cols; // 按哪些列排序
+    bool order_by_desc{false};              // 是否降序
 };
