@@ -66,6 +66,7 @@ public:
     void visit(IdentifierExpression& expr) override;
     void visit(BinaryExpression& expr) override;
     void visit(CreateTableStatement& stmt) override;
+    void visit(AggregateExpression& expr) override;
     void visit(InsertStatement& stmt) override;
     void visit(SelectStatement& stmt) override;
     void visit(DeleteStatement& stmt) override;

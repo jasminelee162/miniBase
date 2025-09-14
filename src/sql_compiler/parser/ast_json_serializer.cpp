@@ -55,6 +55,37 @@ json ASTJson::toJson(const Statement* stmt)
     // SELECT
     if (auto sel = dynamic_cast<const SelectStatement*>(stmt)) {
         json j;
+        //先处理聚合函数group by
+        if (!sel->getGroupByColumns().empty()) {
+        j["type"] = "GroupBy";
+        j["table_name"] = sel->getTableName();
+        j["group_keys"] = sel->getGroupByColumns();
+        
+        // 处理聚合函数
+        json aggregatesJson = json::array();
+        for (const auto& agg : sel->getAggregates()) {
+            json aggObj;
+            aggObj["func"] = agg->getFunction();
+            aggObj["column"] = agg->getColumn();
+            if (!agg->getAlias().empty()) {
+                aggObj["as"] = agg->getAlias();
+            }
+            aggregatesJson.push_back(aggObj);
+        }
+        j["aggregates"] = aggregatesJson;
+        
+        // 处理 HAVING 子句
+        if (sel->getHavingClause()) {
+            try {
+                auto havingJson = exprToJson(sel->getHavingClause());
+                j["having_predicate"] = havingJson.is_string() ? havingJson.get<std::string>() : havingJson.dump();
+            } catch (const std::exception &e) {
+                std::cerr << "[ASTJson][ERROR] 序列化 HAVING 子句失败: " << e.what() << std::endl;
+                j["having_predicate"] = "HAVING_CLAUSE_ERROR";
+            }
+        }
+    } else {
+        // 普通的 SELECT
         j["type"] = "Select";
         j["table_name"] = sel->getTableName();
         j["columns"] = sel->getColumns();
@@ -112,7 +143,7 @@ json ASTJson::toJson(const Statement* stmt)
         }
         return j;
     }
-
+}
     throw std::runtime_error(SqlErrors::UNSUPPORTED_STMT_JSON);
 }
 

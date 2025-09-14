@@ -9,9 +9,19 @@ enum class TokenType {
     //Select
     KEYWORD_SELECT,
     KEYWORD_FROM,
+    KEYWORD_AS,
     KEYWORD_WHERE,
+
     KEYWORD_GROUP_BY, //聚合
+    KEYWORD_BY,        // 需要单独的 BY token
     KEYWORD_HAVING,
+    // 聚合函数
+    KEYWORD_SUM,
+    KEYWORD_COUNT,
+    KEYWORD_AVG,
+    KEYWORD_MIN,
+    KEYWORD_MAX,
+    
 
     //CREATE
     KEYWORD_CREATE,

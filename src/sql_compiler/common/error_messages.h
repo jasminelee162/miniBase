@@ -41,6 +41,10 @@ inline constexpr const char* EXPECT_VALUE_IN_ASSIGNMENT = "赋值语句缺少值
 inline constexpr const char* EXPECT_SEMI_AFTER_UPDATE = "UPDATE 语句末尾缺少分号 ';'";
 inline constexpr const char* EXPECT_EXPR_AFTER_WHERE = "WHERE 子句缺少条件表达式";
 inline constexpr const char* EXPECT_EXPRESSION = "缺少表达式";
+inline constexpr const char* EXPECT_COMPARISON = "缺少比较表达式";
+inline constexpr const char* EXPECT_BY_AFTER_GROUP = "在 'GROUP' 之后缺少关键字 'BY'";
+inline constexpr const char* EXPECT_IDENTIFIER = "缺少标识符";
+
 // VARCHAR length specific
 inline constexpr const char* EXPECT_VARCHAR_LENGTH = "在 'VARCHAR(' 之后期望长度";
 inline constexpr const char* EXPECT_RPAREN_AFTER_VARCHAR_LEN = "在 VARCHAR 长度之后期望出现 ')'";

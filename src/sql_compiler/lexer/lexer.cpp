@@ -11,6 +11,16 @@ Lexer::Lexer(const std::string& source)
     keywords["SELECT"] = TokenType::KEYWORD_SELECT;
     keywords["FROM"] = TokenType::KEYWORD_FROM;
     keywords["WHERE"] = TokenType::KEYWORD_WHERE;
+    keywords["AS"] = TokenType::KEYWORD_AS;
+    keywords["GROUP"] = TokenType::KEYWORD_GROUP_BY; 
+    keywords["HAVING"] = TokenType::KEYWORD_HAVING;
+    keywords["BY"] = TokenType::KEYWORD_BY;
+    keywords["SUM"] = TokenType::KEYWORD_SUM;
+    keywords["COUNT"] = TokenType::KEYWORD_COUNT;
+    keywords["AVG"] = TokenType::KEYWORD_AVG;
+    keywords["MIN"] = TokenType::KEYWORD_MIN;
+    keywords["MAX"] = TokenType::KEYWORD_MAX;
+    
     keywords["CREATE"] = TokenType::KEYWORD_CREATE;
     keywords["TABLE"] = TokenType::KEYWORD_TABLE;
     keywords["INSERT"] = TokenType::KEYWORD_INSERT;

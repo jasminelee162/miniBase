@@ -133,6 +133,14 @@ void SemanticAnalyzer::visit(BinaryExpression& expr) {
     
     // 类型检查在getExpressionType中已经进行
 }
+void SemanticAnalyzer::visit(AggregateExpression& expr) {
+    // 检查聚合函数的列是否存在
+    if (currentTable_.table_name.empty()) {
+        throw SemanticError(SemanticError::ErrorType::UNKNOWN, 
+                          SqlErrors::noCurrentTableForIdentifier(expr.getColumn()));
+    }
+    checkColumnExists(currentTable_.table_name, expr.getColumn());
+}
 
 void SemanticAnalyzer::visit(CreateTableStatement& stmt) {
     Logger logger("logs/semantic.log");

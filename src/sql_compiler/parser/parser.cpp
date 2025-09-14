@@ -224,17 +224,42 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
     
     // 解析列名列表
     std::vector<std::string> columns;
+    //聚合函数
+    std::vector<std::unique_ptr<AggregateExpression>> aggregates;
+
+    //解析列表过程
     if (match(TokenType::OPERATOR_TIMES)) {
         columns.push_back("*");
     } else {
-        // require at least one identifier
+        // 需要至少一个列名
         if (!check(TokenType::IDENTIFIER)) {
             Token t = peek();
             throw ParseError("Expected identifier after SELECT", t.line, t.column);
         }
         do {
+            //检查是否是聚合函数
+            if (check(TokenType::KEYWORD_SUM) || check(TokenType::KEYWORD_COUNT) || 
+                check(TokenType::KEYWORD_AVG) || check(TokenType::KEYWORD_MIN) || 
+                check(TokenType::KEYWORD_MAX)) {
+                
+                Token funcToken = advance(); // 获取函数名
+                consume(TokenType::DELIMITER_LPAREN, SqlErrors::EXPECT_LPAREN);
+                Token colToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
+                consume(TokenType::DELIMITER_RPAREN, SqlErrors::EXPECT_RPAREN);
+                
+                std::string alias;
+                if (match(TokenType::KEYWORD_AS)) {
+                    Token aliasToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_IDENTIFIER);
+                    alias = aliasToken.lexeme;
+                }
+                
+                aggregates.push_back(std::make_unique<AggregateExpression>(
+                    funcToken.lexeme, colToken.lexeme, alias));
+            } else {
+                // 普通列名
             Token nameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
             columns.push_back(nameToken.lexeme);
+            }
         } while (match(TokenType::DELIMITER_COMMA));
     }
     
@@ -257,9 +282,27 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
         whereClause = expression();
     }
     
+    // 可选的GROUP BY子句
+       std::vector<std::string> groupByColumns;
+    if (match(TokenType::KEYWORD_GROUP_BY)) {
+        consume(TokenType::KEYWORD_BY, SqlErrors::EXPECT_BY_AFTER_GROUP);
+        do {
+            Token colToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
+            groupByColumns.push_back(colToken.lexeme);
+        } while (match(TokenType::DELIMITER_COMMA));
+    }
+    
+    // HAVING 子句
+    std::unique_ptr<Expression> havingClause = nullptr;
+    if (match(TokenType::KEYWORD_HAVING)) {
+        havingClause = expression();
+    }
+    
     consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_SELECT);
     
-    return std::make_unique<SelectStatement>(std::move(columns), tableName, std::move(whereClause));
+    return std::make_unique<SelectStatement>(
+        std::move(columns), std::move(aggregates), tableName, 
+        std::move(whereClause), std::move(groupByColumns), std::move(havingClause));
 }
 
 // 解析DELETE语句

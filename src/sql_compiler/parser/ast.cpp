@@ -13,7 +13,9 @@ void IdentifierExpression::accept(ASTVisitor& visitor) {
 void BinaryExpression::accept(ASTVisitor& visitor) {
     visitor.visit(*this);
 }
-
+void AggregateExpression::accept(ASTVisitor& visitor) {
+    visitor.visit(*this);
+}
 void CreateTableStatement::accept(ASTVisitor& visitor) {
     visitor.visit(*this);
 }

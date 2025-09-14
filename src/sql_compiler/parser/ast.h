@@ -93,6 +93,24 @@ private:
     std::unique_ptr<Expression> right;
 };
 
+//聚合表达式
+class AggregateExpression : public Expression {
+    private:
+    std::string function;  // SUM, COUNT, AVG, etc.
+    std::string column;
+    std::string alias;     // AS alias
+    
+public:
+    AggregateExpression(const std::string& func, const std::string& col, const std::string& as = "")
+        : function(func), column(col), alias(as) {}
+    
+    const std::string& getFunction() const { return function; }
+    const std::string& getColumn() const { return column; }
+    const std::string& getAlias() const { return alias; }
+    
+    void accept(ASTVisitor& visitor) override;
+};
+
 // 列定义
 class ColumnDefinition {
 public:
@@ -163,14 +181,22 @@ private:
 // SELECT语句
 class SelectStatement : public Statement {
 public:
-    SelectStatement(std::vector<std::string> columns, 
-                   const std::string& tableName,
-                   std::unique_ptr<Expression> whereClause = nullptr)
-        : columns(std::move(columns)), tableName(tableName), whereClause(std::move(whereClause)) {}
-
+    SelectStatement(std::vector<std::string> cols, 
+                   std::vector<std::unique_ptr<AggregateExpression>> aggs,
+                   const std::string& table, 
+                   std::unique_ptr<Expression> where = nullptr,
+                   std::vector<std::string> groupBy = {},
+                   std::unique_ptr<Expression> having = nullptr)
+        : columns(std::move(cols)), aggregates(std::move(aggs)), tableName(table), 
+          whereClause(std::move(where)), groupByColumns(std::move(groupBy)), 
+          havingClause(std::move(having)) {}
+    
     const std::vector<std::string>& getColumns() const { return columns; }
+    const std::vector<std::unique_ptr<AggregateExpression>>& getAggregates() const { return aggregates; }
     const std::string& getTableName() const { return tableName; }
     Expression* getWhereClause() const { return whereClause.get(); }
+    const std::vector<std::string>& getGroupByColumns() const { return groupByColumns; }
+    Expression* getHavingClause() const { return havingClause.get(); }
 
     void accept(ASTVisitor& visitor) override;
 
@@ -178,6 +204,10 @@ private:
     std::vector<std::string> columns;
     std::string tableName;
     std::unique_ptr<Expression> whereClause;
+
+    std::vector<std::unique_ptr<AggregateExpression>> aggregates;
+    std::vector<std::string> groupByColumns;
+    std::unique_ptr<Expression> havingClause;
 };
 
 // DELETE语句
@@ -224,6 +254,7 @@ public:
     virtual void visit(LiteralExpression& expr) = 0;
     virtual void visit(IdentifierExpression& expr) = 0;
     virtual void visit(BinaryExpression& expr) = 0;
+    virtual void visit(AggregateExpression& expr) = 0;
     virtual void visit(CreateTableStatement& stmt) = 0;
     virtual void visit(InsertStatement& stmt) = 0;
     virtual void visit(SelectStatement& stmt) = 0;
