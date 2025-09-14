@@ -83,73 +83,6 @@ namespace minidb
                   << " 创建成功，目录已保存，首个数据页 = " << pid << std::endl;
     }
 
-    // CatalogData Catalog::SerializeTables()
-    // {
-    //     CatalogData cd;
-    //     std::ostringstream oss;
-
-    //     for (const auto &[name, schema] : tables_)
-    //     {
-    //         oss << schema.table_name << "|"
-    //             << schema.first_page_id;
-    //         for (const auto &col : schema.columns)
-    //         {
-    //             oss << "|" << col.name << ":" << col.type << ":" << col.length;
-    //         }
-    //         oss << "\n";
-    //     }
-
-    //     std::string tmp = oss.str();
-    //     cd.data = std::vector<char>(tmp.begin(), tmp.end());
-    //     return cd;
-    // }
-
-    // void Catalog::DeserializeTables(const CatalogData &cd)
-    // {
-    //     tables_.clear();
-    //     std::string tmp(cd.data.begin(), cd.data.end());
-    //     std::istringstream iss(tmp);
-
-    //     std::string line;
-
-    //     while (std::getline(iss, line))
-    //     {
-    //         if (line.empty())
-    //             continue;
-
-    //         std::istringstream ls(line);
-    //         std::string token;
-
-    //         // 先读表名和first_page_id
-    //         std::getline(ls, token, '|');
-    //         std::string table_name = token;
-
-    //         std::getline(ls, token, '|');
-    //         page_id_t first_pid = std::stoi(token);
-
-    //         TableSchema schema;
-    //         schema.table_name = table_name;
-    //         schema.first_page_id = first_pid;
-
-    //         // 继续解析列
-    //         while (std::getline(ls, token, '|'))
-    //         {
-    //             size_t p1 = token.find(':');
-    //             size_t p2 = token.find(':', p1 + 1);
-    //             if (p1 == std::string::npos || p2 == std::string::npos)
-    //                 continue;
-
-    //             Column col;
-    //             col.name = token.substr(0, p1);
-    //             col.type = token.substr(p1 + 1, p2 - p1 - 1);
-    //             col.length = std::stoi(token.substr(p2 + 1));
-    //             schema.columns.push_back(col);
-    //         }
-
-    //         tables_[table_name] = schema;
-    //     }
-    // }
-
     bool Catalog::HasTable(const std::string &table_name) const
     {
         std::lock_guard<std::recursive_mutex> guard(latch_);
@@ -389,6 +322,18 @@ namespace minidb
             }
         }
         return "";
+    }
+
+    std::vector<std::string> Catalog::GetAllTables() const
+    {
+        std::lock_guard<std::recursive_mutex> guard(latch_);
+        std::vector<std::string> result;
+        result.reserve(tables_.size());
+        for (const auto &kv : tables_)
+        {
+            result.push_back(kv.first);
+        }
+        return result;
     }
 
 } // namespace minidb
