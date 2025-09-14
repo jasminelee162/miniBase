@@ -753,10 +753,9 @@ namespace minidb
         engine_->PutPage(parent_id, false);
     }
 
-<<<<<<< HEAD
+
 // ===== 增强操作实现 =====
-=======
->>>>>>> ccdc3ee266ed979cf7a03c3e88e701099cbd78ea
+
     void BPlusTree::RebalanceInternal(page_id_t node_id)
     {
         Page *node = engine_->GetPage(node_id);
@@ -803,11 +802,6 @@ namespace minidb
         auto pia = GetInternalArrays(parent);
         page_id_t left_id = (idx > 0) ? pia.children[idx - 1] : INVALID_PAGE_ID;
         page_id_t right_id = (idx + 1 <= GetNodeHeaderConst(parent)->key_count) ? pia.children[idx + 1] : INVALID_PAGE_ID;
-<<<<<<< HEAD
-
-=======
->>>>>>> ccdc3ee266ed979cf7a03c3e88e701099cbd78ea
-
         // 尝试从左借
         if (left_id != INVALID_PAGE_ID)
         {

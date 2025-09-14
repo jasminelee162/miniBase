@@ -31,9 +31,17 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
         project->type = PlanType::Project;
         project->table_name = j.at("table_name").get<std::string>();
 
-        if (j.contains("columns"))
-            project->columns = j["columns"].get<std::vector<std::string>>();
-
+        if (j.contains("columns")) {
+            auto columns = j["columns"];
+            if (columns.is_array() && columns.size() == 1 && columns[0] == "*") {
+                // SELECT * 的情况 - 不设置 columns，让执行器处理所有列
+                std::cout << "[JsonToPlan] 处理 SELECT *" << std::endl;
+                project->columns.clear(); // 空的 columns 表示选择所有列
+            } else {
+                // 具体列名的情况
+                project->columns = j["columns"].get<std::vector<std::string>>();
+            }
+        }
         auto scan = std::make_unique<PlanNode>();
         scan->type = PlanType::SeqScan;
         scan->table_name = j.at("table_name").get<std::string>();

@@ -495,16 +495,32 @@ namespace minidb
 
             return {};
         }
-
+        //SeqScan（修复）
         case PlanType::SeqScan:
         {
-            logger.log("SELECT * FROM " + node->table_name);
-            std::cout << "[Executor] 查询表: " << node->table_name << std::endl;
+            // logger.log("SELECT * FROM " + node->table_name);
+            // std::cout << "[Executor] 查询表: " << node->table_name << std::endl;
 
+            // auto rows = SeqScanAll(node->table_name);
+            // std::cout << "[SeqScan] 读取到 " << rows.size() << " 行:" << std::endl;
+            // for (auto &row : rows)
+            //     std::cout << "[Row] " << row.toString() << std::endl;
+            // return rows;
+            logger.log("SEQSCAN " + node->table_name);
+            std::cout << "[Executor] 顺序扫描表: " << node->table_name << std::endl;
+        
             auto rows = SeqScanAll(node->table_name);
-            std::cout << "[SeqScan] 读取到 " << rows.size() << " 行:" << std::endl;
-            for (auto &row : rows)
-                std::cout << "[Row] " << row.toString() << std::endl;
+            std::cout << "[SeqScan] 扫描到 " << rows.size() << " 行:" << std::endl;
+            
+            // 只在调试时显示前几行，避免输出过多
+            size_t show_count = std::min(rows.size(), size_t(5));
+            for (size_t i = 0; i < show_count; ++i) {
+                std::cout << "[Row] " << rows[i].toString() << std::endl;
+            }
+            if (rows.size() > show_count) {
+                std::cout << "[SeqScan] ... 还有 " << (rows.size() - show_count) << " 行" << std::endl;
+            }
+            
             return rows;
         }
 
@@ -625,161 +641,244 @@ namespace minidb
             return {};
         }
 
-        // ===== Filter =====
+        // ===== Filter =====（修复）
         case PlanType::Filter:
         {
             logger.log("FILTER on " + node->predicate);
             std::cout << "[Executor] 过滤条件: " << node->predicate << std::endl;
+               // 从子节点获取数据
+    std::vector<Row> input_rows;
+    if (!node->children.empty()) {
+        input_rows = execute(node->children[0].get());
+    } else {
+        // 没有子节点，直接全表扫描
+        if (catalog_ && catalog_->HasTable(node->table_name)) {
+            input_rows = SeqScanAll(node->table_name);
+        }
+    }
 
-            if (!catalog_ || !catalog_->HasTable(node->table_name))
-                return {};
+    // 应用过滤条件
+    std::vector<Row> filtered;
+    for (const auto &row : input_rows) {
+        if (matchesPredicate(row, node->predicate)) {
+            filtered.push_back(row);
+        }
+    }
 
-            const auto &schema = catalog_->GetTable(node->table_name);
-            std::vector<Row> filtered;
+    std::cout << "[Filter] 过滤后 " << filtered.size() << " 行:" << std::endl;
+    for (auto &row : filtered)
+        std::cout << "[Row] " << row.toString() << std::endl;
 
-            // 尝试使用索引
-            std::string col, value;
-            bool use_index = false;
-            if (parsePredicate(node->predicate, col, value))
-            {
-                auto idx_name = catalog_->FindIndexByColumn(node->table_name, col);
-                if (!idx_name.empty())
-                {
-                    const auto &idx_schema = catalog_->GetIndex(idx_name);
-                    if (idx_schema.type == "BPLUS")
-                    {
-                        use_index = true;
-                        BPlusTree bpt(storage_engine_.get()); // 只传 engine
-                        bpt.SetRoot(idx_schema.root_page_id); // 设置已有根页
+    return filtered;
+            // if (!catalog_ || !catalog_->HasTable(node->table_name))
+            //     return {};
 
-                        int64_t key = std::stoll(value);
-                        auto rid_opt = bpt.Search(static_cast<int32_t>(key));
-                        if (rid_opt.has_value())
-                        {
-                            RID rid = rid_opt.value();
-                            Page *p = storage_engine_->GetDataPage(rid.page_id);
-                            if (p)
-                            {
-                                auto records = storage_engine_->GetPageRecords(p);
-                                for (auto &rec : records)
-                                {
-                                    auto row = Row::Deserialize(
-                                        reinterpret_cast<const unsigned char *>(rec.first),
-                                        rec.second,
-                                        schema);
-                                    if (matchesPredicate(row, node->predicate))
-                                        filtered.push_back(row);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            // const auto &schema = catalog_->GetTable(node->table_name);
+            // std::vector<Row> filtered;
 
-            // fallback 全表扫描
-            if (!use_index)
-            {
-                auto pages = storage_engine_->GetPageChain(schema.first_page_id);
-                for (auto *p : pages)
-                {
-                    auto records = storage_engine_->GetPageRecords(p);
-                    for (auto &rec : records)
-                    {
-                        auto row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first),
-                                                    rec.second, schema);
-                        if (matchesPredicate(row, node->predicate))
-                            filtered.push_back(row);
-                    }
-                }
-            }
+            // // 尝试使用索引
+            // std::string col, value;
+            // bool use_index = false;
+            // if (parsePredicate(node->predicate, col, value))
+            // {
+            //     auto idx_name = catalog_->FindIndexByColumn(node->table_name, col);
+            //     if (!idx_name.empty())
+            //     {
+            //         const auto &idx_schema = catalog_->GetIndex(idx_name);
+            //         if (idx_schema.type == "BPLUS")
+            //         {
+            //             use_index = true;
+            //             BPlusTree bpt(storage_engine_.get()); // 只传 engine
+            //             bpt.SetRoot(idx_schema.root_page_id); // 设置已有根页
 
-            std::cout << "[Filter] 过滤后 " << filtered.size() << " 行:" << std::endl;
-            for (auto &row : filtered)
-                std::cout << "[Row] " << row.toString() << std::endl;
+            //             int64_t key = std::stoll(value);
+            //             auto rid_opt = bpt.Search(static_cast<int32_t>(key));
+            //             if (rid_opt.has_value())
+            //             {
+            //                 RID rid = rid_opt.value();
+            //                 Page *p = storage_engine_->GetDataPage(rid.page_id);
+            //                 if (p)
+            //                 {
+            //                     auto records = storage_engine_->GetPageRecords(p);
+            //                     for (auto &rec : records)
+            //                     {
+            //                         auto row = Row::Deserialize(
+            //                             reinterpret_cast<const unsigned char *>(rec.first),
+            //                             rec.second,
+            //                             schema);
+            //                         if (matchesPredicate(row, node->predicate))
+            //                             filtered.push_back(row);
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
 
-            return filtered;
+            // // fallback 全表扫描
+            // if (!use_index)
+            // {
+            //     auto pages = storage_engine_->GetPageChain(schema.first_page_id);
+            //     for (auto *p : pages)
+            //     {
+            //         auto records = storage_engine_->GetPageRecords(p);
+            //         for (auto &rec : records)
+            //         {
+            //             auto row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first),
+            //                                         rec.second, schema);
+            //             if (matchesPredicate(row, node->predicate))
+            //                 filtered.push_back(row);
+            //         }
+            //     }
+            // }
+
+            // std::cout << "[Filter] 过滤后 " << filtered.size() << " 行:" << std::endl;
+            // for (auto &row : filtered)
+            //     std::cout << "[Row] " << row.toString() << std::endl;
+
+            // return filtered;
         }
 
-        // ===== Project =====
+        // ===== Project =====（修复）
         case PlanType::Project:
         {
             logger.log("PROJECT columns");
             std::cout << "[Executor] 投影列: ";
-            for (auto &col : node->columns)
+
+            // 处理 SELECT * 的情况
+            std::vector<std::string> projection_columns;
+            if (node->columns.empty()) {
+                // SELECT * - 获取表的所有列
+                std::cout << "* (所有列)";
+                if (catalog_ && catalog_->HasTable(node->table_name)) {
+                    const auto &schema = catalog_->GetTable(node->table_name);
+                    for (const auto &col : schema.columns) {
+                        projection_columns.push_back(col.name);
+                    }
+                }
+            } else {
+                // 具体列名
+            projection_columns = node->columns;
+            for (auto &col : projection_columns)//将node->columns换为projection_columns
                 std::cout << col << " ";
+            }
             std::cout << std::endl;
+            // 从子节点获取数据
+    std::vector<Row> input_rows;
+    if (!node->children.empty()) {
+        // 有子节点，执行子节点获取数据
+        input_rows = execute(node->children[0].get());
+    } else {
+        // 没有子节点，直接全表扫描
+        if (catalog_ && catalog_->HasTable(node->table_name)) {
+            input_rows = SeqScanAll(node->table_name);
+        }
+    }
 
-            if (!catalog_ || !catalog_->HasTable(node->table_name))
-                break;
-
-            const auto &schema = catalog_->GetTable(node->table_name);
-            std::vector<Row> projected;
-
-            // 尝试使用索引
-            std::string col, value;
-            bool use_index = false;
-            if (!node->columns.empty() && parsePredicate(node->predicate, col, value))
-            {
-                auto idx_name = catalog_->FindIndexByColumn(node->table_name, col);
-                if (!idx_name.empty())
-                {
-                    const auto &idx_schema = catalog_->GetIndex(idx_name);
-                    if (idx_schema.type == "BPLUS")
-                    {
-                        use_index = true;
-                        BPlusTree bpt(storage_engine_.get()); // 只传 engine
-                        bpt.SetRoot(idx_schema.root_page_id); // 设置已有根页
-
-                        int64_t key = std::stoll(value);
-                        auto rid_opt = bpt.Search(static_cast<int32_t>(key));
-                        if (rid_opt.has_value())
-                        {
-                            RID rid = rid_opt.value();
-                            Page *p = storage_engine_->GetDataPage(rid.page_id);
-                            if (p)
-                            {
-                                auto records = storage_engine_->GetPageRecords(p);
-                                for (auto &rec : records)
-                                {
-                                    auto row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first),
-                                                                rec.second, schema);
-                                    Row r;
-                                    for (auto &col_name : node->columns)
-                                    {
-                                        int idx = schema.getColumnIndex(col_name);
-                                        if (idx >= 0 && idx < row.columns.size())
-                                            r.columns.push_back(row.columns[idx]);
-                                    }
-                                    projected.push_back(r);
-                                }
-                            }
-                        }
+    // 执行投影
+    std::vector<Row> projected;
+    for (const auto &input_row : input_rows) {
+        Row projected_row;
+        
+        if (projection_columns.empty()) {
+            // 如果投影列仍为空，返回所有列
+            projected_row = input_row;
+        } else {
+            // 按指定列进行投影
+            for (const auto &col_name : projection_columns) {
+                // 在输入行中查找对应列
+                bool found = false;
+                for (const auto &input_col : input_row.columns) {
+                    if (input_col.col_name == col_name) {
+                        projected_row.columns.push_back(input_col);
+                        found = true;
+                        break;
                     }
                 }
-            }
-
-            // fallback 全表扫描
-            if (!use_index)
-            {
-                auto pages = storage_engine_->GetPageChain(schema.first_page_id);
-                for (auto *p : pages)
-                {
-                    auto records = storage_engine_->GetPageRecords(p);
-                    for (auto &rec : records)
-                    {
-                        auto row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first),
-                                                    rec.second, schema);
-                        Row r;
-                        for (auto &col_name : node->columns)
-                        {
-                            int idx = schema.getColumnIndex(col_name);
-                            if (idx >= 0 && idx < row.columns.size())
-                                r.columns.push_back(row.columns[idx]);
-                        }
-                        projected.push_back(r);
-                    }
+                
+                if (!found) {
+                    // 如果没找到列，添加空值
+                    ColumnValue cv;
+                    cv.col_name = col_name;
+                    cv.value = "";
+                    projected_row.columns.push_back(cv);
                 }
             }
+        }
+        
+        projected.push_back(projected_row);
+    }
+            // if (!catalog_ || !catalog_->HasTable(node->table_name))
+            //     break;
+
+            // const auto &schema = catalog_->GetTable(node->table_name);
+            // std::vector<Row> projected;
+
+            // // 尝试使用索引
+            // std::string col, value;
+            // bool use_index = false;
+            // if (!node->columns.empty() && parsePredicate(node->predicate, col, value))
+            // {
+            //     auto idx_name = catalog_->FindIndexByColumn(node->table_name, col);
+            //     if (!idx_name.empty())
+            //     {
+            //         const auto &idx_schema = catalog_->GetIndex(idx_name);
+            //         if (idx_schema.type == "BPLUS")
+            //         {
+            //             use_index = true;
+            //             BPlusTree bpt(storage_engine_.get()); // 只传 engine
+            //             bpt.SetRoot(idx_schema.root_page_id); // 设置已有根页
+
+            //             int64_t key = std::stoll(value);
+            //             auto rid_opt = bpt.Search(static_cast<int32_t>(key));
+            //             if (rid_opt.has_value())
+            //             {
+            //                 RID rid = rid_opt.value();
+            //                 Page *p = storage_engine_->GetDataPage(rid.page_id);
+            //                 if (p)
+            //                 {
+            //                     auto records = storage_engine_->GetPageRecords(p);
+            //                     for (auto &rec : records)
+            //                     {
+            //                         auto row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first),
+            //                                                     rec.second, schema);
+            //                         Row r;
+            //                         for (auto &col_name : node->columns)
+            //                         {
+            //                             int idx = schema.getColumnIndex(col_name);
+            //                             if (idx >= 0 && idx < row.columns.size())
+            //                                 r.columns.push_back(row.columns[idx]);
+            //                         }
+            //                         projected.push_back(r);
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+
+            // // fallback 全表扫描
+            // if (!use_index)
+            // {
+            //     auto pages = storage_engine_->GetPageChain(schema.first_page_id);
+            //     for (auto *p : pages)
+            //     {
+            //         auto records = storage_engine_->GetPageRecords(p);
+            //         for (auto &rec : records)
+            //         {
+            //             auto row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first),
+            //                                         rec.second, schema);
+            //             Row r;
+            //             for (auto &col_name : node->columns)
+            //             {
+            //                 int idx = schema.getColumnIndex(col_name);
+            //                 if (idx >= 0 && idx < row.columns.size())
+            //                     r.columns.push_back(row.columns[idx]);
+            //             }
+            //             projected.push_back(r);
+            //         }
+            //     }
+            // }
 
             std::cout << "[Project] 投影后 " << projected.size() << " 行:" << std::endl;
             for (auto &row : projected)

@@ -2,6 +2,7 @@
 #include "ast.h"
 #include <stdexcept>
 #include "../common/error_messages.h"
+#include <iostream>
 
 using json = nlohmann::json;
 
@@ -12,6 +13,7 @@ json ASTJson::toJson(const Statement* stmt)
     if (!stmt) return json();
 
     // try dynamic cast to each statement type
+    // CREATE TABLE
     if (auto ct = dynamic_cast<const CreateTableStatement*>(stmt)) {
         json j;
         j["type"] = "CreateTable";
@@ -29,7 +31,7 @@ json ASTJson::toJson(const Statement* stmt)
         j["columns"] = cols;
         return j;
     }
-
+    // INSERT
     if (auto ins = dynamic_cast<const InsertStatement*>(stmt)) {
         json j;
         j["type"] = "Insert";
@@ -50,19 +52,35 @@ json ASTJson::toJson(const Statement* stmt)
         j["values"] = vals;
         return j;
     }
-
+    // SELECT
     if (auto sel = dynamic_cast<const SelectStatement*>(stmt)) {
         json j;
         j["type"] = "Select";
         j["table_name"] = sel->getTableName();
         j["columns"] = sel->getColumns();
+        //处理列名
+        auto columns = sel->getColumns();
+        if (columns.size() == 1 && columns[0] == "*") {
+            std::cout << "[ASTJson] 序列化 SELECT *" << std::endl;
+            j["columns"] = json::array({"*"});
+        } else {
+            j["columns"] = columns;
+        }
+        //处理 WHERE 子句
         if (sel->getWhereClause()) {
+            std::cout << "[ASTJson] 序列化 WHERE 子句" << std::endl;
+            try{
             auto p = exprToJson(sel->getWhereClause());
             j["predicate"] = p.is_string() ? p.get<std::string>() : p.dump();
+        }  catch (const std::exception &e) {
+            std::cerr << "[ASTJson][ERROR] 序列化 WHERE 子句失败: " << e.what() << std::endl;
+            j["predicate"] = "WHERE_CLAUSE_ERROR";
         }
+        }
+
         return j;
     }
-
+    // DELETE
     if (auto del = dynamic_cast<const DeleteStatement*>(stmt)) {
         json j;
         j["type"] = "Delete";
