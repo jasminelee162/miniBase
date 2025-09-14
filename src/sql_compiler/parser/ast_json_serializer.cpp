@@ -91,6 +91,27 @@ json ASTJson::toJson(const Statement* stmt)
         }
         return j;
     }
+    //Update
+    if (auto upd = dynamic_cast<const UpdateStatement*>(stmt)) {
+        json j;
+        j["type"] = "Update";
+        j["table_name"] = upd->getTableName();
+        // 处理SET子句 → set_values 对象
+        json set_values = json::object();
+        for (const auto& assignment : upd->getAssignments()) {
+            auto exprJson = exprToJson(assignment.second.get());
+            // 统一转为字符串
+            std::string valueStr = exprJson.is_string() ? exprJson.get<std::string>() : exprJson.dump();
+            set_values[assignment.first] = valueStr;
+        }
+        j["set_values"] = set_values;
+        // 处理WHERE子句
+        if (upd->getWhereClause()) {
+            auto p = exprToJson(upd->getWhereClause());
+            j["predicate"] = p.is_string() ? p.get<std::string>() : p.dump();
+        }
+        return j;
+    }
 
     throw std::runtime_error(SqlErrors::UNSUPPORTED_STMT_JSON);
 }
