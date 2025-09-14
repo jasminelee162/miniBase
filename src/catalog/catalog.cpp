@@ -41,6 +41,35 @@ namespace minidb
             return;
         }
 
+        // // ===== 确保 MetaPage 存在 =====
+        // Page *meta_page = storage_engine_->GetMetaPage();
+        // if (!meta_page)
+        // {
+        //     if (!storage_engine_->InitializeMetaPage())
+        //     {
+        //         throw std::runtime_error("CreateTable failed: cannot create MetaPage");
+        //     }
+        //     meta_page = storage_engine_->GetMetaPage();
+        //     std::cout << "[Catalog] 自动创建 MetaPage (pid=0)" << std::endl;
+        // }
+
+        // ===== 确保 CatalogPage 存在 =====
+        Page *catalog_page = storage_engine_->GetCatalogPage();
+        if (!catalog_page)
+        {
+            catalog_page = storage_engine_->CreateCatalogPage();
+            if (!catalog_page)
+            {
+                throw std::runtime_error("CreateTable failed: cannot create CatalogPage");
+            }
+            std::cout << "[Catalog] 自动创建 CatalogPage (pid=" << catalog_page->GetPageId() << ")" << std::endl;
+
+            // 更新 MetaInfo
+            MetaInfo meta = storage_engine_->GetMetaInfo();
+            meta.catalog_root = catalog_page->GetPageId();
+            storage_engine_->UpdateMetaInfo(meta);
+        }
+
         // 构造 schema
         TableSchema schema;
         schema.table_name = table_name;
@@ -57,19 +86,6 @@ namespace minidb
 
         schema.first_page_id = pid;
         tables_[table_name] = schema;
-
-        // ===== 确保 CatalogPage 存在 =====
-        Page *catalog_page = storage_engine_->GetCatalogPage();
-        if (!catalog_page)
-        {
-            // 尝试创建目录页（StorageEngine 已实现 CreateCatalogPage）
-            catalog_page = storage_engine_->CreateCatalogPage();
-            if (!catalog_page)
-            {
-                throw std::runtime_error("CreateTable failed: cannot create catalog page");
-            }
-            std::cout << "[Catalog] 自动创建 CatalogPage (pid=" << catalog_page->GetPageId() << ")" << std::endl;
-        }
 
         // ===== 更新 CatalogPage =====
         CatalogData cd = SerializeTables(); // 序列化内存目录
@@ -413,4 +429,25 @@ namespace minidb
         }
         return result;
     }
+
+    // Catalog.cpp
+    std::string Catalog::FindIndexByColumn(const std::string &table_name, const std::string &col) const
+    {
+        for (const auto &kv : indexes_)
+        {
+            const auto &idx = kv.second;
+            if (idx.table_name == table_name)
+            {
+                for (const auto &c : idx.cols)
+                {
+                    if (c == col)
+                    {
+                        return idx.index_name;
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
 } // namespace minidb

@@ -5,6 +5,20 @@
 #include <memory>
 #include <windows.h>
 
+// 打印结果工具函数
+void printResult(const std::vector<Row> &rows)
+{
+    if (rows.empty())
+    {
+        std::cout << "(no rows)" << std::endl;
+        return;
+    }
+    for (const auto &row : rows)
+    {
+        std::cout << row.toString() << std::endl;
+    }
+}
+
 int main()
 {
     SetConsoleOutputCP(CP_UTF8);
@@ -29,7 +43,7 @@ int main()
             minidb::Column{"full_name", "VARCHAR", 100},
             minidb::Column{"subject", "VARCHAR", 50},
             minidb::Column{"experience", "INT", -1}};
-        exec.execute(&create);
+        exec.execute(&create); // 返回值可忽略
     }
 
     // 5. INSERT 新数据
@@ -39,7 +53,9 @@ int main()
             {"202", "Bob Johnson", "English", "8"},
             {"203", "Carol Lee", "Physics", "3"},
             {"204", "David Kim", "History", "10"},
-            {"205", "Eva Brown", "Chemistry", "6"}};
+            {"205", "Eva Brown", "Chemistry", "6"},
+            {"206", "Frank Green", "Math", "12"},
+            {"207", "Grace White", "English", "15"}};
 
         for (auto &vals : rows)
         {
@@ -57,7 +73,8 @@ int main()
         PlanNode scan;
         scan.type = PlanType::SeqScan;
         scan.table_name = "teachers";
-        exec.execute(&scan);
+        auto result = exec.execute(&scan);
+        printResult(result);
     }
 
     // 6. FILTER experience > 5
@@ -67,7 +84,8 @@ int main()
         filter.type = PlanType::Filter;
         filter.table_name = "teachers";
         filter.predicate = "experience>5";
-        exec.execute(&filter);
+        auto result = exec.execute(&filter);
+        printResult(result);
     }
 
     // 7. PROJECT full_name, subject
@@ -77,7 +95,8 @@ int main()
         project.type = PlanType::Project;
         project.table_name = "teachers";
         project.columns = {"full_name", "subject"};
-        exec.execute(&project);
+        auto result = exec.execute(&project);
+        printResult(result);
     }
 
     // 8. UPDATE Bob Johnson -> experience=9
@@ -96,7 +115,8 @@ int main()
         PlanNode scan;
         scan.type = PlanType::SeqScan;
         scan.table_name = "teachers";
-        exec.execute(&scan);
+        auto result = exec.execute(&scan);
+        printResult(result);
     }
 
     // 9. DELETE teacher_id=203 (Carol Lee)
@@ -109,12 +129,40 @@ int main()
         exec.execute(&del);
     }
 
-    std::cout << "\n== Final Table ==" << std::endl;
+    std::cout << "\n== After Delete ==" << std::endl;
     {
         PlanNode scan;
         scan.type = PlanType::SeqScan;
         scan.table_name = "teachers";
-        exec.execute(&scan);
+        auto result = exec.execute(&scan);
+        printResult(result);
+    }
+
+    // 10. GROUP BY subject, SUM(experience)
+    std::cout << "\n== Group By subject, SUM(experience) ==" << std::endl;
+    {
+        PlanNode group;
+        group.type = PlanType::GroupBy;
+        group.table_name = "teachers";
+        group.group_keys = {"subject"};
+        group.aggregates = {
+            {"SUM", "experience", "total_exp"}};
+        auto result = exec.execute(&group);
+        printResult(result);
+    }
+
+    // 11. GROUP BY subject, SUM(experience) HAVING total_exp > 15
+    std::cout << "\n== Group By subject, SUM(experience) HAVING total_exp > 15 ==" << std::endl;
+    {
+        PlanNode group;
+        group.type = PlanType::GroupBy;
+        group.table_name = "teachers";
+        group.group_keys = {"subject"};
+        group.aggregates = {
+            {"SUM", "experience", "total_exp"}};
+        group.having_predicate = "total_exp>15";
+        auto result = exec.execute(&group);
+        printResult(result);
     }
 
     return 0;
