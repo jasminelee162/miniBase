@@ -6,7 +6,7 @@ CREATE TABLE teachers (
     subject VARCHAR(50),
     experience INT
 );
-
+-- 七条记录
 INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (201, 'Alice Smith', 'Math', 5);
 INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (202, 'Bob Johnson', 'English', 8);
 INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (203, 'Carol Lee', 'Physics', 3);
@@ -16,6 +16,7 @@ VALUES
     (205, 'Eva Brown', 'Chemistry', 6),
     (206, 'Frank Green', 'Math', 12),
     (207, 'Grace White', 'English', 15);
+
 SELECT * FROM teachers; 
 
 SELECT full_name, subject FROM teachers;
@@ -31,10 +32,32 @@ DELETE FROM teachers WHERE teacher_id = 203;
 
 SELECT * FROM teachers;
 
+-- 增加三条记录
+INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES
+    (208, 'Helen Park', 'Physics', 7),   
+    (209, 'Ian Scott', 'History', 9),    
+    (210, 'Jack Brown', 'Chemistry', 11); 
+
+
 SELECT subject, SUM(experience) AS total_exp FROM teachers GROUP BY subject;
 
 SELECT subject, SUM(experience) AS total_exp FROM teachers GROUP BY subject HAVING total_exp > 15;
 
+CREATE TABLE departments (
+    dept_id INT,
+    dept_name VARCHAR(50),
+    building VARCHAR(50)
+);
+
+INSERT INTO departments (dept_id, dept_name, building) VALUES
+    (1, 'Math', 'Science Hall'),
+    (2, 'English', 'Humanities Hall'),
+    (3, 'Physics', 'Research Center'),
+    (4, 'History', 'Liberal Arts Hall'),
+    (5, 'Chemistry', 'Science Hall');
+SELECT * FROM departments;
+SELECT * FROM teachers 
+JOIN departments ON teachers.subject = departments.dept_name;
 --------------------------------
 
 DROP TABLE IF EXISTS employees_914;

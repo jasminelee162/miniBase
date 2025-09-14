@@ -104,8 +104,8 @@ int main(int argc, char** argv) {
                 auto plan = JsonToPlan::translate(j);
                 // std::cout << "plan: " << plan->toString() << std::endl;
                 // 调用 PlanPrinter 打印
-                PlanPrinter printer;
-                std::cout << "plan: " << printer.print(plan.get()) << std::endl;
+                // PlanPrinter printer;
+                // std::cout << "plan: " << printer.print(plan.get()) << std::endl;
 
                 exec->execute(plan.get());
                 std::cout << "[OK] executed." << std::endl;

@@ -905,6 +905,11 @@ namespace minidb
                         filtered.push_back(row);
                 }
                 result_rows = std::move(filtered);
+
+            }
+            std::cout << "[GroupBy] 结果: " << result_rows.size() << " 行" << std::endl;
+            for (auto &r : result_rows){
+                std::cout <<  "[Row] " << r.toString() << std::endl;
             }
 
             return result_rows;

@@ -57,61 +57,65 @@ json ASTJson::toJson(const Statement* stmt)
         json j;
         //先处理聚合函数group by
         if (!sel->getGroupByColumns().empty()) {
-        j["type"] = "GroupBy";
-        j["table_name"] = sel->getTableName();
-        j["group_keys"] = sel->getGroupByColumns();
-        
-        // 处理聚合函数
-        json aggregatesJson = json::array();
-        for (const auto& agg : sel->getAggregates()) {
-            json aggObj;
-            aggObj["func"] = agg->getFunction();
-            aggObj["column"] = agg->getColumn();
-            if (!agg->getAlias().empty()) {
-                aggObj["as"] = agg->getAlias();
+            j["type"] = "GroupBy";
+            j["table_name"] = sel->getTableName();
+            j["group_keys"] = sel->getGroupByColumns();
+            
+            // 处理聚合函数
+            json aggregatesJson = json::array();
+            for (const auto& agg : sel->getAggregates()) {
+                json aggObj;
+                aggObj["func"] = agg->getFunction();
+                aggObj["column"] = agg->getColumn();
+                if (!agg->getAlias().empty()) {
+                    aggObj["as"] = agg->getAlias();
+                }
+                aggregatesJson.push_back(aggObj);
             }
-            aggregatesJson.push_back(aggObj);
-        }
-        j["aggregates"] = aggregatesJson;
+            j["aggregates"] = aggregatesJson;
         
-        // 处理 HAVING 子句
-        if (sel->getHavingClause()) {
-            try {
-                auto havingJson = exprToJson(sel->getHavingClause());
-                j["having_predicate"] = havingJson.is_string() ? havingJson.get<std::string>() : havingJson.dump();
-            } catch (const std::exception &e) {
-                std::cerr << "[ASTJson][ERROR] 序列化 HAVING 子句失败: " << e.what() << std::endl;
-                j["having_predicate"] = "HAVING_CLAUSE_ERROR";
+            // 处理 HAVING 子句
+            if (sel->getHavingClause()) {
+                try {
+                    auto havingJson = exprToJson(sel->getHavingClause());
+                    j["having_predicate"] = havingJson.is_string() ? havingJson.get<std::string>() : havingJson.dump();
+                } catch (const std::exception &e) {
+                    std::cerr << "[ASTJson][ERROR] 序列化 HAVING 子句失败: " << e.what() << std::endl;
+                    j["having_predicate"] = "HAVING_CLAUSE_ERROR";
+                }
             }
-        }
-    } else {
-        // 普通的 SELECT
-        j["type"] = "Select";
-        j["table_name"] = sel->getTableName();
-        j["columns"] = sel->getColumns();
-        //处理列名
-        auto columns = sel->getColumns();
-        if (columns.size() == 1 && columns[0] == "*") {
-            std::cout << "[ASTJson] 序列化 SELECT *" << std::endl;
-            j["columns"] = json::array({"*"});
-        } else {
-            j["columns"] = columns;
-        }
-        //处理 WHERE 子句
-        if (sel->getWhereClause()) {
-            std::cout << "[ASTJson] 序列化 WHERE 子句" << std::endl;
-            try{
-            auto p = exprToJson(sel->getWhereClause());
-            j["predicate"] = p.is_string() ? p.get<std::string>() : p.dump();
-        }  catch (const std::exception &e) {
-            std::cerr << "[ASTJson][ERROR] 序列化 WHERE 子句失败: " << e.what() << std::endl;
-            j["predicate"] = "WHERE_CLAUSE_ERROR";
-        }
-        }
+        } 
+        else {
+            // 普通的 SELECT
+            j["type"] = "Select";
+            j["table_name"] = sel->getTableName();
 
-        return j;
+            //处理列名
+            auto columns = sel->getColumns();
+            if (columns.size() == 1 && columns[0] == "*") {
+                std::cout << "[ASTJson] 序列化 SELECT *" << std::endl;
+                j["columns"] = json::array({"*"});
+            } else {
+                j["columns"] = columns;
+            }
+
+            //处理 WHERE 子句
+            if (sel->getWhereClause()) {
+                std::cout << "[ASTJson] 序列化 WHERE 子句" << std::endl;
+                try{
+                auto p = exprToJson(sel->getWhereClause());
+                j["predicate"] = p.is_string() ? p.get<std::string>() : p.dump();
+                }  
+                catch (const std::exception &e) {
+                    std::cerr << "[ASTJson][ERROR] 序列化 WHERE 子句失败: " << e.what() << std::endl;
+                    j["predicate"] = "WHERE_CLAUSE_ERROR";
+                }
+            }
+        
+        }
+    return j;
     }
-    // DELETE
+
     if (auto del = dynamic_cast<const DeleteStatement*>(stmt)) {
         json j;
         j["type"] = "Delete";
@@ -143,7 +147,6 @@ json ASTJson::toJson(const Statement* stmt)
         }
         return j;
     }
-}
     throw std::runtime_error(SqlErrors::UNSUPPORTED_STMT_JSON);
 }
 
@@ -178,6 +181,15 @@ static json exprToJson(const Expression* e)
             case BinaryExpression::Operator::DIVIDE: op = " / "; break;
         }
         return left + op + right;
+    }
+    if( auto ae = dynamic_cast<const AggregateExpression*>(e)) {
+        json j;
+        j["function"] = ae->getFunction();
+        j["column"] = ae->getColumn();
+        if (!ae->getAlias().empty()) {
+            j["as"] = ae->getAlias();
+        }
+        return j;
     }
 
     return json();
