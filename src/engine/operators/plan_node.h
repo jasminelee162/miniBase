@@ -1,7 +1,6 @@
 #pragma once
 // #include "../../catalog/catalog.h" // Column
-#include "catalog/catalog.h"
-
+#include "../../catalog/catalog.h" // Column
 #include <string>
 #include <vector>
 #include <memory>
@@ -22,7 +21,8 @@ enum class PlanType
     Delete,
     Update,
     GroupBy, // 新增
-    Having   // 新增
+    Having,  // 新增
+    Join
 };
 
 struct AggregateExpr
@@ -37,7 +37,7 @@ struct PlanNode
     PlanType type;
     std::vector<std::unique_ptr<PlanNode>> children; // 子节点
     std::string table_name;
-
+    std::vector<std::string> from_tables; // 多表 FROM
     // 统一：所有节点只保存列名
     std::vector<std::string> columns;
 

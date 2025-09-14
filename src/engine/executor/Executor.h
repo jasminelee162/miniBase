@@ -16,7 +16,9 @@ namespace minidb
     class Executor
     {
     public:
-        Executor(std::shared_ptr<StorageEngine> se) : storage_engine_(se) {} // ✅ 改构造函数
+        Executor(std::shared_ptr<StorageEngine> se) : storage_engine_(se) {}
+        std::vector<std::string> expandWildcardColumns(const PlanNode *node);
+        // ✅ 改构造函数
         std::vector<Row> execute(PlanNode *node);
         std::string parseColumnFromBuffer(const void *data, size_t &offset, const std::string &col_name, const std::string &table_name);
         Row parseRowFromPage(Page *page, const std::vector<std::string> &columns, const std::string &table_name);

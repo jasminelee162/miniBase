@@ -3,166 +3,178 @@
 #include "../../src/catalog/catalog.h"
 #include <iostream>
 #include <memory>
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
-// 打印结果工具函数
 void printResult(const std::vector<Row> &rows)
 {
     if (rows.empty())
     {
-        std::cout << "(no rows)" << std::endl;
+        std::cout << "(no rows)\n";
         return;
     }
-    for (const auto &row : rows)
-    {
-        std::cout << row.toString() << std::endl;
-    }
+    for (const auto &r : rows)
+        std::cout << r.toString() << '\n';
 }
 
 int main()
 {
+#ifdef _WIN32
     SetConsoleOutputCP(CP_UTF8);
-
-    // 1. 创建 StorageEngine (10 页)
+#endif
     auto engine = std::make_shared<minidb::StorageEngine>("school.db", 10);
-
-    // 2. 创建 Executor
     minidb::Executor exec(engine);
-
-    // 3. 创建 Catalog 并关联 Executor
     auto catalog = std::make_shared<minidb::Catalog>(engine.get());
     exec.SetCatalog(catalog);
 
-    // 4. CREATE TABLE teachers
+    /* 1. 建表 */
     {
-        PlanNode create;
-        create.type = PlanType::CreateTable;
-        create.table_name = "teachers";
-        create.table_columns = {
-            minidb::Column{"teacher_id", "INT", -1},
-            minidb::Column{"full_name", "VARCHAR", 100},
-            minidb::Column{"subject", "VARCHAR", 50},
-            minidb::Column{"experience", "INT", -1}};
-        exec.execute(&create); // 返回值可忽略
+        PlanNode ct;
+        ct.type = PlanType::CreateTable;
+        ct.table_name = "teachers";
+        ct.table_columns = {
+            {"teacher_id", "INT", -1},
+            {"full_name", "VARCHAR", 100},
+            {"subject", "VARCHAR", 50},
+            {"experience", "INT", -1}};
+        exec.execute(&ct);
     }
 
-    // 5. INSERT 新数据
+    /* 2. 插入 2 行即可 */
     {
-        std::vector<std::vector<std::string>> rows = {
+        std::vector<std::vector<std::string>> vals = {
             {"201", "Alice Smith", "Math", "5"},
-            {"202", "Bob Johnson", "English", "8"},
-            {"203", "Carol Lee", "Physics", "3"},
-            {"204", "David Kim", "History", "10"},
-            {"205", "Eva Brown", "Chemistry", "6"},
-            {"206", "Frank Green", "Math", "12"},
-            {"207", "Grace White", "English", "15"}};
-
-        for (auto &vals : rows)
+            {"202", "Bob Johnson", "English", "8"}};
+        for (auto &v : vals)
         {
-            PlanNode insert;
-            insert.type = PlanType::Insert;
-            insert.table_name = "teachers";
-            insert.columns = {"teacher_id", "full_name", "subject", "experience"};
-            insert.values = {vals};
-            exec.execute(&insert);
+            PlanNode ins;
+            ins.type = PlanType::Insert;
+            ins.table_name = "teachers";
+            ins.columns = {"teacher_id", "full_name", "subject", "experience"};
+            ins.values = {v};
+            exec.execute(&ins);
         }
     }
 
-    std::cout << "\n== After Insert ==" << std::endl;
+    /* 3. 全表扫描 */
+    std::cout << "\n== After Insert ==\n";
     {
         PlanNode scan;
         scan.type = PlanType::SeqScan;
         scan.table_name = "teachers";
-        auto result = exec.execute(&scan);
-        printResult(result);
+        printResult(exec.execute(&scan));
     }
 
-    // 6. FILTER experience > 5
-    std::cout << "\n== Filter experience > 5 ==" << std::endl;
+    /* 4. Filter 体验 > 5 */
+    std::cout << "\n== Filter experience > 5 ==\n";
     {
-        PlanNode filter;
-        filter.type = PlanType::Filter;
-        filter.table_name = "teachers";
-        filter.predicate = "experience>5";
-        auto result = exec.execute(&filter);
-        printResult(result);
+        PlanNode f;
+        f.type = PlanType::Filter;
+        f.table_name = "teachers";
+        f.predicate = "experience>5";
+        printResult(exec.execute(&f));
     }
 
-    // 7. PROJECT full_name, subject
-    std::cout << "\n== Project full_name, subject ==" << std::endl;
+    /* 5. Project 两列 */
+    std::cout << "\n== Project full_name, subject ==\n";
     {
-        PlanNode project;
-        project.type = PlanType::Project;
-        project.table_name = "teachers";
-        project.columns = {"full_name", "subject"};
-        auto result = exec.execute(&project);
-        printResult(result);
+        PlanNode p;
+        p.type = PlanType::Project;
+        p.table_name = "teachers";
+        p.columns = {"full_name", "subject"};
+        printResult(exec.execute(&p));
     }
 
-    // 8. UPDATE Bob Johnson -> experience=9
-    std::cout << "\n== Update Bob Johnson -> experience=9 ==" << std::endl;
+    /* 6. Update Bob -> 9 年经验 */
+    std::cout << "\n== Update Bob Johnson -> experience=9 ==\n";
     {
-        PlanNode update;
-        update.type = PlanType::Update;
-        update.table_name = "teachers";
-        update.predicate = "full_name=Bob Johnson";
-        update.set_values = {{"experience", "9"}};
-        exec.execute(&update);
+        PlanNode u;
+        u.type = PlanType::Update;
+        u.table_name = "teachers";
+        u.predicate = "full_name=Bob Johnson";
+        u.set_values = {{"experience", "9"}};
+        exec.execute(&u);
+    }
+    std::cout << "\n== After Update ==\n";
+    {
+        PlanNode s;
+        s.type = PlanType::SeqScan;
+        s.table_name = "teachers";
+        printResult(exec.execute(&s));
     }
 
-    std::cout << "\n== After Update ==" << std::endl;
+    /* 7. Delete Alice */
+    std::cout << "\n== Delete teacher_id=201 ==\n";
     {
-        PlanNode scan;
-        scan.type = PlanType::SeqScan;
-        scan.table_name = "teachers";
-        auto result = exec.execute(&scan);
-        printResult(result);
+        PlanNode d;
+        d.type = PlanType::Delete;
+        d.table_name = "teachers";
+        d.predicate = "teacher_id=201";
+        exec.execute(&d);
+    }
+    std::cout << "\n== After Delete ==\n";
+    {
+        PlanNode s;
+        s.type = PlanType::SeqScan;
+        s.table_name = "teachers";
+        printResult(exec.execute(&s));
     }
 
-    // 9. DELETE teacher_id=203 (Carol Lee)
-    std::cout << "\n== Delete teacher_id=203 ==" << std::endl;
+    /* 8. Group By + Having */
+    std::cout << "\n== Group By subject, SUM(experience) ==\n";
     {
-        PlanNode del;
-        del.type = PlanType::Delete;
-        del.table_name = "teachers";
-        del.predicate = "teacher_id=203";
-        exec.execute(&del);
+        PlanNode g;
+        g.type = PlanType::GroupBy;
+        g.table_name = "teachers";
+        g.group_keys = {"subject"};
+        g.aggregates = {{"SUM", "experience", "total_exp"}};
+        printResult(exec.execute(&g));
+    }
+    std::cout << "\n== Having total_exp>5 ==\n";
+    {
+        PlanNode g;
+        g.type = PlanType::GroupBy;
+        g.table_name = "teachers";
+        g.group_keys = {"subject"};
+        g.aggregates = {{"SUM", "experience", "total_exp"}};
+        g.having_predicate = "total_exp>5";
+        printResult(exec.execute(&g));
     }
 
-    std::cout << "\n== After Delete ==" << std::endl;
+    /* 9. 建 departments 并插 2 行 */
     {
-        PlanNode scan;
-        scan.type = PlanType::SeqScan;
-        scan.table_name = "teachers";
-        auto result = exec.execute(&scan);
-        printResult(result);
+        PlanNode ct;
+        ct.type = PlanType::CreateTable;
+        ct.table_name = "departments";
+        ct.table_columns = {{"dept_id", "INT", -1}, {"dept_name", "VARCHAR", 50}};
+        exec.execute(&ct);
+    }
+    {
+        std::vector<std::vector<std::string>> d = {
+            {"1", "Math"},
+            {"2", "English"}};
+        for (auto &v : d)
+        {
+            PlanNode ins;
+            ins.type = PlanType::Insert;
+            ins.table_name = "departments";
+            ins.columns = {"dept_id", "dept_name"};
+            ins.values = {v};
+            exec.execute(&ins);
+        }
     }
 
-    // 10. GROUP BY subject, SUM(experience)
-    std::cout << "\n== Group By subject, SUM(experience) ==" << std::endl;
+    /* 10. 两表连接 */
+    std::cout << "\n== Join teachers.subject = departments.dept_name ==\n";
     {
-        PlanNode group;
-        group.type = PlanType::GroupBy;
-        group.table_name = "teachers";
-        group.group_keys = {"subject"};
-        group.aggregates = {
-            {"SUM", "experience", "total_exp"}};
-        auto result = exec.execute(&group);
-        printResult(result);
-    }
+        auto j = std::make_unique<PlanNode>(); // 用 unique_ptr 管理
+        j->type = PlanType::Join;
+        j->from_tables = {"teachers", "departments"};
+        j->columns = {"*"};
+        j->predicate = "teachers.subject=departments.dept_name";
 
-    // 11. GROUP BY subject, SUM(experience) HAVING total_exp > 15
-    std::cout << "\n== Group By subject, SUM(experience) HAVING total_exp > 15 ==" << std::endl;
-    {
-        PlanNode group;
-        group.type = PlanType::GroupBy;
-        group.table_name = "teachers";
-        group.group_keys = {"subject"};
-        group.aggregates = {
-            {"SUM", "experience", "total_exp"}};
-        group.having_predicate = "total_exp>15";
-        auto result = exec.execute(&group);
-        printResult(result);
+        printResult(exec.execute(j.get()));
     }
 
     return 0;
