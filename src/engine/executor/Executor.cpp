@@ -493,7 +493,7 @@ namespace minidb
             // 更新内存的 TableSchema（如果需要）
             // 假设 catalog_ 内部存的是副本，确保写回 first_page_id
             // 推荐提供 Catalog::UpdateTableFirstPageId() 或 SaveToStorage 会序列化当前内存结构
-            catalog_->SaveToStorage(storage_engine_.get()); // 写回页0的Catalog元数据（含首页信息）
+            catalog_->SaveToStorage(); // 写回页0的Catalog元数据（含首页信息）
 
             // ========== 更新索引（逐条对应 inserted_pids） ==========
             std::vector<IndexSchema> indexes = catalog_->GetTableIndexes(node->table_name);
@@ -530,7 +530,7 @@ namespace minidb
             }
 
             // 最后把 catalog（包含更新后的 index.root_page_id）写回页0
-            catalog_->SaveToStorage(storage_engine_.get());
+            catalog_->SaveToStorage();
 
             return {};
         }
@@ -872,77 +872,6 @@ namespace minidb
 
                 projected.push_back(projected_row);
             }
-            // if (!catalog_ || !catalog_->HasTable(node->table_name))
-            //     break;
-
-            // const auto &schema = catalog_->GetTable(node->table_name);
-            // std::vector<Row> projected;
-
-            // // 尝试使用索引
-            // std::string col, value;
-            // bool use_index = false;
-            // if (!node->columns.empty() && parsePredicate(node->predicate, col, value))
-            // {
-            //     auto idx_name = catalog_->FindIndexByColumn(node->table_name, col);
-            //     if (!idx_name.empty())
-            //     {
-            //         const auto &idx_schema = catalog_->GetIndex(idx_name);
-            //         if (idx_schema.type == "BPLUS")
-            //         {
-            //             use_index = true;
-            //             BPlusTree bpt(storage_engine_.get()); // 只传 engine
-            //             bpt.SetRoot(idx_schema.root_page_id); // 设置已有根页
-
-            //             int64_t key = std::stoll(value);
-            //             auto rid_opt = bpt.Search(static_cast<int32_t>(key));
-            //             if (rid_opt.has_value())
-            //             {
-            //                 RID rid = rid_opt.value();
-            //                 Page *p = storage_engine_->GetDataPage(rid.page_id);
-            //                 if (p)
-            //                 {
-            //                     auto records = storage_engine_->GetPageRecords(p);
-            //                     for (auto &rec : records)
-            //                     {
-            //                         auto row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first),
-            //                                                     rec.second, schema);
-            //                         Row r;
-            //                         for (auto &col_name : node->columns)
-            //                         {
-            //                             int idx = schema.getColumnIndex(col_name);
-            //                             if (idx >= 0 && idx < row.columns.size())
-            //                                 r.columns.push_back(row.columns[idx]);
-            //                         }
-            //                         projected.push_back(r);
-            //                     }
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-
-            // // fallback 全表扫描
-            // if (!use_index)
-            // {
-            //     auto pages = storage_engine_->GetPageChain(schema.first_page_id);
-            //     for (auto *p : pages)
-            //     {
-            //         auto records = storage_engine_->GetPageRecords(p);
-            //         for (auto &rec : records)
-            //         {
-            //             auto row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first),
-            //                                         rec.second, schema);
-            //             Row r;
-            //             for (auto &col_name : node->columns)
-            //             {
-            //                 int idx = schema.getColumnIndex(col_name);
-            //                 if (idx >= 0 && idx < row.columns.size())
-            //                     r.columns.push_back(row.columns[idx]);
-            //             }
-            //             projected.push_back(r);
-            //         }
-            //     }
-            // }
 
             std::cout << "[Project] 投影后 " << projected.size() << " 行:" << std::endl;
             for (auto &row : projected)

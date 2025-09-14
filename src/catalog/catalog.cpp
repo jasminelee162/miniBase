@@ -17,7 +17,7 @@ namespace minidb
     Catalog::Catalog(StorageEngine *engine) : storage_engine_(engine)
     {
         if (storage_engine_)
-            LoadFromStorage(storage_engine_);
+            LoadFromStorage();
     }
 
     void Catalog::SetStorageEngine(StorageEngine *engine)
@@ -50,7 +50,8 @@ namespace minidb
             {
                 throw std::runtime_error("CreateTable failed: cannot create CatalogPage");
             }
-            std::cout << "[Catalog] 自动创建 CatalogPage (pid=" << catalog_page->GetPageId() << ")" << std::endl;
+            std::cout << "[Catalog] 自动创建 CatalogPage (pid="
+                      << catalog_page->GetPageId() << ")" << std::endl;
 
             // 更新 MetaInfo
             MetaInfo meta = storage_engine_->GetMetaInfo();
@@ -75,84 +76,79 @@ namespace minidb
         schema.first_page_id = pid;
         tables_[table_name] = schema;
 
-        // ===== 更新 CatalogPage =====
-        CatalogData cd = SerializeTables(); // 序列化内存目录
-        catalog_page->InitializePage(PageType::CATALOG_PAGE);
-        char *page_data = catalog_page->GetData() + PAGE_HEADER_SIZE;
-        size_t copy_size = std::min(cd.data.size(), static_cast<size_t>(PAGE_SIZE - PAGE_HEADER_SIZE));
-        std::memcpy(page_data, cd.data.data(), copy_size);
-        storage_engine_->PutPage(catalog_page->GetPageId(), true);
+        // ===== 统一使用 SaveToStorage() 更新 CatalogPage =====
+        SaveToStorage();
 
         std::cout << "[CreateTable] 表 " << table_name
-                  << " 创建成功，目录已写入 CatalogPage，首个数据页 = " << pid << std::endl;
+                  << " 创建成功，目录已保存，首个数据页 = " << pid << std::endl;
     }
 
-    CatalogData Catalog::SerializeTables()
-    {
-        CatalogData cd;
-        std::ostringstream oss;
+    // CatalogData Catalog::SerializeTables()
+    // {
+    //     CatalogData cd;
+    //     std::ostringstream oss;
 
-        for (const auto &[name, schema] : tables_)
-        {
-            oss << schema.table_name << "|"
-                << schema.first_page_id;
-            for (const auto &col : schema.columns)
-            {
-                oss << "|" << col.name << ":" << col.type << ":" << col.length;
-            }
-            oss << "\n";
-        }
+    //     for (const auto &[name, schema] : tables_)
+    //     {
+    //         oss << schema.table_name << "|"
+    //             << schema.first_page_id;
+    //         for (const auto &col : schema.columns)
+    //         {
+    //             oss << "|" << col.name << ":" << col.type << ":" << col.length;
+    //         }
+    //         oss << "\n";
+    //     }
 
-        std::string tmp = oss.str();
-        cd.data = std::vector<char>(tmp.begin(), tmp.end());
-        return cd;
-    }
+    //     std::string tmp = oss.str();
+    //     cd.data = std::vector<char>(tmp.begin(), tmp.end());
+    //     return cd;
+    // }
 
-    void Catalog::DeserializeTables(const CatalogData &cd)
-    {
-        tables_.clear();
-        std::string tmp(cd.data.begin(), cd.data.end());
-        std::istringstream iss(tmp);
+    // void Catalog::DeserializeTables(const CatalogData &cd)
+    // {
+    //     tables_.clear();
+    //     std::string tmp(cd.data.begin(), cd.data.end());
+    //     std::istringstream iss(tmp);
 
-        std::string line;
+    //     std::string line;
 
-        while (std::getline(iss, line))
-        {
-            if (line.empty())
-                continue;
+    //     while (std::getline(iss, line))
+    //     {
+    //         if (line.empty())
+    //             continue;
 
-            std::istringstream ls(line);
-            std::string token;
+    //         std::istringstream ls(line);
+    //         std::string token;
 
-            // 先读表名和first_page_id
-            std::getline(ls, token, '|');
-            std::string table_name = token;
+    //         // 先读表名和first_page_id
+    //         std::getline(ls, token, '|');
+    //         std::string table_name = token;
 
-            std::getline(ls, token, '|');
-            page_id_t first_pid = std::stoi(token);
+    //         std::getline(ls, token, '|');
+    //         page_id_t first_pid = std::stoi(token);
 
-            TableSchema schema;
-            schema.table_name = table_name;
-            schema.first_page_id = first_pid;
+    //         TableSchema schema;
+    //         schema.table_name = table_name;
+    //         schema.first_page_id = first_pid;
 
-            // 继续解析列
-            while (std::getline(ls, token, '|'))
-            {
-                size_t p1 = token.find(':');
-                size_t p2 = token.find(':', p1 + 1);
-                if (p1 == std::string::npos || p2 == std::string::npos)
-                    continue;
+    //         // 继续解析列
+    //         while (std::getline(ls, token, '|'))
+    //         {
+    //             size_t p1 = token.find(':');
+    //             size_t p2 = token.find(':', p1 + 1);
+    //             if (p1 == std::string::npos || p2 == std::string::npos)
+    //                 continue;
 
-                Column col;
-                col.name = token.substr(0, p1);
-                col.type = token.substr(p1 + 1, p2 - p1 - 1);
-                col.length = std::stoi(token.substr(p2 + 1));
-                schema.columns.push_back(col);
-            }
+    //             Column col;
+    //             col.name = token.substr(0, p1);
+    //             col.type = token.substr(p1 + 1, p2 - p1 - 1);
+    //             col.length = std::stoi(token.substr(p2 + 1));
+    //             schema.columns.push_back(col);
+    //         }
 
-            tables_[table_name] = schema;
-        }
-    }
+    //         tables_[table_name] = schema;
+    //     }
+    // }
 
     bool Catalog::HasTable(const std::string &table_name) const
     {
@@ -173,170 +169,118 @@ namespace minidb
         return it->second;
     }
 
-    void Catalog::LoadFromStorage(StorageEngine *engine)
+    // ================= 序列化并写入 CatalogPage =================
+    void Catalog::SaveToStorage()
     {
         std::lock_guard<std::recursive_mutex> lock(latch_);
-        if (engine == nullptr)
-            engine = storage_engine_;
-        if (!engine)
-            throw std::runtime_error("[Catalog] LoadFromStorage: StorageEngine 未设置");
 
-        // ---------- 1. 读取 Meta 页 (page0) ----------
-        page_id_t meta_pid = 0;
-        Page *meta_page = engine->GetPage(meta_pid);
-        if (!meta_page)
-            throw std::runtime_error("[Catalog::LoadFromStorage] meta page0 不存在，数据库文件可能未初始化");
-
-        // 从 meta_page 读取 catalog_root
-        page_id_t catalog_pid;
-        std::memcpy(&catalog_pid, meta_page->GetData() + 16, sizeof(page_id_t)); // 约定 offset=16 存 catalog_root
-
-        if (catalog_pid == INVALID_PAGE_ID)
-        {
-            // 数据库刚初始化，没有目录
-            tables_.clear();
-            indexes_.clear();
-            engine->PutPage(meta_pid, false);
-            return;
-        }
-
-        // ---------- 2. 读取 Catalog 页 ----------
-        Page *catalog_page = engine->GetPage(catalog_pid);
+        Page *catalog_page = storage_engine_->GetCatalogPage();
         if (!catalog_page)
         {
-            std::cerr << "[Catalog::LoadFromStorage] catalog 页 " << catalog_pid << " 不存在" << std::endl;
-            engine->PutPage(meta_pid, false);
+            throw std::runtime_error("[Catalog::SaveToStorage] catalog 页获取失败");
+        }
+
+        std::ostringstream oss;
+        for (const auto &[name, schema] : tables_)
+        {
+            oss << schema.table_name << "|"
+                << schema.first_page_id;
+            for (const auto &col : schema.columns)
+            {
+                oss << "|" << col.name << ":" << col.type << ":" << col.length;
+            }
+            oss << "\n";
+        }
+
+        std::string tmp = oss.str();
+        std::vector<char> data(tmp.begin(), tmp.end());
+
+        catalog_page->InitializePage(PageType::CATALOG_PAGE);
+        char *page_data = catalog_page->GetData() + PAGE_HEADER_SIZE;
+        size_t copy_size = std::min(data.size(), static_cast<size_t>(PAGE_SIZE - PAGE_HEADER_SIZE));
+        std::memcpy(page_data, data.data(), copy_size);
+
+        storage_engine_->PutPage(catalog_page->GetPageId(), true);
+        std::cout << "[Catalog::SaveToStorage] 成功写入目录，共 "
+                  << tables_.size() << " 张表" << std::endl;
+    }
+
+    // ================= 从 CatalogPage 加载并反序列化 =================
+    void Catalog::LoadFromStorage()
+    {
+        std::lock_guard<std::recursive_mutex> lock(latch_);
+
+        Page *catalog_page = storage_engine_->GetCatalogPage();
+        if (!catalog_page)
+        {
+            std::cerr << "[Catalog::LoadFromStorage] catalog 页不存在" << std::endl;
             return;
         }
 
-        std::string content(catalog_page->GetData(), PAGE_SIZE);
-        std::istringstream iss(content);
-        std::string line;
-
         tables_.clear();
-        indexes_.clear();
 
+        char *page_data = catalog_page->GetData() + PAGE_HEADER_SIZE;
+        size_t data_size = PAGE_SIZE - PAGE_HEADER_SIZE;
+
+        // 去掉尾部 \0
+        std::string tmp(page_data, strnlen(page_data, data_size));
+        std::istringstream iss(tmp);
+
+        std::string line;
         while (std::getline(iss, line))
         {
             if (line.empty())
                 continue;
 
             std::istringstream ls(line);
-            std::string tag;
-            ls >> tag;
+            std::string token;
 
-            if (tag == "#TABLE")
+            // 表名
+            std::getline(ls, token, '|');
+            if (token.empty())
+                continue;
+            std::string table_name = token;
+
+            // first_page_id
+            if (!std::getline(ls, token, '|') || token.empty())
             {
-                TableSchema schema;
-                ls >> schema.table_name;
+                std::cerr << "[Catalog::LoadFromStorage] 缺少 first_page_id, line=" << line << std::endl;
+                continue;
+            }
 
-                std::string coldef;
-                while (ls >> coldef)
+            page_id_t first_pid = static_cast<page_id_t>(std::stoi(token));
+
+            TableSchema schema;
+            schema.table_name = table_name;
+            schema.first_page_id = first_pid;
+
+            // 列信息
+            while (std::getline(ls, token, '|'))
+            {
+                size_t p1 = token.find(':');
+                size_t p2 = token.find(':', p1 + 1);
+                if (p1 == std::string::npos || p2 == std::string::npos)
+                    continue;
+
+                Column col;
+                col.name = token.substr(0, p1);
+                col.type = token.substr(p1 + 1, p2 - p1 - 1);
+                try
                 {
-                    Column col;
-                    size_t p1 = coldef.find(':');
-                    size_t p2 = coldef.find(':', p1 + 1);
-                    if (p1 != std::string::npos && p2 != std::string::npos)
-                    {
-                        col.name = coldef.substr(0, p1);
-                        col.type = coldef.substr(p1 + 1, p2 - p1 - 1);
-                        col.length = std::stoi(coldef.substr(p2 + 1));
-                    }
-                    else
-                    {
-                        col.name = coldef;
-                        col.type = "TEXT";
-                        col.length = 0;
-                    }
-                    schema.columns.push_back(col);
+                    col.length = std::stoi(token.substr(p2 + 1));
                 }
-                tables_[schema.table_name] = schema;
+                catch (...)
+                {
+                    col.length = 0;
+                }
+                schema.columns.push_back(col);
             }
-            else if (tag == "#INDEX")
-            {
-                IndexSchema idx;
-                ls >> idx.index_name >> idx.table_name >> idx.type >> idx.root_page_id;
-                std::string colname;
-                while (ls >> colname)
-                    idx.cols.push_back(colname);
-                indexes_[idx.index_name] = idx;
-            }
+
+            tables_[table_name] = schema;
         }
 
-        // ---------- 3. 释放页 ----------
-        engine->PutPage(catalog_pid, false);
-        engine->PutPage(meta_pid, false);
-    }
-
-    void Catalog::SaveToStorage(StorageEngine *engine)
-    {
-        std::lock_guard<std::recursive_mutex> lock(latch_);
-        if (engine == nullptr)
-            engine = storage_engine_;
-        if (!engine)
-            throw std::runtime_error("[Catalog] SaveToStorage: StorageEngine 未设置");
-
-        // ---------- 1. 获取 meta 页 ----------
-        page_id_t meta_pid = 0;
-        Page *meta_page = engine->GetPage(meta_pid);
-        if (!meta_page)
-            throw std::runtime_error("[Catalog::SaveToStorage] meta page0 不存在");
-
-        // 从 meta_page 读取 catalog_root
-        page_id_t catalog_pid;
-        std::memcpy(&catalog_pid, meta_page->GetData() + 16, sizeof(page_id_t));
-
-        // 如果还没分配 catalog 页，就创建一个
-        if (catalog_pid == INVALID_PAGE_ID)
-        {
-            Page *catalog_page_new = engine->CreatePage(&catalog_pid);
-            if (!catalog_page_new)
-                throw std::runtime_error("[Catalog::SaveToStorage] 无法创建 catalog 页");
-            engine->PutPage(catalog_pid, false);
-
-            // 更新 meta_page 中的 catalog_root
-            std::memcpy(meta_page->GetData() + 16, &catalog_pid, sizeof(page_id_t));
-            engine->PutPage(meta_pid, true); // 标脏
-        }
-        else
-        {
-            engine->PutPage(meta_pid, false); // 用完 meta_page
-        }
-
-        // ---------- 2. 获取 catalog 页 ----------
-        Page *catalog_page = engine->GetPage(catalog_pid);
-        if (!catalog_page)
-            throw std::runtime_error("[Catalog::SaveToStorage] catalog 页获取失败");
-
-        std::ostringstream oss;
-        for (const auto &kv : tables_)
-        {
-            const TableSchema &schema = kv.second;
-            oss << "#TABLE " << schema.table_name;
-            for (const auto &col : schema.columns)
-                oss << " " << col.name << ":" << col.type << ":" << col.length;
-            oss << "\n";
-        }
-        for (const auto &kv : indexes_)
-        {
-            const IndexSchema &idx = kv.second;
-            oss << "#INDEX " << idx.index_name << " " << idx.table_name
-                << " " << idx.type << " " << idx.root_page_id;
-            for (const auto &col : idx.cols)
-                oss << " " << col;
-            oss << "\n";
-        }
-
-        std::string s = oss.str();
-        if (s.size() > PAGE_SIZE)
-            throw std::runtime_error("[Catalog::SaveToStorage] 元数据超出 PAGE_SIZE");
-
-        // 清空旧内容并写入
-        std::memset(catalog_page->GetData(), 0, PAGE_SIZE);
-        std::memcpy(catalog_page->GetData(), s.data(), s.size());
-
-        // ---------- 3. 标脏并释放 ----------
-        engine->PutPage(catalog_pid, true);
+        std::cout << "[Catalog::LoadFromStorage] 加载完成，共 "
+                  << tables_.size() << " 张表" << std::endl;
     }
 
     std::vector<std::string> Catalog::GetTableColumns(const std::string &table_name)
@@ -395,7 +339,7 @@ namespace minidb
 
         // 持久化
         if (storage_engine_)
-            SaveToStorage(storage_engine_);
+            SaveToStorage();
     }
 
     bool Catalog::HasIndex(const std::string &index_name) const
