@@ -69,9 +69,6 @@ namespace minidb
         // ===== 表管理 =====
         void CreateTable(const std::string &table_name, const std::vector<Column> &columns);
 
-        CatalogData SerializeTables();
-
-        void DeserializeTables(const CatalogData &cd);
         void LoadFromStorage();
 
         std::vector<std::string> GetTableColumns(const std::string &table_name);
@@ -92,10 +89,7 @@ namespace minidb
 
         std::string FindIndexByColumn(const std::string &table_name, const std::string &col) const;
 
-        // ===== 元数据持久化（到 StorageEngine 页 0）=====
-        // engine 参数若为空则使用内部 storage_engine_
-        // void LoadFromStorage(StorageEngine *engine = nullptr);
-        // void SaveToStorage(StorageEngine *engine = nullptr);
+        std::vector<std::string> GetAllTables() const; // 导出中使用
 
     private:
         StorageEngine *storage_engine_{nullptr}; // 如果通过构造或 Set 注入则使用

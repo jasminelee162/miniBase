@@ -44,6 +44,12 @@ namespace minidb
             // std::cout << "[Executor] SetCatalog called, catalog ptr=" << catalog_.get() << std::endl;
         }
 
+        // ✅ 新增 Getter
+        std::shared_ptr<StorageEngine> GetStorageEngine() const
+        {
+            return storage_engine_;
+        }
+
     private:
         std::shared_ptr<StorageEngine> storage_engine_;
         static Logger logger;
