@@ -44,7 +44,8 @@ inline constexpr const char* EXPECT_EXPRESSION = "缺少表达式";
 inline constexpr const char* EXPECT_COMPARISON = "缺少比较表达式";
 inline constexpr const char* EXPECT_BY_AFTER_GROUP = "在 'GROUP' 之后缺少关键字 'BY'";
 inline constexpr const char* EXPECT_IDENTIFIER = "缺少标识符";
-
+inline constexpr const char* EXPECT_COMMA_OR_FROM = "缺少逗号或关键字 'FROM'";
+inline constexpr const char* EXPECT_BY_AFTER_ORDER = "在 'ORDER' 之后缺少关键字 'BY'";
 // VARCHAR length specific
 inline constexpr const char* EXPECT_VARCHAR_LENGTH = "在 'VARCHAR(' 之后期望长度";
 inline constexpr const char* EXPECT_RPAREN_AFTER_VARCHAR_LEN = "在 VARCHAR 长度之后期望出现 ')'";

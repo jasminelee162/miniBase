@@ -298,8 +298,29 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
         havingClause = expression();
     }
     
-    consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_SELECT);
+    // 可选的 ORDER BY 子句
+    std::vector<std::string> orderByColumns;
+    bool orderByDesc = false;
     
+    if (match(TokenType::KEYWORD_ORDER)) {
+        consume(TokenType::KEYWORD_BY, SqlErrors::EXPECT_BY_AFTER_ORDER);
+        
+        // 解析排序列（支持多列，但先实现单列）
+        do {
+            Token colToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
+            orderByColumns.push_back(colToken.lexeme);
+        } while (match(TokenType::DELIMITER_COMMA));
+        
+        // 检查 ASC/DESC（可选，默认 ASC）
+        if (match(TokenType::KEYWORD_ASC)) {
+            orderByDesc = false;
+        } else if (match(TokenType::KEYWORD_DESC)) {
+            orderByDesc = true;
+        }
+        // 如果都没有，保持默认的 orderByDesc = false (ASC)
+    }
+
+    consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_SELECT);
     return std::make_unique<SelectStatement>(
         std::move(columns), std::move(aggregates), tableName, 
         std::move(whereClause), std::move(groupByColumns), std::move(havingClause));

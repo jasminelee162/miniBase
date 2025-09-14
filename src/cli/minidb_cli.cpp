@@ -7,6 +7,7 @@
 #include "../storage/storage_engine.h"
 #include "../engine/executor/executor.h"
 #include "../catalog/catalog.h"
+#include "../util/table_utils.h"
 #include <iostream>
 #include <string>
 #include <memory>
@@ -108,15 +109,10 @@ int main(int argc, char** argv) {
                 // std::cout << "plan: " << printer.print(plan.get()) << std::endl;
 
                 exec->execute(plan.get());
+                auto results = exec->execute(plan.get());
                 std::cout << "[OK] executed." << std::endl;
+                TablePrinter::printResults(results, " ");
 
-                // 添加文件检查
-                std::ifstream file(dbFile, std::ios::binary | std::ios::ate);
-                if (file.is_open()) {
-                    auto size = file.tellg();
-                    std::cout << "[INFO] 数据库文件大小: " << size << " 字节" << std::endl;
-                    file.close();
-                }
             }
         } catch (const ParseError &e) {
             std::cerr << "[Parser][ERROR] [minidb_cli] " << e.what() << " at (" << e.getLine() << "," << e.getColumn() << ")" << std::endl;

@@ -55,6 +55,65 @@ json ASTJson::toJson(const Statement* stmt)
     // SELECT
     if (auto sel = dynamic_cast<const SelectStatement*>(stmt)) {
         json j;
+        // 检查是否有 ORDER BY
+        if (!sel->getOrderByColumns().empty()) {
+            // 如果有 ORDER BY，创建嵌套结构
+            j["type"] = "OrderBy";
+            j["order_by_cols"] = sel->getOrderByColumns();
+            j["order_by_desc"] = sel->isOrderByDesc();
+            
+            // 创建子节点
+            json child;
+            
+            // 检查是否有 GROUP BY
+            if (!sel->getGroupByColumns().empty()) {
+                child["type"] = "GroupBy";
+                child["table_name"] = sel->getTableName();
+                child["group_keys"] = sel->getGroupByColumns();
+                
+                // 处理聚合函数
+                json aggregatesJson = json::array();
+                for (const auto& agg : sel->getAggregates()) {
+                    json aggObj;
+                    aggObj["func"] = agg->getFunction();
+                    aggObj["column"] = agg->getColumn();
+                    if (!agg->getAlias().empty()) {
+                        aggObj["as"] = agg->getAlias();
+                    }
+                    aggregatesJson.push_back(aggObj);
+                }
+                child["aggregates"] = aggregatesJson;
+                
+                // HAVING 子句
+                if (sel->getHavingClause()) {
+                    try {
+                        auto havingJson = exprToJson(sel->getHavingClause());
+                        child["having_predicate"] = havingJson.is_string() ? havingJson.get<std::string>() : havingJson.dump();
+                    } catch (const std::exception &e) {
+                        child["having_predicate"] = "HAVING_CLAUSE_ERROR";
+                    }
+                }
+            } else {
+                // 没有 GROUP BY，创建 SeqScan 子节点
+                child["type"] = "SeqScan";
+                child["table_name"] = sel->getTableName();
+                
+                // 如果有 WHERE 子句，可能需要 Filter 节点
+                if (sel->getWhereClause()) {
+                    // 这里简化处理，实际可能需要更复杂的逻辑
+                    try {
+                        auto whereJson = exprToJson(sel->getWhereClause());
+                        child["predicate"] = whereJson.is_string() ? whereJson.get<std::string>() : whereJson.dump();
+                    } catch (const std::exception &e) {
+                        child["predicate"] = "WHERE_CLAUSE_ERROR";
+                    }
+                }
+            }
+            
+            j["child"] = child;
+            return j;
+        }
+        // 如果没有 ORDER BY，使用原有的逻辑
         //先处理聚合函数group by
         if (!sel->getGroupByColumns().empty()) {
             j["type"] = "GroupBy";

@@ -20,7 +20,10 @@ Lexer::Lexer(const std::string& source)
     keywords["AVG"] = TokenType::KEYWORD_AVG;
     keywords["MIN"] = TokenType::KEYWORD_MIN;
     keywords["MAX"] = TokenType::KEYWORD_MAX;
-
+    keywords["ORDER"] = TokenType::KEYWORD_ORDER;
+    keywords["ASC"] = TokenType::KEYWORD_ASC;
+    keywords["DESC"] = TokenType::KEYWORD_DESC;
+    
     keywords["CREATE"] = TokenType::KEYWORD_CREATE;
     keywords["TABLE"] = TokenType::KEYWORD_TABLE;
 

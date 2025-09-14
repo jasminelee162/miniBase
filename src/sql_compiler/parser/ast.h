@@ -186,17 +186,25 @@ public:
                    const std::string& table, 
                    std::unique_ptr<Expression> where = nullptr,
                    std::vector<std::string> groupBy = {},
-                   std::unique_ptr<Expression> having = nullptr)
+                   std::unique_ptr<Expression> having = nullptr,
+                   std::vector<std::string> orderBy = {},
+                   bool orderDesc = false)
         : columns(std::move(cols)), aggregates(std::move(aggs)), tableName(table), 
           whereClause(std::move(where)), groupByColumns(std::move(groupBy)), 
-          havingClause(std::move(having)) {}
+          havingClause(std::move(having)), orderByColumns(std::move(orderBy)),
+          orderByDesc(orderDesc) {}
     
     const std::vector<std::string>& getColumns() const { return columns; }
-    const std::vector<std::unique_ptr<AggregateExpression>>& getAggregates() const { return aggregates; }
     const std::string& getTableName() const { return tableName; }
     Expression* getWhereClause() const { return whereClause.get(); }
+    //Group by
+    const std::vector<std::unique_ptr<AggregateExpression>>& getAggregates() const { return aggregates; }
     const std::vector<std::string>& getGroupByColumns() const { return groupByColumns; }
     Expression* getHavingClause() const { return havingClause.get(); }
+
+    // Order by
+    const std::vector<std::string>& getOrderByColumns() const { return orderByColumns; }
+    bool isOrderByDesc() const { return orderByDesc; }
 
     void accept(ASTVisitor& visitor) override;
 
@@ -205,9 +213,14 @@ private:
     std::string tableName;
     std::unique_ptr<Expression> whereClause;
 
+    //Group by
     std::vector<std::unique_ptr<AggregateExpression>> aggregates;
     std::vector<std::string> groupByColumns;
     std::unique_ptr<Expression> havingClause;
+
+    // Order by
+    std::vector<std::string> orderByColumns;
+    bool orderByDesc;
 };
 
 // DELETE语句

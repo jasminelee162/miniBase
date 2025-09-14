@@ -22,7 +22,11 @@ enum class TokenType {
     KEYWORD_MIN,
     KEYWORD_MAX,
     
-
+    //ORDER BY
+    KEYWORD_ORDER,
+    KEYWORD_ASC,
+    KEYWORD_DESC,  
+      
     //CREATE
     KEYWORD_CREATE,
     KEYWORD_TABLE,

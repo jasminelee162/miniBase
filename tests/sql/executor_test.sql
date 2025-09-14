@@ -32,7 +32,6 @@ SELECT full_name, subject FROM teachers WHERE experience > 5;
 
 UPDATE teachers SET experience = 9 WHERE full_name = 'Bob Johnson';
 
-SELECT * FROM teachers;
 
 DELETE FROM teachers WHERE teacher_id = 203;
 
@@ -43,6 +42,9 @@ SELECT * FROM teachers;
 SELECT subject, SUM(experience) AS total_exp FROM teachers GROUP BY subject;
 
 SELECT subject, SUM(experience) AS total_exp FROM teachers GROUP BY subject HAVING total_exp > 15;
+
+SELECT * FROM teachers ORDER BY experience ASC;
+SELECT subject, SUM(experience) AS total FROM teachers GROUP BY subject ORDER BY total DESC;
 
 CREATE TABLE departments (
     dept_id INT,

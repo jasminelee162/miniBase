@@ -554,7 +554,7 @@ namespace minidb
                 std::cout << "[SeqScan] ... 还有 " << (rows.size() - show_count) << " 行" << std::endl;
             }
             // ===== 添加表格输出 =====
-            TablePrinter::printResults(rows, "SELECT");
+            // TablePrinter::printResults(rows, "SELECT");
             return rows;
         }
 
@@ -709,7 +709,7 @@ namespace minidb
             for (auto &row : filtered)
                 std::cout << "[Row] " << row.toString() << std::endl;
             // ===== 添加表格输出 =====
-            TablePrinter::printResults(filtered, "SELECT");
+            // TablePrinter::printResults(filtered, "SELECT");
             return filtered;
         }
 
@@ -804,7 +804,7 @@ namespace minidb
             for (auto &row : projected)
                 std::cout << "[Row] " << row.toString() << std::endl;
             // ===== 添加表格输出 =====
-            TablePrinter::printResults(projected, "SELECT");
+            // TablePrinter::printResults(projected, "SELECT");
             return projected;
         }
 
@@ -916,9 +916,9 @@ namespace minidb
             // }
             // ===== 新增：输出结果 =====
             if (!node->having_predicate.empty()) {
-                TablePrinter::printResults(result_rows, "GROUP BY with HAVING");
+                // TablePrinter::printResults(result_rows, "GROUP BY with HAVING");
             } else {
-                TablePrinter::printResults(result_rows, "GROUP BY");
+                // TablePrinter::printResults(result_rows, "GROUP BY");
             }
             return result_rows;
         }
