@@ -37,8 +37,6 @@ DELETE FROM teachers WHERE teacher_id = 203;
 
 SELECT * FROM teachers;
 
-
-
 SELECT subject, SUM(experience) AS total_exp FROM teachers GROUP BY subject;
 
 SELECT subject, SUM(experience) AS total_exp FROM teachers GROUP BY subject HAVING total_exp > 15;
