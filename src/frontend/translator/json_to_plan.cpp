@@ -29,7 +29,12 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
         // Select 特殊处理：拆成 Project(Filter(SeqScan))
         auto project = std::make_unique<PlanNode>();
         project->type = PlanType::Project;
-        project->table_name = j.at("table_name").get<std::string>();
+        project->table_name = j.value("table_name", "");
+
+        if (j.contains("from_tables"))
+            project->from_tables = j["from_tables"].get<std::vector<std::string>>();
+        else if (!project->table_name.empty())
+            project->from_tables = {project->table_name};
 
         if (j.contains("columns")) {
             auto columns = j["columns"];
@@ -44,13 +49,14 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
         }
         auto scan = std::make_unique<PlanNode>();
         scan->type = PlanType::SeqScan;
-        scan->table_name = j.at("table_name").get<std::string>();
+        scan->table_name = project->table_name;
+        scan->from_tables = project->from_tables;
 
         if (j.contains("predicate"))
         {
             auto filter = std::make_unique<PlanNode>();
             filter->type = PlanType::Filter;
-            filter->table_name = j.at("table_name").get<std::string>();
+            filter->table_name = project->table_name;
             filter->predicate = j.at("predicate").get<std::string>();
             filter->children.push_back(std::move(scan));
             project->children.push_back(std::move(filter));
@@ -91,6 +97,37 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
         if (j.contains("predicate"))
             node->predicate = j["predicate"].get<std::string>();
     }
+    else if (type == "Join")
+    {
+        node->type = PlanType::Join;
+
+        // 读取连接表列表
+        if (!j.contains("from_tables"))
+            throw std::runtime_error("Join must have from_tables");
+        node->from_tables = j["from_tables"].get<std::vector<std::string>>();
+        if (node->from_tables.size() < 2)
+            throw std::runtime_error("Join requires at least two tables");
+
+        // 连接条件
+        if (j.contains("predicate"))
+            node->predicate = j["predicate"].get<std::string>();
+
+        // 为每个表创建 SeqScan 子节点
+        for (auto &tbl : node->from_tables)
+        {
+            auto scan = std::make_unique<PlanNode>();
+            scan->type = PlanType::SeqScan;
+            scan->table_name = tbl;
+            scan->from_tables = {tbl};
+            node->children.push_back(std::move(scan));
+        }
+
+        // 支持列投影
+        if (j.contains("columns"))
+            node->columns = j["columns"].get<std::vector<std::string>>();
+
+        return node;
+    }
 
     else
         throw std::runtime_error("Unknown plan type: " + type);
@@ -98,6 +135,11 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
     // ----------- 通用字段 -----------
     if (j.contains("table_name"))
         node->table_name = j["table_name"].get<std::string>();
+
+    if (j.contains("from_tables"))
+        node->from_tables = j["from_tables"].get<std::vector<std::string>>();
+    else if (!node->table_name.empty())
+        node->from_tables = {node->table_name};
 
     if (j.contains("columns"))
     {
@@ -116,7 +158,7 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
         }
         else
         {
-            // 普通节点只保存列名
+            // 普通节点只保存列名（可能是 "*"）
             node->columns = j["columns"].get<std::vector<std::string>>();
         }
     }

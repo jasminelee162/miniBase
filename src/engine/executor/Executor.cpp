@@ -113,7 +113,6 @@ namespace minidb
         if (predicate.empty())
             return true;
 
-        // 去掉左右空格辅助函数
         auto trim = [](const std::string &s) -> std::string
         {
             size_t start = s.find_first_not_of(" \t\n\r");
@@ -123,54 +122,57 @@ namespace minidb
 
         std::string trimmed = trim(predicate);
 
-        // 支持 =
+        // 支持 col1 = col2 或 col = value
         auto pos_eq = trimmed.find('=');
         if (pos_eq != std::string::npos)
         {
-            std::string col = trim(trimmed.substr(0, pos_eq));
-            std::string val = trimmed.substr(pos_eq + 1); // 保留中间空格
-            return row.getValue(col) == val;
+            std::string left = trim(trimmed.substr(0, pos_eq));
+            std::string right = trim(trimmed.substr(pos_eq + 1));
+
+            // 判断右侧是列还是常量
+            std::string left_val = row.getValue(left);
+            std::string right_val = row.getValue(right);
+
+            if (!right_val.empty())
+            {
+                // col1 = col2
+                return left_val == right_val;
+            }
+            else
+            {
+                // col = constant
+                return left_val == right;
+            }
         }
 
-        // 支持 >
-        auto pos_gt = trimmed.find('>');
-        if (pos_gt != std::string::npos)
+        // 支持 >, <
+        auto handleCmp = [&](char op) -> bool
         {
-            std::string col = trim(trimmed.substr(0, pos_gt));
-            std::string val = trim(trimmed.substr(pos_gt + 1));
-
-            std::string row_val_str = trim(row.getValue(col)); // 数值比较时去掉首尾空格
+            size_t pos = trimmed.find(op);
+            if (pos == std::string::npos)
+                return false;
+            std::string col = trim(trimmed.substr(0, pos));
+            std::string val = trim(trimmed.substr(pos + 1));
+            std::string row_val_str = trim(row.getValue(col));
             try
             {
                 int row_val = std::stoi(row_val_str);
                 int cmp_val = std::stoi(val);
-                return row_val > cmp_val;
+                if (op == '>')
+                    return row_val > cmp_val;
+                else
+                    return row_val < cmp_val;
             }
             catch (...)
             {
                 return false;
             }
-        }
+        };
 
-        // 支持 <
-        auto pos_lt = trimmed.find('<');
-        if (pos_lt != std::string::npos)
-        {
-            std::string col = trim(trimmed.substr(0, pos_lt));
-            std::string val = trim(trimmed.substr(pos_lt + 1));
-
-            std::string row_val_str = trim(row.getValue(col)); // 数值比较时去掉首尾空格
-            try
-            {
-                int row_val = std::stoi(row_val_str);
-                int cmp_val = std::stoi(val);
-                return row_val < cmp_val;
-            }
-            catch (...)
-            {
-                return false;
-            }
-        }
+        if (trimmed.find('>') != std::string::npos)
+            return handleCmp('>');
+        if (trimmed.find('<') != std::string::npos)
+            return handleCmp('<');
 
         return false;
     }
@@ -308,6 +310,43 @@ namespace minidb
         trim(val);
 
         return !col.empty() && !val.empty();
+    }
+
+    // select * 的实现
+    std::vector<std::string> Executor::expandWildcardColumns(const PlanNode *node)
+    {
+        std::vector<std::string> expanded;
+
+        // 如果 JSON 里有 from_tables（多表）
+        if (!node->from_tables.empty())
+        {
+            for (auto &table_name : node->from_tables)
+            {
+                if (!catalog_->HasTable(table_name))
+                    continue;
+
+                auto schema = catalog_->GetTable(table_name);
+                for (auto &col : schema.columns)
+                {
+                    // 多表情况加前缀，避免歧义
+                    expanded.push_back(table_name + "." + col.name);
+                }
+            }
+        }
+        else
+        {
+            // 单表情况，取 node->table_name
+            if (!catalog_->HasTable(node->table_name))
+                return expanded;
+
+            auto schema = catalog_->GetTable(node->table_name);
+            for (auto &col : schema.columns)
+            {
+                expanded.push_back(col.name); // 单表可以不加前缀
+            }
+        }
+
+        return expanded;
     }
 
     /**
@@ -495,7 +534,7 @@ namespace minidb
 
             return {};
         }
-        //SeqScan（修复）
+        // SeqScan（修复）
         case PlanType::SeqScan:
         {
             // logger.log("SELECT * FROM " + node->table_name);
@@ -508,19 +547,21 @@ namespace minidb
             // return rows;
             logger.log("SEQSCAN " + node->table_name);
             std::cout << "[Executor] 顺序扫描表: " << node->table_name << std::endl;
-        
+
             auto rows = SeqScanAll(node->table_name);
             std::cout << "[SeqScan] 扫描到 " << rows.size() << " 行:" << std::endl;
-            
+
             // 只在调试时显示前几行，避免输出过多
             size_t show_count = std::min(rows.size(), size_t(5));
-            for (size_t i = 0; i < show_count; ++i) {
+            for (size_t i = 0; i < show_count; ++i)
+            {
                 std::cout << "[Row] " << rows[i].toString() << std::endl;
             }
-            if (rows.size() > show_count) {
+            if (rows.size() > show_count)
+            {
                 std::cout << "[SeqScan] ... 还有 " << (rows.size() - show_count) << " 行" << std::endl;
             }
-            
+
             return rows;
         }
 
@@ -646,30 +687,36 @@ namespace minidb
         {
             logger.log("FILTER on " + node->predicate);
             std::cout << "[Executor] 过滤条件: " << node->predicate << std::endl;
-               // 从子节点获取数据
-    std::vector<Row> input_rows;
-    if (!node->children.empty()) {
-        input_rows = execute(node->children[0].get());
-    } else {
-        // 没有子节点，直接全表扫描
-        if (catalog_ && catalog_->HasTable(node->table_name)) {
-            input_rows = SeqScanAll(node->table_name);
-        }
-    }
+            // 从子节点获取数据
+            std::vector<Row> input_rows;
+            if (!node->children.empty())
+            {
+                input_rows = execute(node->children[0].get());
+            }
+            else
+            {
+                // 没有子节点，直接全表扫描
+                if (catalog_ && catalog_->HasTable(node->table_name))
+                {
+                    input_rows = SeqScanAll(node->table_name);
+                }
+            }
 
-    // 应用过滤条件
-    std::vector<Row> filtered;
-    for (const auto &row : input_rows) {
-        if (matchesPredicate(row, node->predicate)) {
-            filtered.push_back(row);
-        }
-    }
+            // 应用过滤条件
+            std::vector<Row> filtered;
+            for (const auto &row : input_rows)
+            {
+                if (matchesPredicate(row, node->predicate))
+                {
+                    filtered.push_back(row);
+                }
+            }
 
-    std::cout << "[Filter] 过滤后 " << filtered.size() << " 行:" << std::endl;
-    for (auto &row : filtered)
-        std::cout << "[Row] " << row.toString() << std::endl;
+            std::cout << "[Filter] 过滤后 " << filtered.size() << " 行:" << std::endl;
+            for (auto &row : filtered)
+                std::cout << "[Row] " << row.toString() << std::endl;
 
-    return filtered;
+            return filtered;
             // if (!catalog_ || !catalog_->HasTable(node->table_name))
             //     return {};
 
@@ -747,67 +794,84 @@ namespace minidb
 
             // 处理 SELECT * 的情况
             std::vector<std::string> projection_columns;
-            if (node->columns.empty()) {
+            if (node->columns.empty())
+            {
                 // SELECT * - 获取表的所有列
                 std::cout << "* (所有列)";
-                if (catalog_ && catalog_->HasTable(node->table_name)) {
+                if (catalog_ && catalog_->HasTable(node->table_name))
+                {
                     const auto &schema = catalog_->GetTable(node->table_name);
-                    for (const auto &col : schema.columns) {
+                    for (const auto &col : schema.columns)
+                    {
                         projection_columns.push_back(col.name);
                     }
                 }
-            } else {
+            }
+            else
+            {
                 // 具体列名
-            projection_columns = node->columns;
-            for (auto &col : projection_columns)//将node->columns换为projection_columns
-                std::cout << col << " ";
+                projection_columns = node->columns;
+                for (auto &col : projection_columns) // 将node->columns换为projection_columns
+                    std::cout << col << " ";
             }
             std::cout << std::endl;
             // 从子节点获取数据
-    std::vector<Row> input_rows;
-    if (!node->children.empty()) {
-        // 有子节点，执行子节点获取数据
-        input_rows = execute(node->children[0].get());
-    } else {
-        // 没有子节点，直接全表扫描
-        if (catalog_ && catalog_->HasTable(node->table_name)) {
-            input_rows = SeqScanAll(node->table_name);
-        }
-    }
-
-    // 执行投影
-    std::vector<Row> projected;
-    for (const auto &input_row : input_rows) {
-        Row projected_row;
-        
-        if (projection_columns.empty()) {
-            // 如果投影列仍为空，返回所有列
-            projected_row = input_row;
-        } else {
-            // 按指定列进行投影
-            for (const auto &col_name : projection_columns) {
-                // 在输入行中查找对应列
-                bool found = false;
-                for (const auto &input_col : input_row.columns) {
-                    if (input_col.col_name == col_name) {
-                        projected_row.columns.push_back(input_col);
-                        found = true;
-                        break;
-                    }
-                }
-                
-                if (!found) {
-                    // 如果没找到列，添加空值
-                    ColumnValue cv;
-                    cv.col_name = col_name;
-                    cv.value = "";
-                    projected_row.columns.push_back(cv);
+            std::vector<Row> input_rows;
+            if (!node->children.empty())
+            {
+                // 有子节点，执行子节点获取数据
+                input_rows = execute(node->children[0].get());
+            }
+            else
+            {
+                // 没有子节点，直接全表扫描
+                if (catalog_ && catalog_->HasTable(node->table_name))
+                {
+                    input_rows = SeqScanAll(node->table_name);
                 }
             }
-        }
-        
-        projected.push_back(projected_row);
-    }
+
+            // 执行投影
+            std::vector<Row> projected;
+            for (const auto &input_row : input_rows)
+            {
+                Row projected_row;
+
+                if (projection_columns.empty())
+                {
+                    // 如果投影列仍为空，返回所有列
+                    projected_row = input_row;
+                }
+                else
+                {
+                    // 按指定列进行投影
+                    for (const auto &col_name : projection_columns)
+                    {
+                        // 在输入行中查找对应列
+                        bool found = false;
+                        for (const auto &input_col : input_row.columns)
+                        {
+                            if (input_col.col_name == col_name)
+                            {
+                                projected_row.columns.push_back(input_col);
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (!found)
+                        {
+                            // 如果没找到列，添加空值
+                            ColumnValue cv;
+                            cv.col_name = col_name;
+                            cv.value = "";
+                            projected_row.columns.push_back(cv);
+                        }
+                    }
+                }
+
+                projected.push_back(projected_row);
+            }
             // if (!catalog_ || !catalog_->HasTable(node->table_name))
             //     break;
 
@@ -1016,6 +1080,91 @@ namespace minidb
                 std::cout << r.toString() << std::endl;
 
             return result_rows;
+        }
+
+        case PlanType::Join:
+        {
+            logger.log("JOIN tables");
+
+            // 自动生成 SeqScan 子节点（如果 children 为空且 from_tables 至少有两个表）
+            if (node->children.empty() && node->from_tables.size() >= 2)
+            {
+                for (auto &tbl : node->from_tables)
+                {
+                    auto scan = std::make_unique<PlanNode>();
+                    scan->type = PlanType::SeqScan;
+                    scan->table_name = tbl;
+                    node->children.push_back(std::move(scan));
+                }
+            }
+
+            if (node->children.size() < 2)
+            {
+                std::cerr << "[Join] 需要至少两个子节点" << std::endl;
+                return {};
+            }
+
+            // 扫描第一个子节点
+            std::vector<Row> joined_rows = execute(node->children[0].get());
+            // 给列加表名前缀
+            for (auto &row : joined_rows)
+                for (auto &col : row.columns)
+                    if (col.col_name.find('.') == std::string::npos)
+                        col.col_name = node->from_tables[0] + "." + col.col_name;
+
+            // 对后续子节点依次 JOIN
+            for (size_t i = 1; i < node->children.size(); ++i)
+            {
+                std::vector<Row> right_rows = execute(node->children[i].get());
+                // 给右表列加前缀
+                for (auto &row : right_rows)
+                    for (auto &col : row.columns)
+                        if (col.col_name.find('.') == std::string::npos)
+                            col.col_name = node->from_tables[i] + "." + col.col_name;
+
+                std::vector<Row> tmp;
+
+                std::string join_predicate = node->predicate;
+                auto trim = [](const std::string &s) -> std::string
+                {
+                    size_t start = s.find_first_not_of(" \t\n\r");
+                    size_t end = s.find_last_not_of(" \t\n\r");
+                    return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);
+                };
+                auto pos_eq = join_predicate.find('=');
+                if (pos_eq == std::string::npos)
+                {
+                    std::cerr << "[Join] 仅支持 col=col 条件" << std::endl;
+                    return {};
+                }
+
+                std::string left_col = trim(join_predicate.substr(0, pos_eq));
+                std::string right_col = trim(join_predicate.substr(pos_eq + 1));
+
+                for (auto &lrow : joined_rows)
+                {
+                    for (auto &rrow : right_rows)
+                    {
+                        std::string lval = lrow.getValue(left_col);
+                        std::string rval = rrow.getValue(right_col);
+
+                        if (lval == rval)
+                        {
+                            Row combined = lrow;
+                            combined.columns.insert(combined.columns.end(), rrow.columns.begin(), rrow.columns.end());
+                            tmp.push_back(std::move(combined));
+                        }
+                    }
+                }
+
+                joined_rows.swap(tmp);
+            }
+
+            std::cout << "[Join] 连接后 " << joined_rows.size() << " 行:" << std::endl;
+            for (auto &row : joined_rows)
+                std::cout << "[Row] " << row.toString() << std::endl;
+
+            return joined_rows;
         }
 
         default:
