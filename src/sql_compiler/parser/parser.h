@@ -1,3 +1,4 @@
+//parser.h
 #ifndef MINIBASE_PARSER_H
 #define MINIBASE_PARSER_H
 
@@ -48,6 +49,7 @@ private:
     std::unique_ptr<InsertStatement> insertStatement();
     std::unique_ptr<SelectStatement> selectStatement();
     std::unique_ptr<DeleteStatement> deleteStatement();
+    std::unique_ptr<UpdateStatement> updateStatement();
 
     // 表达式解析
     std::unique_ptr<Expression> expression();

@@ -6,15 +6,27 @@
 // Token类型枚举
 enum class TokenType {
     // 关键字
+    //Select
     KEYWORD_SELECT,
     KEYWORD_FROM,
     KEYWORD_WHERE,
+    KEYWORD_GROUP_BY, //聚合
+    KEYWORD_HAVING,
+
+    //CREATE
     KEYWORD_CREATE,
     KEYWORD_TABLE,
+    //INSERT
     KEYWORD_INSERT,
     KEYWORD_INTO,
     KEYWORD_VALUES,
+    //DELETE
     KEYWORD_DELETE,
+
+    //UPDATE
+    KEYWORD_UPDATE,
+    KEYWORD_SET,
+    //类型
     KEYWORD_INT,
     KEYWORD_VARCHAR,
     

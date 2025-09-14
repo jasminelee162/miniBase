@@ -29,3 +29,6 @@ void SelectStatement::accept(ASTVisitor& visitor) {
 void DeleteStatement::accept(ASTVisitor& visitor) {
     visitor.visit(*this);
 }
+void UpdateStatement::accept(ASTVisitor& visitor) {
+    visitor.visit(*this);
+}

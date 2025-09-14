@@ -10,11 +10,12 @@ CREATE TABLE teachers (
 INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (201, 'Alice Smith', 'Math', 5);
 INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (202, 'Bob Johnson', 'English', 8);
 INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (203, 'Carol Lee', 'Physics', 3);
-INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (204, 'David Kim', 'History', 10);
-INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (205, 'Eva Brown', 'Chemistry', 6);
-INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (206, 'Frank Green', 'Math', 12);
-INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (207, 'Grace White', 'English', 15);
-
+INSERT INTO teachers (teacher_id, full_name, subject, experience) 
+VALUES 
+    (204, 'David Kim', 'History', 10),
+    (205, 'Eva Brown', 'Chemistry', 6),
+    (206, 'Frank Green', 'Math', 12),
+    (207, 'Grace White', 'English', 15);
 SELECT * FROM teachers; 
 
 SELECT full_name, subject FROM teachers;

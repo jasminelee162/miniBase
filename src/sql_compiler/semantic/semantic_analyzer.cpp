@@ -279,3 +279,34 @@ void SemanticAnalyzer::visit(DeleteStatement& stmt) {
     currentTable_ = TableSchema();
     logger.log(std::string("[Semantic] Delete checks passed for: ") + stmt.getTableName());
 }
+
+void SemanticAnalyzer::visit(UpdateStatement& stmt) {
+    Logger logger("logs/semantic.log");
+    logger.log(std::string("[Semantic] Update on: ") + stmt.getTableName());
+    // 检查表是否存在
+    checkTableExists(stmt.getTableName());
+    currentTable_ = catalog_->GetTable(stmt.getTableName());
+
+    // 检查SET子句
+    for (const auto& assignment : stmt.getAssignments()) {
+        const std::string& colName = assignment.first;
+        checkColumnExists(stmt.getTableName(), colName);
+        assignment.second->accept(*this);
+    }
+
+    // 检查WHERE子句
+    if (stmt.getWhereClause()) {
+        stmt.getWhereClause()->accept(*this);
+
+        // WHERE子句的结果应该是布尔类型（在我们的简化模型中用INT表示）
+        std::string whereType = getExpressionType(stmt.getWhereClause());
+        if (whereType != "INT") {
+            throw SemanticError(SemanticError::ErrorType::TYPE_MISMATCH,
+                                "WHERE clause must evaluate to a boolean condition");
+        }
+    }
+
+    // 清空当前表
+    currentTable_ = TableSchema();
+    logger.log(std::string("[Semantic] Update checks passed for: ") + stmt.getTableName());
+}

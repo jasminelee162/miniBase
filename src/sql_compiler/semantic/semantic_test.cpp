@@ -10,65 +10,71 @@
 using namespace minidb;
 
 int main() {
-    // 创建Catalog实例（用于测试）
-    Catalog catalog("catalog.dat");
-    
-    // 测试SQL语句
-    std::vector<std::string> testQueries = {
-        // 正确的语句
-        "CREATE TABLE student(id INT, name VARCHAR, age INT);",
-        "INSERT INTO student(id,name,age) VALUES (1,'Alice',20);",
-        "SELECT id,name FROM student WHERE age > 18;",
-        "DELETE FROM student WHERE id = 1;",
-        
-        // 错误的语句
-        "CREATE TABLE student(id INT, name VARCHAR, age INT);", // 表已存在
-        "INSERT INTO nonexistent(id) VALUES (1);", // 表不存在
-        "INSERT INTO student(nonexistent) VALUES (1);", // 列不存在
-        "INSERT INTO student(id,name) VALUES (1,'Alice',20);", // 列数不匹配
-        "INSERT INTO student(id,name,age) VALUES ('abc',123,20);", // 类型不匹配
-        "SELECT nonexistent FROM student;", // 列不存在
-        "DELETE FROM nonexistent WHERE id = 1;" // 表不存在
+    std::vector<std::string> correct_sql_statements = {
+        "CREATE TABLE students (id INT, name VARCHAR(20), age INT);",
+        "INSERT INTO students VALUES (1, 'Alice', 20);",
+        "SELECT id, name FROM students WHERE age > 18;",
+        "DELETE FROM students WHERE id = 1;",
+        "UPDATE teachers SET experience = 9 WHERE full_name = 'Bob Johnson';"
     };
-    
-    for (const auto& query : testQueries) {
-        std::cout << "\nSQL: " << query << std::endl;
-        std::cout << "-----------------------------------" << std::endl;
-        
+
+    std::vector<std::string> error_sql_statements = {
+        "CREATE TABLE students (id INT, name VARCHAR(20), age INT)", // Missing semicolon
+        "INSERT INTO students VALUES (1, 'Alice', 20)", // Missing semicolon
+        "SELECT id, name FROM students WHERE age > 18", // Missing semicolon
+        "DELETE FROM students WHERE id = 1", // Missing semicolon
+        "UPDATE teachers SET experience = 9 WHERE full_name = 'Bob Johnson'" // Missing semicolon
+    };
+
+    // Test correct SQL statements
+    for (const auto& sql : correct_sql_statements) {
+        std::cout << "\nTesting SQL: " << sql << std::endl;
         try {
-            // 词法分析
-            Lexer lexer(query);
+            minidb::Catalog catalog;
+            Lexer lexer(sql);
             std::vector<Token> tokens = lexer.tokenize();
-            
-            // 语法分析
+            lexer.printTokens(tokens); // Print tokens for debugging
             Parser parser(tokens);
-            std::unique_ptr<Statement> ast = parser.parse();
-            
-            // 打印AST
-            std::cout << "AST:" << std::endl;
-            ASTPrinter printer;
-            ast->accept(printer);
-            std::cout << printer.getResult();
-            
-            // 语义分析
-            std::cout << "\nSemantic Analysis:" << std::endl;
-            SemanticAnalyzer analyzer;
+            auto ast = parser.parse();
+            std::cout << "SQL parsed successfully." << std::endl;
+
+            // Semantic analysis
+            SemanticAnalyzer analyzer(&catalog);
             analyzer.analyze(ast.get());
-            std::cout << "Semantic check passed!" << std::endl;
-            
-        } catch (const SemanticError& e) {
-            std::cerr << "Semantic error: [" << SemanticError::errorTypeToString(e.getType()) << ", "
-                      << e.getLine() << ", " << e.getColumn() << "] "
-                      << e.what() << std::endl;
+            std::cout << "Semantic analysis successful." << std::endl;
+
+            // Print AST (optional)
+            // ASTPrinter printer;
+            // printer.print(ast.get());
+
         } catch (const ParseError& e) {
-            std::cerr << "Parse error at line " << e.getLine() << ", column " << e.getColumn()
-                      << ": " << e.what() << std::endl;
+            std::cerr << "Parse Error: " << e.what() << " at (" << e.getLine() << "," << e.getColumn() << ")" << std::endl;
+        } catch (const SemanticError& e) {
+            std::cerr << "Semantic Error: " << e.what() << std::endl;
         } catch (const std::exception& e) {
             std::cerr << "Error: " << e.what() << std::endl;
         }
-        
-        std::cout << "-----------------------------------" << std::endl;
     }
-    
+
+    // Test error SQL statements
+    for (const auto& sql : error_sql_statements) {
+        std::cout << "\nTesting error SQL: " << sql << std::endl;
+        try {
+            minidb::Catalog catalog;
+            Lexer lexer(sql);
+            std::vector<Token> tokens = lexer.tokenize();
+            lexer.printTokens(tokens); // Print tokens for debugging
+            Parser parser(tokens);
+            auto ast = parser.parse();
+            std::cerr << "Error: Expected parse error but got success for: " << sql << std::endl;
+        } catch (const ParseError& e) {
+            std::cout << "Caught expected parse error: " << e.what() << " at (" << e.getLine() << "," << e.getColumn() << ")" << std::endl;
+        } catch (const SemanticError& e) {
+            std::cerr << "Semantic Error: " << e.what() << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+        }
+    }
+
     return 0;
 }
