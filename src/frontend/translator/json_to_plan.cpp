@@ -36,13 +36,17 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
         else if (!project->table_name.empty())
             project->from_tables = {project->table_name};
 
-        if (j.contains("columns")) {
+        if (j.contains("columns"))
+        {
             auto columns = j["columns"];
-            if (columns.is_array() && columns.size() == 1 && columns[0] == "*") {
+            if (columns.is_array() && columns.size() == 1 && columns[0] == "*")
+            {
                 // SELECT * 的情况 - 不设置 columns，让执行器处理所有列
                 std::cout << "[JsonToPlan] 处理 SELECT *" << std::endl;
                 project->columns.clear(); // 空的 columns 表示选择所有列
-            } else {
+            }
+            else
+            {
                 // 具体列名的情况
                 project->columns = j["columns"].get<std::vector<std::string>>();
             }
@@ -127,6 +131,23 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
             node->columns = j["columns"].get<std::vector<std::string>>();
 
         return node;
+    }
+    else if (type == "OrderBy")
+    {
+        node->type = PlanType::OrderBy;
+
+        if (j.contains("order_keys"))
+            node->order_by_cols = j["order_keys"].get<std::vector<std::string>>();
+
+        if (j.contains("order") && j["order"].is_string())
+        {
+            std::string order = j["order"].get<std::string>();
+            node->order_by_desc = (order == "DESC");
+        }
+
+        // OrderBy 通常有一个子节点（Project/Filter/SeqScan）
+        if (j.contains("child"))
+            node->children.push_back(translate(j["child"]));
     }
 
     else
