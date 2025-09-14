@@ -6,9 +6,8 @@
 #include "../../catalog/catalog.h"        // 确保能 include 到你发的 Catalog
 #include "../operators/plan_node.h"       // PlanNode
 #include "../../storage/storage_engine.h" // ✅ 改这里
-// #include "../../storage/page/disk_manager.h"
-#include "../../storage/page/page.h" // Page
-#include "../operators/row.h"        // Row, ColumnValue
+#include "../../storage/page/page.h"      // Page
+#include "../operators/row.h"             // Row, ColumnValue
 #include "../../util/logger.h"
 #include <iostream>
 
@@ -18,11 +17,11 @@ namespace minidb
     {
     public:
         Executor(std::shared_ptr<StorageEngine> se) : storage_engine_(se) {} // ✅ 改构造函数
-
+        std::vector<Row> execute(PlanNode *node);
         std::string parseColumnFromBuffer(const void *data, size_t &offset, const std::string &col_name, const std::string &table_name);
         Row parseRowFromPage(Page *page, const std::vector<std::string> &columns, const std::string &table_name);
 
-        void execute(PlanNode *node);
+        // void execute(PlanNode *node);
         void SetStorageEngine(std::shared_ptr<StorageEngine> se) { storage_engine_ = se; }
         Executor() = default;
 
@@ -40,7 +39,7 @@ namespace minidb
         void SetCatalog(std::shared_ptr<minidb::Catalog> catalog)
         {
             catalog_ = catalog;
-            std::cout << "[Executor] SetCatalog called, catalog ptr=" << catalog_.get() << std::endl;
+            // std::cout << "[Executor] SetCatalog called, catalog ptr=" << catalog_.get() << std::endl;
         }
 
     private:

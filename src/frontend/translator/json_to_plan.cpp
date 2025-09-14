@@ -53,6 +53,36 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
 
         return project;
     }
+    else if (type == "GroupBy")
+    {
+        node->type = PlanType::GroupBy;
+
+        if (j.contains("group_keys"))
+            node->group_keys = j["group_keys"].get<std::vector<std::string>>();
+
+        if (j.contains("aggregates"))
+        {
+            for (auto &agg : j["aggregates"])
+            {
+                AggregateExpr expr;
+                expr.func = agg.at("func").get<std::string>();
+                expr.column = agg.at("column").get<std::string>();
+                expr.as_name = agg.value("as", "");
+                node->aggregates.push_back(expr);
+            }
+        }
+
+        // 添加 having_predicate 支持
+        if (j.contains("having_predicate"))
+            node->having_predicate = j["having_predicate"].get<std::string>();
+    }
+    else if (type == "Having")
+    {
+        node->type = PlanType::Having;
+        if (j.contains("predicate"))
+            node->predicate = j["predicate"].get<std::string>();
+    }
+
     else
         throw std::runtime_error("Unknown plan type: " + type);
 

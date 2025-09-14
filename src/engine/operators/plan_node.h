@@ -20,7 +20,16 @@ enum class PlanType
     CreateTable,
     Insert,
     Delete,
-    Update
+    Update,
+    GroupBy, // 新增
+    Having   // 新增
+};
+
+struct AggregateExpr
+{
+    std::string func;    // 聚合函数，如 COUNT / SUM / AVG
+    std::string column;  // 聚合的列
+    std::string as_name; // 聚合结果的别名
 };
 
 struct PlanNode
@@ -38,4 +47,9 @@ struct PlanNode
     std::string predicate;                         // where 条件
     std::vector<std::vector<std::string>> values;  // Insert 用：每行数据
     std::map<std::string, std::string> set_values; // Update 用：列=值
+
+    // 新增字段
+    std::vector<std::string> group_keys;   // Group By 的列
+    std::vector<AggregateExpr> aggregates; // 聚合表达式
+    std::string having_predicate;          // Having 条件
 };

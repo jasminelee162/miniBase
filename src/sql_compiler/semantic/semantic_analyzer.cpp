@@ -210,8 +210,15 @@ void SemanticAnalyzer::visit(SelectStatement& stmt) {
     currentTable_ = catalog_.GetTable(stmt.getTableName());
     
     // 检查列名是否存在
-    for (const auto& colName : stmt.getColumns()) {
-        checkColumnExists(stmt.getTableName(), colName);
+    // for (const auto& colName : stmt.getColumns()) {
+    //     checkColumnExists(stmt.getTableName(), colName);
+    //     // 检查列名是否存在（当为 * 时表示选择所有列，跳过检查）
+    const auto &selectColumns = stmt.getColumns();
+    bool isSelectAll = (selectColumns.size() == 1 && selectColumns[0] == "*");
+    if (!isSelectAll) {
+        for (const auto& colName : selectColumns) {
+            checkColumnExists(stmt.getTableName(), colName);
+        }
     }
     
     // 检查WHERE子句

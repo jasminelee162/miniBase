@@ -215,13 +215,30 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
     
     // 解析列名列表
     std::vector<std::string> columns;
-    do {
-        Token nameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
-        columns.push_back(nameToken.lexeme);
-    } while (match(TokenType::DELIMITER_COMMA));
+    if (match(TokenType::OPERATOR_TIMES)) {
+        columns.push_back("*");
+    } else {
+        // require at least one identifier
+        if (!check(TokenType::IDENTIFIER)) {
+            Token t = peek();
+            throw ParseError("Expected identifier after SELECT", t.line, t.column);
+        }
+        do {
+            Token nameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
+            columns.push_back(nameToken.lexeme);
+        } while (match(TokenType::DELIMITER_COMMA));
+    }
     
+    if (!check(TokenType::KEYWORD_FROM)) {
+        Token t = peek();
+        throw ParseError("Expected 'FROM' before '" + t.lexeme + "'", t.line, t.column);
+    }
     consume(TokenType::KEYWORD_FROM, SqlErrors::EXPECT_FROM_AFTER_COLS);
     
+    if (!check(TokenType::IDENTIFIER)) {
+        Token t = peek();
+        throw ParseError("Expected table name after FROM", t.line, t.column);
+    }
     Token tableNameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
     std::string tableName = tableNameToken.lexeme;
     

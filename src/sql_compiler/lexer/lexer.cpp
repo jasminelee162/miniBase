@@ -71,6 +71,16 @@ Token Lexer::scanNumber() {
         result += currentChar;
         advance();
     }
+    // detect invalid numeric literal like 123abc
+    if (std::isalpha(static_cast<unsigned char>(currentChar)) || currentChar == '_') {
+        std::string tail;
+        while (currentChar != '\0' && (std::isalnum(static_cast<unsigned char>(currentChar)) || currentChar == '_')) {
+            tail += currentChar;
+            advance();
+        }
+        std::string full = result + tail;
+        return Token(TokenType::INVALID, full, line, startColumn, std::string("Invalid numeric literal '") + full + "'");
+    }
     return Token(TokenType::CONST_INT, result, line, startColumn);
 }
 
@@ -150,10 +160,16 @@ std::vector<Token> Lexer::tokenize() {
     Token token;
     do {
         token = getNextToken();
-    // include error message if present
-    std::string logLine = std::string("[Lexer] Token: ") + token.lexeme;
-    if (!token.errorMessage.empty()) logLine += std::string(" ERROR: ") + token.errorMessage;
-    logger.log(logLine);
+        // if the first token is a bare identifier (likely misspelled keyword), flag it
+        if (tokens.empty() && token.type == TokenType::IDENTIFIER) {
+            Token err(TokenType::INVALID, token.lexeme, token.line, token.column,
+                      std::string("Unknown identifier '") + token.lexeme + "'");
+            token = err;
+        }
+        // include error message if present
+        std::string logLine = std::string("[Lexer] Token: ") + token.lexeme;
+        if (!token.errorMessage.empty()) logLine += std::string(" ERROR: ") + token.errorMessage;
+        logger.log(logLine);
         tokens.push_back(token);
     } while (token.type != TokenType::END_OF_FILE && token.type != TokenType::INVALID);
     logger.log("[Lexer] Tokenizing finished");

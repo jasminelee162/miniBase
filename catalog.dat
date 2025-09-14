@@ -1,2 +1,3 @@
-students id:TEXT name:TEXT age:TEXT
-users id:TEXT name:TEXT age:TEXT
+students id:TEXT:0 name:TEXT:0 age:TEXT:0
+users id:TEXT:0 name:TEXT:0 age:TEXT:0
+
