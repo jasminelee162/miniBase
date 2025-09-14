@@ -40,11 +40,11 @@ json ASTJson::toJson(const Statement* stmt)
         j["columns"] = ins->getColumnNames();
         // values: flatten first value list into array-of-arrays (single-row)
         json vals = json::array();
-        if (!ins->getValueLists().empty()) {
-            auto &vl = ins->getValueLists().front();
+        // 处理所有值列表
+        for (const auto& valueList : ins->getValueLists()) {
             json row = json::array();
-            for (auto &v : vl.getValues()) {
-                auto je = exprToJson(v.get());
+            for (const auto& value : valueList.getValues()) {
+                auto je = exprToJson(value.get());
                 row.push_back(je.is_string() ? je.get<std::string>() : je.dump());
             }
             vals.push_back(row);

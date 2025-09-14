@@ -15,11 +15,11 @@ INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (205, '
 INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (206, 'Frank Green', 'Math', 12);
 INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (207, 'Grace White', 'English', 15);
 
-SELECT * FROM teachers; --目前不支持*
+SELECT * FROM teachers; 
 
 SELECT full_name, subject FROM teachers;
 
-SELECT full_name, subject FROM teachers WHERE experience > 5; --目前不支持>
+SELECT full_name, subject FROM teachers WHERE experience > 5; 
 
 
 UPDATE teachers SET experience = 9 WHERE full_name = 'Bob Johnson';
