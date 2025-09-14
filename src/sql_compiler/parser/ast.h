@@ -1,3 +1,4 @@
+//ast.h
 #ifndef MINIBASE_AST_H
 #define MINIBASE_AST_H
 
@@ -195,6 +196,26 @@ private:
     std::unique_ptr<Expression> whereClause;
 };
 
+//UPDATE语句
+class UpdateStatement : public Statement {
+public:
+    UpdateStatement(const std::string& tableName,
+                    std::vector<std::pair<std::string, std::unique_ptr<Expression>>> assignments,
+                    std::unique_ptr<Expression> whereClause = nullptr)
+            : tableName_(std::move(tableName)),
+                assignments_(std::move(assignments)), // ✅ move
+              whereClause_(std::move(whereClause)) {}
+    const std::string& getTableName() const { return tableName_; }
+    const std::vector<std::pair<std::string, std::unique_ptr<Expression>>>& getAssignments() const { return assignments_; }
+    Expression* getWhereClause() const { return whereClause_.get(); }
+
+    void accept(ASTVisitor& visitor) override;
+private:
+    std::string tableName_;
+    std::vector<std::pair<std::string, std::unique_ptr<Expression>>> assignments_;
+    std::unique_ptr<Expression> whereClause_;
+};
+
 // AST访问者接口
 class ASTVisitor {
 public:
@@ -207,6 +228,7 @@ public:
     virtual void visit(InsertStatement& stmt) = 0;
     virtual void visit(SelectStatement& stmt) = 0;
     virtual void visit(DeleteStatement& stmt) = 0;
+    virtual void visit(UpdateStatement& stmt) = 0;
 };
 
 #endif // MINIBASE_AST_H

@@ -6,35 +6,41 @@ namespace SqlErrors {
 
 // Lexer errors
 inline constexpr const char* UNCLOSED_STRING = "字符串字面量未闭合";
-inline constexpr const char* EXPECT_EQ_AFTER_BANG = "在 '!' 之后期望出现 '='";
+inline constexpr const char* EXPECT_EQ_AFTER_BANG = "在 '!' 之后缺少 '='";
 inline std::string unknownOperator(char op) { return std::string("未知运算符: ") + op; }
 
 // Parser generic
 inline constexpr const char* UNEXPECTED_AFTER_STATEMENT = "在语句结束后存在多余的内容";
-inline constexpr const char* EXPECT_STATEMENT = "期望一条有效的语句";
-inline constexpr const char* EXPECT_CREATE = "期望关键字 'CREATE'";
-inline constexpr const char* EXPECT_TABLE_AFTER_CREATE = "在 'CREATE' 之后期望关键字 'TABLE'";
-inline constexpr const char* EXPECT_TABLE_NAME = "期望表名";
-inline constexpr const char* EXPECT_LPAREN_AFTER_TABLE = "在表名之后期望出现 '('";
-inline constexpr const char* EXPECT_RPAREN_AFTER_COLUMNS = "在列定义之后期望出现 ')'";
-inline constexpr const char* EXPECT_SEMI_AFTER_CREATE = "在 CREATE TABLE 语句末尾期望出现 ';'";
-inline constexpr const char* EXPECT_COLUMN_NAME = "期望列名";
-inline constexpr const char* EXPECT_DATA_TYPE = "期望数据类型";
-inline constexpr const char* EXPECT_INSERT = "期望关键字 'INSERT'";
-inline constexpr const char* EXPECT_INTO_AFTER_INSERT = "在 'INSERT' 之后期望关键字 'INTO'";
-inline constexpr const char* EXPECT_RPAREN_AFTER_COLS = "在列名列表之后期望出现 ')'";
-inline constexpr const char* EXPECT_VALUES = "期望关键字 'VALUES'";
-inline constexpr const char* EXPECT_SEMI_AFTER_INSERT = "在 INSERT 语句末尾期望出现 ';'";
-inline constexpr const char* EXPECT_LPAREN = "期望出现 '('";
-inline constexpr const char* EXPECT_RPAREN = "期望出现 ')'";
-inline constexpr const char* EXPECT_SELECT = "期望关键字 'SELECT'";
-inline constexpr const char* EXPECT_FROM_AFTER_COLS = "在列名之后期望关键字 'FROM'";
-inline constexpr const char* EXPECT_SEMI_AFTER_SELECT = "在 SELECT 语句末尾期望出现 ';'";
-inline constexpr const char* EXPECT_DELETE = "期望关键字 'DELETE'";
-inline constexpr const char* EXPECT_FROM_AFTER_DELETE = "在 'DELETE' 之后期望关键字 'FROM'";
-inline constexpr const char* EXPECT_SEMI_AFTER_DELETE = "在 DELETE 语句末尾期望出现 ';'";
-inline constexpr const char* EXPECT_RPAREN_AFTER_EXPR = "在表达式之后期望出现 ')'";
-inline constexpr const char* EXPECT_EXPRESSION = "期望一个表达式";
+inline constexpr const char* EXPECT_STATEMENT = "缺少有效的语句";
+inline constexpr const char* EXPECT_CREATE = "缺少关键字 'CREATE'";
+inline constexpr const char* EXPECT_TABLE_AFTER_CREATE = "在 'CREATE' 之后缺少关键字 'TABLE'";
+inline constexpr const char* EXPECT_TABLE_NAME = "缺少表名";
+inline constexpr const char* EXPECT_LPAREN_AFTER_TABLE = "在表名之后缺少 '('";
+inline constexpr const char* EXPECT_RPAREN_AFTER_COLUMNS = "在列定义之后缺少 ')'";
+inline constexpr const char* EXPECT_SEMI_AFTER_CREATE = "在 CREATE TABLE 语句末尾缺少 ';'";
+inline constexpr const char* EXPECT_COLUMN_NAME = "缺少列名";
+inline constexpr const char* EXPECT_DATA_TYPE = "缺少数据类型";
+inline constexpr const char* EXPECT_INSERT = "缺少关键字 'INSERT'";
+inline constexpr const char* EXPECT_INTO_AFTER_INSERT = "在 'INSERT' 之后缺少关键字 'INTO'";
+inline constexpr const char* EXPECT_RPAREN_AFTER_COLS = "在列名列表之后缺少 ')'";
+inline constexpr const char* EXPECT_VALUES = "缺少关键字 'VALUES'";
+inline constexpr const char* EXPECT_SEMI_AFTER_INSERT = "在 INSERT 语句末尾缺少 ';'";
+inline constexpr const char* EXPECT_LPAREN = "缺少 '('";
+inline constexpr const char* EXPECT_RPAREN = "缺少 ')'";
+inline constexpr const char* EXPECT_SELECT = "缺少关键字 'SELECT'";
+inline constexpr const char* EXPECT_FROM_AFTER_COLS = "在列名之后缺少关键字 'FROM'";
+inline constexpr const char* EXPECT_SEMI_AFTER_SELECT = "在 SELECT 语句末尾缺少 ';'";
+inline constexpr const char* EXPECT_DELETE = "缺少关键字 'DELETE'";
+inline constexpr const char* EXPECT_FROM_AFTER_DELETE = "在 'DELETE' 之后缺少关键字 'FROM'";
+inline constexpr const char* EXPECT_SEMI_AFTER_DELETE = "在 DELETE 语句末尾缺少 ';'";
+inline constexpr const char* EXPECT_RPAREN_AFTER_EXPR = "在表达式之后缺少 ')'";
+inline constexpr const char* EXPECT_UPDATE = "缺少关键字 UPDATE";
+inline constexpr const char* EXPECT_SET_AFTER_UPDATE = "在 UPDATE 之后缺少 SET";
+inline constexpr const char* EXPECT_EQUALS_IN_ASSIGNMENT = "赋值语句缺少等号 '='";
+inline constexpr const char* EXPECT_VALUE_IN_ASSIGNMENT = "赋值语句缺少值";
+inline constexpr const char* EXPECT_SEMI_AFTER_UPDATE = "UPDATE 语句末尾缺少分号 ';'";
+inline constexpr const char* EXPECT_EXPR_AFTER_WHERE = "WHERE 子句缺少条件表达式";
+inline constexpr const char* EXPECT_EXPRESSION = "缺少表达式";
 // VARCHAR length specific
 inline constexpr const char* EXPECT_VARCHAR_LENGTH = "在 'VARCHAR(' 之后期望长度";
 inline constexpr const char* EXPECT_RPAREN_AFTER_VARCHAR_LEN = "在 VARCHAR 长度之后期望出现 ')'";
@@ -66,4 +72,4 @@ inline std::string columnCountMismatch(size_t expected, size_t got) {
 }
 inline constexpr const char* WHERE_MUST_BE_BOOL = "WHERE 子句必须为布尔条件";
 
-} // namespace SqlErrors 
+} // namespace SqlErrors

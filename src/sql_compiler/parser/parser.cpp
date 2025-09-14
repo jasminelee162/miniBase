@@ -1,3 +1,4 @@
+//parser.cpp
 #include "parser.h"
 #include "../../util/logger.h"
 #include "../common/error_messages.h"
@@ -78,6 +79,9 @@ std::unique_ptr<Statement> Parser::statement() {
         return selectStatement();
     } else if (token.type == TokenType::KEYWORD_DELETE) {
         return deleteStatement();
+    }
+    else if (token.type == TokenType::KEYWORD_UPDATE) {
+        return updateStatement();
     }
     
     throw ParseError(SqlErrors::EXPECT_STATEMENT, token.line, token.column);
@@ -277,7 +281,38 @@ std::unique_ptr<DeleteStatement> Parser::deleteStatement() {
     
     return std::make_unique<DeleteStatement>(tableName, std::move(whereClause));
 }
-
+std::unique_ptr<UpdateStatement> Parser::updateStatement() {
+    // UPDATE tableName SET col1 = val1, col2 = val2 WHERE condition
+    consume(TokenType::KEYWORD_UPDATE, SqlErrors::EXPECT_UPDATE);
+    
+    Token tableNameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
+    std::string tableName = tableNameToken.lexeme;
+    
+    consume(TokenType::KEYWORD_SET, SqlErrors::EXPECT_SET_AFTER_UPDATE);
+    
+    std::vector<std::pair<std::string, std::unique_ptr<Expression>>> assignments;
+    do {
+        Token columnToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
+        std::string columnName = columnToken.lexeme;
+        
+        consume(TokenType::OPERATOR_EQ, SqlErrors::EXPECT_EQUALS_IN_ASSIGNMENT);
+        
+        auto valueExpr = expression();
+        
+        assignments.emplace_back(columnName, std::move(valueExpr));
+        
+    } while (match(TokenType::DELIMITER_COMMA));
+    
+    // 可选的WHERE子句
+    std::unique_ptr<Expression> whereClause = nullptr;
+    if (match(TokenType::KEYWORD_WHERE)) {
+        whereClause = expression();
+    }
+    
+    consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_UPDATE);
+    
+    return std::make_unique<UpdateStatement>(tableName, std::move(assignments), std::move(whereClause));
+}
 // 表达式解析
 std::unique_ptr<Expression> Parser::expression() {
     return comparison();

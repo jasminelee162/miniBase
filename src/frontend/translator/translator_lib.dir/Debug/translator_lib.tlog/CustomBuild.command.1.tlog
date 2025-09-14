@@ -1,0 +1,10 @@
+^E:\CODE\PROJECT_GRADE3\SX\NEW\MINIBASE\SRC\FRONTEND\TRANSLATOR\CMAKELISTS.TXT
+setlocal
+D:\CMake\bin\cmake.exe -SE:/Code/Project_grade3/SX/new/miniBase -BE:/Code/Project_grade3/SX/new/miniBase --check-stamp-file E:/Code/Project_grade3/SX/new/miniBase/src/frontend/translator/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

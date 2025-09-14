@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
                 }
             }
         } catch (const ParseError &e) {
-            std::cerr << "[Parser][ERROR] " << e.what() << " at (" << e.getLine() << "," << e.getColumn() << ")" << std::endl;
+            std::cerr << "[Parser][ERROR] [minidb_cli] " << e.what() << " at (" << e.getLine() << "," << e.getColumn() << ")" << std::endl;
         } catch (const std::exception &e) {
             std::cerr << "[ERROR] " << e.what() << std::endl;
         }

@@ -19,6 +19,9 @@ Lexer::Lexer(const std::string& source)
     keywords["DELETE"] = TokenType::KEYWORD_DELETE;
     keywords["INT"] = TokenType::KEYWORD_INT;
     keywords["VARCHAR"] = TokenType::KEYWORD_VARCHAR;
+    keywords["UPDATE"] = TokenType::KEYWORD_UPDATE;
+    keywords["SET"] = TokenType::KEYWORD_SET;
+
 
     currentChar = input.empty() ? '\0' : input[0];
 }
