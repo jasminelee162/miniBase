@@ -2,6 +2,7 @@
 #include "../sql_compiler/parser/parser.h"
 #include "../sql_compiler/parser/ast_json_serializer.h"
 #include "../sql_compiler/semantic/semantic_analyzer.h"
+#include "../sql_compiler/planner/plan_printer.h"
 #include "../frontend/translator/json_to_plan.h"
 #include "../storage/storage_engine.h"
 #include "../engine/executor/executor.h"
@@ -9,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <fstream>
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -30,7 +32,7 @@ int main(int argc, char** argv) {
 
     bool doExec = true;            // default execute
     bool outputJsonOnly = false;   // --json overrides
-    std::string dbFile = "data/mini.db";
+    std::string dbFile = "data/mini.db"; //文件存储位置
     std::string catalogFile = "catalog.dat";
 
     for (int i = 1; i < argc; ++i) {
@@ -52,8 +54,8 @@ int main(int argc, char** argv) {
     std::unique_ptr<minidb::Executor> exec;
     if (doExec) {
         se = std::make_shared<minidb::StorageEngine>(dbFile, 16);
-        catalog = std::make_shared<minidb::Catalog>(catalogFile);
-        catalog->SetQuiet(true);
+        catalog = std::make_shared<minidb::Catalog>(se.get());
+        // catalog->SetQuiet(true); // 方法不存在，注释掉
         exec = std::make_unique<minidb::Executor>(se);
         exec->SetCatalog(catalog);
     }
@@ -87,19 +89,34 @@ int main(int argc, char** argv) {
             // optional semantic checks
             try {
                 SemanticAnalyzer sem;
+                sem.setCatalog(catalog.get());  // 使用CLI主程序的同一个Catalog实例
                 sem.analyze(stmt.get());
             } catch (const std::exception &e) {
                 std::cerr << "[Semantic][WARN] " << e.what() << std::endl;
             }
 
             auto j = ASTJson::toJson(stmt.get());
+            std::cout << "astjson: " << j.dump(2) << std::endl;
 
             if (outputJsonOnly) {
-                std::cout << j.dump(2) << std::endl;
+                std::cout << "只有astjson: "<<j.dump(2) << std::endl;
             } else if (doExec) {
                 auto plan = JsonToPlan::translate(j);
+                // std::cout << "plan: " << plan->toString() << std::endl;
+                // 调用 PlanPrinter 打印
+                PlanPrinter printer;
+                std::cout << "plan: " << printer.print(plan.get()) << std::endl;
+
                 exec->execute(plan.get());
                 std::cout << "[OK] executed." << std::endl;
+
+                // 添加文件检查
+                std::ifstream file(dbFile, std::ios::binary | std::ios::ate);
+                if (file.is_open()) {
+                    auto size = file.tellg();
+                    std::cout << "[INFO] 数据库文件大小: " << size << " 字节" << std::endl;
+                    file.close();
+                }
             }
         } catch (const ParseError &e) {
             std::cerr << "[Parser][ERROR] " << e.what() << " at (" << e.getLine() << "," << e.getColumn() << ")" << std::endl;

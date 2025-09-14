@@ -103,6 +103,17 @@ void Planner::visit(CreateTableStatement& stmt) {
     // 添加列信息
     for (const auto& col : stmt.getColumns()) {
         currentPlan->columns.push_back(col.getName());
+        
+        // 转换为Catalog的Column格式
+        minidb::Column catalogCol;
+        catalogCol.name = col.getName();
+        if (col.getType() == ColumnDefinition::DataType::INT) {
+            catalogCol.type = "INT";
+        } else if (col.getType() == ColumnDefinition::DataType::VARCHAR) {
+            catalogCol.type = "VARCHAR";
+        }
+        catalogCol.length = -1; // 默认长度
+        currentPlan->table_columns.push_back(catalogCol);
     }
 }
 

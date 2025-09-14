@@ -1,4 +1,5 @@
 #include "json_to_plan.h"
+#include "../../engine/operators/plan_node.h"
 #include <stdexcept>
 #include <iostream>
 

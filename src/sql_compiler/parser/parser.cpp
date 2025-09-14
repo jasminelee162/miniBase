@@ -145,16 +145,21 @@ std::vector<ColumnDefinition> Parser::columnDefinitions() {
 // 解析INSERT语句
 std::unique_ptr<InsertStatement> Parser::insertStatement() {
     // INSERT INTO tableName (col1, col2, ...) VALUES (val1, val2, ...), (val1, val2, ...)
+    // 或 INSERT INTO tableName VALUES (val1, val2, ...), (val1, val2, ...)
     consume(TokenType::KEYWORD_INSERT, SqlErrors::EXPECT_INSERT);
     consume(TokenType::KEYWORD_INTO, SqlErrors::EXPECT_INTO_AFTER_INSERT);
     
     Token tableNameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
     std::string tableName = tableNameToken.lexeme;
     
-    // 解析列名列表
-    consume(TokenType::DELIMITER_LPAREN, SqlErrors::EXPECT_LPAREN);
-    auto columns = columnNames();
-    consume(TokenType::DELIMITER_RPAREN, SqlErrors::EXPECT_RPAREN_AFTER_COLS);
+    // 解析列名列表（可选）
+    std::vector<std::string> columns;
+    if (check(TokenType::DELIMITER_LPAREN)) {
+        consume(TokenType::DELIMITER_LPAREN, SqlErrors::EXPECT_LPAREN);
+        columns = columnNames();
+        consume(TokenType::DELIMITER_RPAREN, SqlErrors::EXPECT_RPAREN_AFTER_COLS);
+    }
+    // 如果没有列名列表，columns将保持为空，表示插入所有列
     
     // 解析VALUES子句
     consume(TokenType::KEYWORD_VALUES, SqlErrors::EXPECT_VALUES);

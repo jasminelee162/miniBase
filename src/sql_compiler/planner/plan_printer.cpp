@@ -46,9 +46,14 @@ void PlanPrinter::printCreateTable(const PlanNode* node) {
     indent();
     printIndent();
     result << "Columns: [";
-    for (size_t i = 0; i < node->columns.size(); ++i) {
+    for (size_t i = 0; i < node->table_columns.size(); ++i) {  // ✅ 使用 table_columns.size()
         if (i > 0) result << ", ";
-        result << node->columns[i];
+        result << node->table_columns[i].name 
+               << "(" << node->table_columns[i].type;
+        if (node->table_columns[i].length > 0) {
+            result << "(" << node->table_columns[i].length << ")";  // ✅ 长度大于 0 才显示
+        }
+        result << ")";
     }
     result << "]" << std::endl;
     dedent();

@@ -1,17 +1,18 @@
 #pragma once
 
-#include "../../engine/operators/plan_node.h"
 #include "../../util/json.hpp" // nlohmann/json 单头文件库
 #include <string>
 #include <vector>
+#include <memory>
 
 using json = nlohmann::json;
+
+// 前向声明
+struct PlanNode;
 
 /**
  * JsonToPlan: 把 SQL 的 JSON 表达转成执行计划 PlanNode
  */
-
-using json = nlohmann::json;
 
 class JsonToPlan
 {

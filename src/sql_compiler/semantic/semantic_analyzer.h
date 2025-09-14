@@ -49,11 +49,16 @@ private:
 // 语义分析器类
 class SemanticAnalyzer : public ASTVisitor {
 public:
-    SemanticAnalyzer() : catalog_("catalog.dat") {}
+    SemanticAnalyzer() : catalog_(nullptr) {}
     
     // 分析AST
     void analyze(Statement* stmt) {
         stmt->accept(*this);
+    }
+    
+    // 设置Catalog指针
+    void setCatalog(Catalog* catalog) {
+        catalog_ = catalog;
     }
     
     // 访问者模式实现
@@ -66,7 +71,7 @@ public:
     void visit(DeleteStatement& stmt) override;
     
 private:
-    Catalog catalog_;
+    Catalog* catalog_;
     
     // 当前正在分析的表
     TableSchema currentTable_;

@@ -11,4 +11,5 @@ target_link_libraries(minidb_cli
     storage_lib
     catalog
     util_lib
-) 
+    planner
+)

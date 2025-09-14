@@ -201,9 +201,44 @@ set_tests_properties(storage_end_to_end_demo PROPERTIES
 )
 
 
-# 如需为 CLI/Executor 建独立目标，请在它们模块就绪后启用：
-# add_executable(cli_test unit/CliTest.cpp)
-# target_link_libraries(cli_test cli_lib)  # 或者链接对应核心/依赖库
-# add_executable(executor_test unit/ExecutorTest.cpp)
-# target_link_libraries(executor_test executor_lib)
+# 11) cli_test（CLI功能测试）
+add_executable(cli_test
+    unit/cli_test.cpp
+    simple_test_framework.cpp
+)
+
+target_link_libraries(cli_test
+    lexer
+    parser
+    semantic
+    translator_lib
+    executor_lib
+    storage_lib
+    catalog
+    util_lib
+    Threads::Threads
+)
+
+add_test(NAME cli_test COMMAND cli_test)
+set_tests_properties(cli_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 12) executor_test（Executor功能测试）
+add_executable(executor_test
+    unit/executor_test.cpp
+)
+
+target_link_libraries(executor_test
+    executor_lib
+    storage_lib
+    catalog
+    util_lib
+    Threads::Threads
+)
+
+add_test(NAME executor_test COMMAND executor_test)
+set_tests_properties(executor_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
 

@@ -753,10 +753,7 @@ namespace minidb
         engine_->PutPage(parent_id, false);
     }
 
-<<<<<<< HEAD
-
 // ===== 增强操作实现 =====
-=======
     void BPlusTree::RebalanceInternal(page_id_t node_id)
     {
         Page *node = engine_->GetPage(node_id);
@@ -803,7 +800,7 @@ namespace minidb
         auto pia = GetInternalArrays(parent);
         page_id_t left_id = (idx > 0) ? pia.children[idx - 1] : INVALID_PAGE_ID;
         page_id_t right_id = (idx + 1 <= GetNodeHeaderConst(parent)->key_count) ? pia.children[idx + 1] : INVALID_PAGE_ID;
->>>>>>> a4c8805e3bca4ca532b01c648f73621ca3321ab2
+
 
         // 尝试从左借
         if (left_id != INVALID_PAGE_ID)
@@ -1028,17 +1025,9 @@ namespace minidb
 
     // ===== 显式模板实例化 =====
 
-<<<<<<< HEAD
-template bool BPlusTree::InsertGeneric<std::string>(const std::string& key, const RID& rid);
-template std::optional<RID> BPlusTree::SearchGeneric<std::string>(const std::string& key);
-template bool BPlusTree::DeleteGeneric<std::string>(const std::string& key);
-
-} // namespace minidb
-=======
     template bool BPlusTree::InsertGeneric<int32_t>(const int32_t &key, const RID &rid);
     template std::optional<RID> BPlusTree::SearchGeneric<int32_t>(const int32_t &key);
     template bool BPlusTree::DeleteGeneric<int32_t>(const int32_t &key);
->>>>>>> a4c8805e3bca4ca532b01c648f73621ca3321ab2
 
     template bool BPlusTree::InsertGeneric<std::string>(const std::string &key, const RID &rid);
     template std::optional<RID> BPlusTree::SearchGeneric<std::string>(const std::string &key);

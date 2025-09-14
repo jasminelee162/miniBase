@@ -67,7 +67,7 @@ std::string SemanticAnalyzer::getExpressionType(Expression* expr) {
 void SemanticAnalyzer::checkTableExists(const std::string& tableName) {
     Logger logger("logs/semantic.log");
     logger.log(std::string("[Semantic] checkTableExists: ") + tableName);
-    if (!catalog_.HasTable(tableName)) {
+    if (!catalog_ || !catalog_->HasTable(tableName)) {
         logger.log(std::string("[Semantic][ERROR] table not found: ") + tableName);
         throw SemanticError(SemanticError::ErrorType::TABLE_NOT_EXIST, 
                           SqlErrors::tableNotExist(tableName));
@@ -78,7 +78,7 @@ void SemanticAnalyzer::checkTableExists(const std::string& tableName) {
 void SemanticAnalyzer::checkTableNotExists(const std::string& tableName) {
     Logger logger("logs/semantic.log");
     logger.log(std::string("[Semantic] checkTableNotExists: ") + tableName);
-    if (catalog_.HasTable(tableName)) {
+    if (catalog_ && catalog_->HasTable(tableName)) {
         logger.log(std::string("[Semantic][ERROR] table already exists: ") + tableName);
         throw SemanticError(SemanticError::ErrorType::TABLE_ALREADY_EXIST, 
                           SqlErrors::tableAlreadyExist(tableName));
@@ -87,12 +87,12 @@ void SemanticAnalyzer::checkTableNotExists(const std::string& tableName) {
 
 // 检查列是否存在
 void SemanticAnalyzer::checkColumnExists(const std::string& tableName, const std::string& columnName) {
-    if (!catalog_.HasTable(tableName)) {
+    if (!catalog_ || !catalog_->HasTable(tableName)) {
         throw SemanticError(SemanticError::ErrorType::TABLE_NOT_EXIST, 
                           SqlErrors::tableNotExist(tableName));
     }
     
-    auto table = catalog_.GetTable(tableName);
+    auto table = catalog_->GetTable(tableName);
     bool found = false;
     for (const auto& col : table.columns) {
         if (col.name == columnName) {
@@ -141,15 +141,23 @@ void SemanticAnalyzer::visit(CreateTableStatement& stmt) {
     checkTableNotExists(stmt.getTableName());
     
     // 准备列定义
-    std::vector<std::string> columns;
+    std::vector<Column> columns;
     for (const auto& col : stmt.getColumns()) {
-        std::string colName = col.getName();
-        columns.push_back(colName);
+        Column catalogCol;
+        catalogCol.name = col.getName();
+        // 转换数据类型
+        if (col.getType() == ColumnDefinition::DataType::INT) {
+            catalogCol.type = "INT";
+        } else if (col.getType() == ColumnDefinition::DataType::VARCHAR) {
+            catalogCol.type = "VARCHAR";
+        }
+        catalogCol.length = -1; // 默认长度
+        columns.push_back(catalogCol);
     }
     
-    // 创建表
-    catalog_.CreateTable(stmt.getTableName(), columns);
-    logger.log(std::string("[Semantic] CreateTable finished: ") + stmt.getTableName());
+    // 语义分析阶段不执行CREATE TABLE，只检查语义
+    // 实际的CREATE TABLE操作在执行阶段进行
+    logger.log(std::string("[Semantic] CreateTable semantic check finished: ") + stmt.getTableName());
 }
 
 void SemanticAnalyzer::visit(InsertStatement& stmt) {
@@ -157,15 +165,24 @@ void SemanticAnalyzer::visit(InsertStatement& stmt) {
     logger.log(std::string("[Semantic] Insert into: ") + stmt.getTableName());
     // 检查表是否存在
     checkTableExists(stmt.getTableName());
-    currentTable_ = catalog_.GetTable(stmt.getTableName());
+    currentTable_ = catalog_->GetTable(stmt.getTableName());
     
-    // 检查列名是否存在
-    for (const auto& colName : stmt.getColumnNames()) {
-        checkColumnExists(stmt.getTableName(), colName);
+    // 处理列名：如果没有指定列名，使用表的所有列
+    std::vector<std::string> columnNames = stmt.getColumnNames();
+    if (columnNames.empty()) {
+        // 如果没有指定列名，使用表的所有列
+        for (const auto& col : currentTable_.columns) {
+            columnNames.push_back(col.name);
+        }
+    } else {
+        // 检查指定的列名是否存在
+        for (const auto& colName : columnNames) {
+            checkColumnExists(stmt.getTableName(), colName);
+        }
     }
     
     // 检查列数是否匹配
-    size_t expectedColumnCount = stmt.getColumnNames().size();
+    size_t expectedColumnCount = columnNames.size();
     for (const auto& valueList : stmt.getValueLists()) {
         if (valueList.getValues().size() != expectedColumnCount) {
             throw SemanticError(SemanticError::ErrorType::COLUMN_COUNT_MISMATCH, 
@@ -174,7 +191,7 @@ void SemanticAnalyzer::visit(InsertStatement& stmt) {
         
         // 检查每个值的类型是否与列类型匹配
         for (size_t i = 0; i < expectedColumnCount; ++i) {
-            const std::string& colName = stmt.getColumnNames()[i];
+            const std::string& colName = columnNames[i];
             
             // 查找列类型
             std::string colType;
@@ -207,8 +224,9 @@ void SemanticAnalyzer::visit(SelectStatement& stmt) {
     logger.log(std::string("[Semantic] Select from: ") + stmt.getTableName());
     // 检查表是否存在
     checkTableExists(stmt.getTableName());
-    currentTable_ = catalog_.GetTable(stmt.getTableName());
+    currentTable_ = catalog_->GetTable(stmt.getTableName());
     
+
     // 检查列名是否存在
     // for (const auto& colName : stmt.getColumns()) {
     //     checkColumnExists(stmt.getTableName(), colName);
@@ -243,7 +261,7 @@ void SemanticAnalyzer::visit(DeleteStatement& stmt) {
     logger.log(std::string("[Semantic] Delete from: ") + stmt.getTableName());
     // 检查表是否存在
     checkTableExists(stmt.getTableName());
-    currentTable_ = catalog_.GetTable(stmt.getTableName());
+    currentTable_ = catalog_->GetTable(stmt.getTableName());
     
     // 检查WHERE子句
     if (stmt.getWhereClause()) {
