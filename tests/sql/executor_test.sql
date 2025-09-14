@@ -16,6 +16,11 @@ VALUES
     (205, 'Eva Brown', 'Chemistry', 6),
     (206, 'Frank Green', 'Math', 12),
     (207, 'Grace White', 'English', 15);
+-- 增加三条记录
+INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES
+    (208, 'Helen Park', 'Physics', 7),   
+    (209, 'Ian Scott', 'History', 9),    
+    (210, 'Jack Brown', 'Chemistry', 11); 
 
 SELECT * FROM teachers; 
 
@@ -32,11 +37,6 @@ DELETE FROM teachers WHERE teacher_id = 203;
 
 SELECT * FROM teachers;
 
--- 增加三条记录
-INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES
-    (208, 'Helen Park', 'Physics', 7),   
-    (209, 'Ian Scott', 'History', 9),    
-    (210, 'Jack Brown', 'Chemistry', 11); 
 
 
 SELECT subject, SUM(experience) AS total_exp FROM teachers GROUP BY subject;
