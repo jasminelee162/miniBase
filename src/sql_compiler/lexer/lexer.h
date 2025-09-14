@@ -32,6 +32,10 @@ private:
     // 可选传入 lexeme 以便在日志/打印时显示出错的词素
     Token createErrorToken(const std::string& message, const std::string& lexeme = "");
 
+    //支持注释
+    void skipLineComment();//单行
+    bool skipBlockComment() ;//多行，块注释方法（支持嵌套检测）
+
 public:
     Lexer(const std::string& source);
 

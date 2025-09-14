@@ -20,15 +20,18 @@ Lexer::Lexer(const std::string& source)
     keywords["AVG"] = TokenType::KEYWORD_AVG;
     keywords["MIN"] = TokenType::KEYWORD_MIN;
     keywords["MAX"] = TokenType::KEYWORD_MAX;
-    
+
     keywords["CREATE"] = TokenType::KEYWORD_CREATE;
     keywords["TABLE"] = TokenType::KEYWORD_TABLE;
+
     keywords["INSERT"] = TokenType::KEYWORD_INSERT;
     keywords["INTO"] = TokenType::KEYWORD_INTO;
     keywords["VALUES"] = TokenType::KEYWORD_VALUES;
+
     keywords["DELETE"] = TokenType::KEYWORD_DELETE;
     keywords["INT"] = TokenType::KEYWORD_INT;
     keywords["VARCHAR"] = TokenType::KEYWORD_VARCHAR;
+
     keywords["UPDATE"] = TokenType::KEYWORD_UPDATE;
     keywords["SET"] = TokenType::KEYWORD_SET;
 
@@ -56,6 +59,64 @@ void Lexer::skipWhitespace() {
 
 char Lexer::peek() {
     return (position + 1 < static_cast<int>(input.length())) ? input[position + 1] : '\0';
+}
+//注释
+void Lexer::skipLineComment() {
+    // 验证当前位置确实是 "--" 的开始
+    if (currentChar != '-' || peek() != '-') {
+        return;
+    }
+    
+    // 跳过 "--"
+    advance(); // 第一个 '-'
+    advance(); // 第二个 '-'
+    
+    // 跳过到行末或文件末尾
+    while (currentChar != '\0' && currentChar != '\n' && currentChar != '\r') {
+        advance();
+    }
+    
+    // 处理换行符
+    if (currentChar == '\r') {
+        advance();
+        if (currentChar == '\n') { // Windows风格 \r\n
+            advance();
+        }
+    } else if (currentChar == '\n') { // Unix风格 \n
+        advance();
+    }
+}
+
+// 实现块注释跳过方法
+bool Lexer::skipBlockComment() {
+    // 验证当前位置确实是 "/*" 的开始
+    if (currentChar != '/' || peek() != '*') {
+        return false; // 不是块注释开始，返回 false
+    }
+    
+    int startLine = line;
+    int startColumn = column;
+    
+    // 跳过 "/*"
+    advance(); // '/'
+    advance(); // '*'
+    
+    // 查找结束标记 "*/"
+    while (currentChar != '\0') {
+        if (currentChar == '*' && peek() == '/') {
+            // 找到结束标记
+            advance(); // '*'
+            advance(); // '/'
+            return true; // 成功跳过块注释
+        } else {
+            advance();
+        }
+    }
+    
+    // 如果到达文件末尾仍未找到结束标记，抛出错误
+    std::string errorMsg = "未关闭的块注释，开始于 (" + std::to_string(startLine) + 
+                          "," + std::to_string(startColumn) + ")";
+    throw std::runtime_error(errorMsg);
 }
 
 Token Lexer::scanIdentifier() {
@@ -158,12 +219,31 @@ Token Lexer::createErrorToken(const std::string& message, const std::string& lex
 }
 
 Token Lexer::getNextToken() {
-    skipWhitespace();
-    if (currentChar == '\0') return Token(TokenType::END_OF_FILE, "", line, column);
-    if (std::isalpha(static_cast<unsigned char>(currentChar)) || currentChar == '_') return scanIdentifier();
-    if (std::isdigit(static_cast<unsigned char>(currentChar))) return scanNumber();
-    if (currentChar == '\'') return scanString();
-    return scanOperator();
+    while(true){
+        skipWhitespace();
+        if (currentChar == '\0') return Token(TokenType::END_OF_FILE, "", line, column);
+        //检查注释
+        if (currentChar == '-' && peek() == '-') {
+            skipLineComment();
+            continue; //跳过注释后继续循环
+        }
+        if (currentChar == '/' && peek() == '*') {
+            try {
+                skipBlockComment();
+            } catch (const std::runtime_error& e) {
+                return createErrorToken(e.what());
+            }
+            continue; //跳过注释后继续循环
+        }
+        break;
+    }
+    
+    // 正常的 token 识别逻辑
+        if (std::isalpha(static_cast<unsigned char>(currentChar)) || currentChar == '_') return scanIdentifier();
+        if (std::isdigit(static_cast<unsigned char>(currentChar))) return scanNumber();
+        if (currentChar == '\'') return scanString();
+        return scanOperator();
+    
 }
 
 std::vector<Token> Lexer::tokenize() {

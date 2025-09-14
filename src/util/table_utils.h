@@ -8,7 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
-# include "../engine/operators/Row.h"
+#include "../engine/operators/Row.h"
 
 class TablePrinter {
 public:
