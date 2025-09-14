@@ -292,17 +292,18 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
         } while (match(TokenType::DELIMITER_COMMA));
     }
     
-    // HAVING 子句
-    std::unique_ptr<Expression> havingClause = nullptr;
-    if (match(TokenType::KEYWORD_HAVING)) {
-        havingClause = expression();
-    }
+        // HAVING 子句
+        std::unique_ptr<Expression> havingClause = nullptr;
+        if (match(TokenType::KEYWORD_HAVING)) {
+            havingClause = expression();
+        }
     
     // 可选的 ORDER BY 子句
     std::vector<std::string> orderByColumns;
     bool orderByDesc = false;
     
-    if (match(TokenType::KEYWORD_ORDER)) {
+    if (check(TokenType::KEYWORD_ORDER)) {
+        advance(); // consume 'ORDER'
         consume(TokenType::KEYWORD_BY, SqlErrors::EXPECT_BY_AFTER_ORDER);
         
         // 解析排序列（支持多列，但先实现单列）
@@ -322,8 +323,14 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
 
     consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_SELECT);
     return std::make_unique<SelectStatement>(
-        std::move(columns), std::move(aggregates), tableName, 
-        std::move(whereClause), std::move(groupByColumns), std::move(havingClause));
+        std::move(columns), 
+        std::move(aggregates), 
+        tableName, 
+        std::move(whereClause), 
+        std::move(groupByColumns), 
+        std::move(havingClause),
+        std::move(orderByColumns), 
+        orderByDesc);
 }
 
 // 解析DELETE语句
