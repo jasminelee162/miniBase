@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
                 // PlanPrinter printer;
                 // std::cout << "plan: " << printer.print(plan.get()) << std::endl;
 
-                exec->execute(plan.get());
+                // exec->execute(plan.get());
                 auto results = exec->execute(plan.get());
                 std::cout << "[OK] executed." << std::endl;
                 TablePrinter::printResults(results, " ");
