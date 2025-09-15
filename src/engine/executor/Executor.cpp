@@ -381,6 +381,10 @@ namespace minidb
 
         case PlanType::Insert:
         {
+            if (!permissionChecker_->checkTablePermission(node->table_name, Permission::INSERT))
+            {
+                throw std::runtime_error("Permission denied: INSERT on " + node->table_name);
+            }
             logger.log("INSERT INTO " + node->table_name);
             std::cout << "[Executor] 插入到表: " << node->table_name << std::endl;
 
@@ -562,6 +566,10 @@ namespace minidb
 
         case PlanType::Delete:
         {
+            if (!permissionChecker_->checkTablePermission(node->table_name, Permission::DELETE))
+            {
+                throw std::runtime_error("Permission denied: INSERT on " + node->table_name);
+            }
             logger.log("DELETE FROM " + node->table_name + " WHERE " + node->predicate);
             std::cout << "[Executor] 删除表: " << node->table_name
                       << " WHERE " << node->predicate << std::endl;
@@ -811,6 +819,10 @@ namespace minidb
         }
 
         case PlanType::Update:
+            if (!permissionChecker_->checkTablePermission(node->table_name, Permission::UPDATE))
+            {
+                throw std::runtime_error("Permission denied: INSERT on " + node->table_name);
+            }
             Update(*node);
             return {};
 
@@ -1189,6 +1201,10 @@ namespace minidb
 
         case PlanType::Drop:
         {
+            if (!permissionChecker_->checkTablePermission(node->table_name, Permission::DROP_TABLE))
+            {
+                throw std::runtime_error("Permission denied: INSERT on " + node->table_name);
+            }
             logger.log("DROP TABLE " + node->table_name);
             std::cout << "[Executor] 删除整张表: " << node->table_name << std::endl;
 
@@ -1223,6 +1239,10 @@ namespace minidb
         }
         case PlanType::CreateProcedure:
         {
+            if (!permissionChecker_->checkTablePermission(node->table_name, Permission::CREATE_PROCEDURE))
+            {
+                throw std::runtime_error("Permission denied: INSERT on " + node->table_name);
+            }
             logger.log("CREATE PROCEDURE " + node->proc_name);
             std::cout << "[Executor] 创建存储过程: " << node->proc_name << std::endl;
 
@@ -1255,6 +1275,10 @@ namespace minidb
 
         case PlanType::CallProcedure:
         {
+            if (!permissionChecker_->checkTablePermission(node->table_name, Permission::CALL_PROCEDURE))
+            {
+                throw std::runtime_error("Permission denied: INSERT on " + node->table_name);
+            }
             logger.log("CALL PROCEDURE " + node->proc_name);
             std::cout << "[Executor] 调用存储过程: " << node->proc_name << std::endl;
 

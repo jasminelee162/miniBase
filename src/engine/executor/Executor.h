@@ -9,6 +9,7 @@
 #include "../../storage/page/page.h"      // Page
 #include "../operators/row.h"             // Row, ColumnValue
 #include "../../util/logger.h"
+#include "../../auth/permission_checker.h"
 #include <iostream>
 
 namespace minidb
@@ -23,7 +24,6 @@ namespace minidb
         std::string parseColumnFromBuffer(const void *data, size_t &offset, const std::string &col_name, const std::string &table_name);
         Row parseRowFromPage(Page *page, const std::vector<std::string> &columns, const std::string &table_name);
 
-        // void execute(PlanNode *node);
         void SetStorageEngine(std::shared_ptr<StorageEngine> se) { storage_engine_ = se; }
         Executor() = default;
 
@@ -41,7 +41,6 @@ namespace minidb
         void SetCatalog(std::shared_ptr<minidb::Catalog> catalog)
         {
             catalog_ = catalog;
-            // std::cout << "[Executor] SetCatalog called, catalog ptr=" << catalog_.get() << std::endl;
         }
 
         // ✅ 新增 Getter
@@ -50,10 +49,15 @@ namespace minidb
             return storage_engine_;
         }
 
+        Executor(Catalog *catalog, PermissionChecker *checker)
+            : catalog_(catalog), permissionChecker_(checker) {}
+
     private:
         std::shared_ptr<StorageEngine> storage_engine_;
         static Logger logger;
         std::shared_ptr<Catalog> catalog_; // 新增
+
+        PermissionChecker *permissionChecker_; // 权限检查器
     };
 
 } // namespace minidb
