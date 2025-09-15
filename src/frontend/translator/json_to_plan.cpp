@@ -207,15 +207,21 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
     {
         node->type = PlanType::CallProcedure;
 
-        if (!j.contains("name") || !j["name"].is_string())
-            throw std::runtime_error("CallProcedure plan must have name");
-        node->proc_name = j["name"].get<std::string>();
+        // 兼容两种键名：{name,args} 或 {proc_name,proc_args}
+        if (j.contains("name") && j["name"].is_string())
+            node->proc_name = j["name"].get<std::string>();
+        else if (j.contains("proc_name") && j["proc_name"].is_string())
+            node->proc_name = j["proc_name"].get<std::string>();
+        else
+            throw std::runtime_error("CallProcedure plan must have name or proc_name");
 
-        // 调用实参（可选）
         if (j.contains("args") && j["args"].is_array())
         {
-            for (auto &arg : j["args"])
-                node->proc_args.push_back(arg.get<std::string>());
+            for (auto &arg : j["args"]) node->proc_args.push_back(arg.get<std::string>());
+        }
+        else if (j.contains("proc_args") && j["proc_args"].is_array())
+        {
+            for (auto &arg : j["proc_args"]) node->proc_args.push_back(arg.get<std::string>());
         }
 
         node->children.clear(); // 调用过程不需要子节点

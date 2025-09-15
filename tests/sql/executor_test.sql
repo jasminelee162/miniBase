@@ -61,6 +61,8 @@ INSERT INTO departments (dept_id, dept_name, building) VALUES
     (5, 'Chemistry', 'Science Hall');
 SELECT * FROM departments;
 SELECT * FROM teachers JOIN departments ON teachers.subject = departments.dept_name;
+
+CALL test_proc('John Smith'); 
 --------------------------------
 
 DROP TABLE IF EXISTS employees_914;

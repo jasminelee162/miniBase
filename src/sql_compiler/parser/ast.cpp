@@ -50,3 +50,9 @@ void ShowTablesStatement::accept(ASTVisitor &visitor)
 void DropStatement::accept(ASTVisitor& visitor) {
     visitor.visit(*this);
 }
+
+void CallProcedureStatement::accept(ASTVisitor &visitor)
+{
+    visitor.visit(*this);
+}
+ 

@@ -345,6 +345,21 @@ public:
     
     void accept(ASTVisitor& visitor) override;
 };
+
+// CALL PROCEDURE 语句
+class CallProcedureStatement : public Statement {
+private:
+    std::string procName;
+    std::vector<std::string> args;
+public:
+    CallProcedureStatement(const std::string& name, std::vector<std::string> a)
+        : procName(name), args(std::move(a)) {}
+
+    const std::string& getProcName() const { return procName; }
+    const std::vector<std::string>& getArgs() const { return args; }
+
+    void accept(ASTVisitor& visitor) override;
+};
 // AST访问者接口
 class ASTVisitor {
 public:
@@ -361,6 +376,7 @@ public:
     virtual void visit(UpdateStatement& stmt) = 0;
     virtual void visit(ShowTablesStatement& stmt) = 0;
     virtual void visit(DropStatement& stmt) = 0;
+    virtual void visit(CallProcedureStatement& stmt) = 0;
 };
 
 #endif // MINIBASE_AST_H

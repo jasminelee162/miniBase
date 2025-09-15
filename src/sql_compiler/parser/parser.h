@@ -53,6 +53,7 @@ private:
     // std::unique_ptr<JoinStatement> joinStatement();
     std::unique_ptr<ShowTablesStatement> showTablesStatement();
     std::unique_ptr<DropStatement> dropStatement();
+    std::unique_ptr<CallProcedureStatement> callProcedureStatement();
 
     // 表达式解析
     std::unique_ptr<Expression> expression();
@@ -65,6 +66,9 @@ private:
     std::vector<ColumnDefinition> columnDefinitions();
     std::vector<std::string> columnNames();
     std::vector<ValueList> valueLists();
+
+    // CALL 参数解析
+    std::vector<std::string> parseCallArgs();
 
     std::string parseJoinCondition(); // 解析JOIN条件
     std::unique_ptr<JoinClause> parseJoinClause(); // 解析单个JOIN

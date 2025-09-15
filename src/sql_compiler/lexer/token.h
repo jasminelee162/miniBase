@@ -55,6 +55,9 @@ enum class TokenType {
     //DORP
     KEYWORD_DROP,
 
+    // PROCEDURE
+    KEYWORD_CALL,
+
     //数据类型
     KEYWORD_INT,
     KEYWORD_VARCHAR,

@@ -152,6 +152,9 @@ std::unique_ptr<Statement> Parser::statement() {
     else if (token.type == TokenType::KEYWORD_DROP) {
         return dropStatement();
     }
+    else if (token.type == TokenType::KEYWORD_CALL) {
+        return callProcedureStatement();
+    }
     
     
     throw ParseError(SqlErrors::EXPECT_STATEMENT, token.line, token.column);
@@ -530,6 +533,42 @@ std::unique_ptr<DropStatement> Parser::dropStatement(){
         consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_DROP);
         
         return std::make_unique<DropStatement>(tableName);
+}
+
+// 解析 CALL 语句: CALL procName('arg1', 123);
+std::unique_ptr<CallProcedureStatement> Parser::callProcedureStatement(){
+    consume(TokenType::KEYWORD_CALL, "期望 'CALL'");
+    Token nameTok = consume(TokenType::IDENTIFIER, "CALL 之后需要过程名");
+    std::string procName = nameTok.lexeme;
+
+    std::vector<std::string> args;
+    if (match(TokenType::DELIMITER_LPAREN)) {
+        args = parseCallArgs();
+        consume(TokenType::DELIMITER_RPAREN, "CALL 参数列表缺少 ')'");
+    }
+    consume(TokenType::DELIMITER_SEMICOLON, "CALL 语句末尾需要 ';'");
+    return std::make_unique<CallProcedureStatement>(procName, std::move(args));
+}
+
+std::vector<std::string> Parser::parseCallArgs(){
+    std::vector<std::string> args;
+    if (check(TokenType::DELIMITER_RPAREN)) return args; // 空参数
+    do {
+        if (match(TokenType::CONST_STRING)) {
+            Token t = tokens[current - 1];
+            args.push_back(t.lexeme);
+        } else if (match(TokenType::CONST_INT)) {
+            Token t = tokens[current - 1];
+            args.push_back(t.lexeme);
+        } else if (match(TokenType::IDENTIFIER)) {
+            Token t = tokens[current - 1];
+            args.push_back(t.lexeme);
+        } else {
+            Token t = peek();
+            throw ParseError(SqlErrors::withHint("无效的 CALL 参数", "使用字符串、数字或标识符"), t.line, t.column);
+        }
+    } while (match(TokenType::DELIMITER_COMMA));
+    return args;
 }
 // 表达式解析
 std::unique_ptr<Expression> Parser::expression() {

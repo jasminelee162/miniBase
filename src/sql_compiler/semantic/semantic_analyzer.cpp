@@ -396,3 +396,15 @@ void SemanticAnalyzer::visit(DropStatement& stmt) {
     checkTableExists(stmt.getTableName());
     logger.log(std::string("[Semantic] Drop table checks passed for: ") + stmt.getTableName());
 }
+
+void SemanticAnalyzer::visit(CallProcedureStatement &stmt)
+{
+    Logger logger("logs/semantic.log");
+    logger.log(std::string("[Semantic] Call procedure: ") + stmt.getProcName());
+    // 对 CALL 暂不进行表/列校验，由执行阶段通过 Catalog 检查过程是否存在
+    // 可选：若需要，这里也可接入 catalog_->HasProcedure 检查
+    if (!catalog_)
+    {
+        throw SemanticError(SemanticError::ErrorType::UNKNOWN, "Catalog is not set for CALL");
+    }
+}

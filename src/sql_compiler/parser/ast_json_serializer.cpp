@@ -250,6 +250,14 @@ json ASTJson::toJson(const Statement* stmt)
         j["table_name"] = drop->getTableName();
         return j;
     }
+    // CALL PROCEDURE
+    if (auto call = dynamic_cast<const CallProcedureStatement*>(stmt)) {
+        json j;
+        j["type"] = "CallProcedure";
+        j["proc_name"] = call->getProcName();
+        j["proc_args"] = call->getArgs();
+        return j;
+    }
     throw std::runtime_error(SqlErrors::UNSUPPORTED_STMT_JSON);
 }
 

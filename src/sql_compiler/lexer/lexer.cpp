@@ -49,6 +49,8 @@ Lexer::Lexer(const std::string& source)
 
     keywords["DROP"] = TokenType::KEYWORD_DROP;
 
+    keywords["CALL"] = TokenType::KEYWORD_CALL;
+
 
     currentChar = input.empty() ? '\0' : input[0];
 }
