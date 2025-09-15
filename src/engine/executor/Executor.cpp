@@ -14,9 +14,9 @@
 #include "../../storage/page/page.h"
 #include "../../storage/page/page_utils.h" // <-- 新增，用于 GetRow / GetSlotCount / HasSpaceFor 等
 #include "../operators/row.h"
-#include "../../util/config.h"     // PAGE_SIZE, DEFAULT_MAX_PAGES (如果有)
-#include "../../util/status.h"     // Status
-#include "../../catalog/catalog.h" // Catalog
+#include "../../util/config.h"      // PAGE_SIZE, DEFAULT_MAX_PAGES (如果有)
+#include "../../util/status.h"      // Status
+#include "../../catalog/catalog.h"  // Catalog
 #include "../../util/table_utils.h" // TableUtils
 namespace minidb
 {
@@ -908,16 +908,18 @@ namespace minidb
                         filtered.push_back(row);
                 }
                 result_rows = std::move(filtered);
-
             }
             // std::cout << "[GroupBy] 结果: " << result_rows.size() << " 行" << std::endl;
             // for (auto &r : result_rows){
             //     std::cout <<  "[Row] " << r.toString() << std::endl;
             // }
             // ===== 新增：输出结果 =====
-            if (!node->having_predicate.empty()) {
+            if (!node->having_predicate.empty())
+            {
                 // TablePrinter::printResults(result_rows, "GROUP BY with HAVING");
-            } else {
+            }
+            else
+            {
                 // TablePrinter::printResults(result_rows, "GROUP BY");
             }
             return result_rows;
@@ -1034,7 +1036,7 @@ namespace minidb
             return joined_rows;
         }
 
-         case PlanType::OrderBy:
+        case PlanType::OrderBy:
         {
             logger.log("ORDER BY");
             std::cout << "[Executor] OrderBy 执行" << std::endl;
@@ -1046,7 +1048,7 @@ namespace minidb
 
             std::vector<Row> rows = execute(node->children[0].get());
             std::cout << "[OrderBy] 从子节点获得 " << rows.size() << " 行数据" << std::endl;
-    
+
             if (rows.empty() || node->order_by_cols.empty())
                 return rows;
 
@@ -1155,6 +1157,31 @@ namespace minidb
             return rows;
         }
 
+        case PlanType::ShowTables:
+        {
+            std::cout << "[Executor] 执行 SHOW TABLES" << std::endl;
+
+            if (!catalog_)
+            {
+                std::cerr << "[ShowTables] Catalog 未初始化" << std::endl;
+                return {};
+            }
+
+            auto tables = catalog_->GetAllTables();
+
+            std::vector<Row> result;
+            for (const auto &name : tables)
+            {
+                Row row;
+                ColumnValue col;
+                col.col_name = "Tables";
+                col.value = name;
+                row.columns.push_back(col);
+                result.push_back(row);
+            }
+
+            return result;
+        }
 
         default:
             std::cerr << "[Executor] 未知 PlanNode 类型" << std::endl;

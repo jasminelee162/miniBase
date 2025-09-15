@@ -145,19 +145,26 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
             node->order_by_desc = (order == "DESC");
         }
 
-        if (j.contains("order_by_cols") && j["order_by_cols"].is_array()) {
-            for (const auto& col : j["order_by_cols"]) {
+        if (j.contains("order_by_cols") && j["order_by_cols"].is_array())
+        {
+            for (const auto &col : j["order_by_cols"])
+            {
                 node->order_by_cols.push_back(col.get<std::string>());
             }
         }
-        
-        if (j.contains("order_by_desc")) {
+
+        if (j.contains("order_by_desc"))
+        {
             node->order_by_desc = j["order_by_desc"].get<bool>();
         }
         // OrderBy 通常有一个子节点（Project/Filter/SeqScan）
         if (j.contains("child"))
             node->children.push_back(translate(j["child"]));
-            
+    }
+    else if (type == "ShowTables")
+    {
+        node->type = PlanType::ShowTables;
+        // SHOW TABLES 不需要额外参数
     }
 
     else

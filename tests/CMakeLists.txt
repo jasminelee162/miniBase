@@ -241,4 +241,414 @@ add_test(NAME executor_test COMMAND executor_test)
 set_tests_properties(executor_test PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
+# 11) test_permissions_updated（权限管理测试）
+add_executable(test_permissions_updated
+    unit/test_permissions_updated.cpp
+)
+
+target_link_libraries(test_permissions_updated
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_test(NAME test_permissions_updated COMMAND test_permissions_updated)
+set_tests_properties(test_permissions_updated PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 12) test_auth_storage_integration（权限管理存储集成测试）
+add_executable(test_auth_storage_integration
+    unit/test_auth_storage_integration.cpp
+)
+
+target_link_libraries(test_auth_storage_integration
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_test(NAME test_auth_storage_integration COMMAND test_auth_storage_integration)
+set_tests_properties(test_auth_storage_integration PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 13) test_auth_bin_structure（权限管理.bin文件结构测试）
+add_executable(test_auth_bin_structure
+    unit/test_auth_bin_structure.cpp
+)
+
+target_link_libraries(test_auth_bin_structure
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_test(NAME test_auth_bin_structure COMMAND test_auth_bin_structure)
+set_tests_properties(test_auth_bin_structure PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 14) test_user_persistence_debug（用户数据持久化调试测试）
+add_executable(test_user_persistence_debug
+    unit/test_user_persistence_debug.cpp
+)
+
+target_link_libraries(test_user_persistence_debug
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_test(NAME test_user_persistence_debug COMMAND test_user_persistence_debug)
+set_tests_properties(test_user_persistence_debug PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 15) test_user_workflow（用户创建和登录流程测试）
+add_executable(test_user_workflow
+    unit/test_user_workflow.cpp
+)
+
+target_link_libraries(test_user_workflow
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_test(NAME test_user_workflow COMMAND test_user_workflow)
+set_tests_properties(test_user_workflow PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 16) test_simple（简单测试程序）
+add_executable(test_simple
+    unit/test_simple.cpp
+)
+
+target_link_libraries(test_simple
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_test(NAME test_simple COMMAND test_simple)
+set_tests_properties(test_simple PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 17) test_debug（调试测试程序）
+add_executable(test_debug
+    unit/test_debug.cpp
+)
+
+target_link_libraries(test_debug
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_test(NAME test_debug COMMAND test_debug)
+set_tests_properties(test_debug PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 18) test_cli（命令行测试程序）
+add_executable(test_cli
+    unit/test_cli.cpp
+)
+
+target_link_libraries(test_cli
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_test(NAME test_cli COMMAND test_cli)
+set_tests_properties(test_cli PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 19) test_auth_interfaces（权限管理接口完整测试）
+add_executable(test_auth_interfaces
+    unit/test_auth_interfaces.cpp
+)
+
+target_link_libraries(test_auth_interfaces
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_test(NAME test_auth_interfaces COMMAND test_auth_interfaces)
+set_tests_properties(test_auth_interfaces PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 20) test_auth_security（权限管理安全约束测试）
+add_executable(test_auth_security
+    unit/test_auth_security.cpp
+)
+
+target_link_libraries(test_auth_security
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_test(NAME test_auth_security COMMAND test_auth_security)
+set_tests_properties(test_auth_security PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 21) auth_test（权限管理基础测试）
+add_executable(auth_test
+    unit/auth_test.cpp
+)
+
+target_link_libraries(auth_test
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_test(NAME auth_test COMMAND auth_test)
+set_tests_properties(auth_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 22) auth_storage_test（权限管理存储测试）
+add_executable(auth_storage_test
+    unit/auth_storage_test.cpp
+)
+
+target_link_libraries(auth_storage_test
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_test(NAME auth_storage_test COMMAND auth_storage_test)
+set_tests_properties(auth_storage_test PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 20) minidb_auth_cli（认证版CLI演示程序）
+add_executable(minidb_auth_cli
+    unit/minidb_auth_cli.cpp
+    ${CMAKE_SOURCE_DIR}/src/cli/AuthCLI.cpp
+)
+target_link_libraries(minidb_auth_cli
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+set_target_properties(minidb_auth_cli PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests/Debug
+)
+
+# 21) test_table_permissions（表级别权限控制测试）
+add_executable(test_table_permissions
+    unit/test_table_permissions.cpp
+)
+target_link_libraries(test_table_permissions
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+set_target_properties(test_table_permissions PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests/Debug
+)
+
+# 22) test_debug_permissions（权限调试程序）
+add_executable(test_debug_permissions
+    unit/test_debug_permissions.cpp
+)
+target_link_libraries(test_debug_permissions
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+set_target_properties(test_debug_permissions PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests/Debug
+)
+
+# 23) test_debug_role（角色调试程序）
+add_executable(test_debug_role
+    unit/test_debug_role.cpp
+)
+target_link_libraries(test_debug_role
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+set_target_properties(test_debug_role PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests/Debug
+)
+
+# 24) test_debug_set（set调试程序）
+add_executable(test_debug_set
+    unit/test_debug_set.cpp
+)
+target_link_libraries(test_debug_set
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+set_target_properties(test_debug_set PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests/Debug
+)
+
+# 25) test_simple_set（简单set测试）
+add_executable(test_simple_set
+    unit/test_simple_set.cpp
+)
+set_target_properties(test_simple_set PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests/Debug
+)
+
+# 26) test_debug_map（map调试程序）
+add_executable(test_debug_map
+    unit/test_debug_map.cpp
+)
+target_link_libraries(test_debug_map
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+set_target_properties(test_debug_map PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests/Debug
+)
+
+# 27) test_permission_compare（Permission比较测试）
+add_executable(test_permission_compare
+    unit/test_permission_compare.cpp
+)
+target_link_libraries(test_permission_compare
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+set_target_properties(test_permission_compare PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests/Debug
+)
+
+# 28) test_role_manager_simple（RoleManager简单测试）
+add_executable(test_role_manager_simple
+    unit/test_role_manager_simple.cpp
+)
+
+add_executable(test_user_login_debug
+    unit/test_user_login_debug.cpp
+)
+target_link_libraries(test_user_login_debug
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_executable(test_user_role_debug
+    unit/test_user_role_debug.cpp
+)
+target_link_libraries(test_user_role_debug
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_executable(test_table_visibility
+    unit/test_table_visibility.cpp
+)
+target_link_libraries(test_table_visibility
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_executable(test_table_visibility_debug
+    unit/test_table_visibility_debug.cpp
+)
+target_link_libraries(test_table_visibility_debug
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_executable(test_user_role_after_table_creation
+    unit/test_user_role_after_table_creation.cpp
+)
+target_link_libraries(test_user_role_after_table_creation
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_executable(test_page_allocation_debug
+    unit/test_page_allocation_debug.cpp
+)
+target_link_libraries(test_page_allocation_debug
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_executable(test_root_role_debug
+    unit/test_root_role_debug.cpp
+)
+target_link_libraries(test_root_role_debug
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+
+add_executable(test_root_role_detailed_debug
+    unit/test_root_role_detailed_debug.cpp
+)
+target_link_libraries(test_root_role_detailed_debug
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+target_link_libraries(test_role_manager_simple
+    auth_lib
+    storage_lib
+    catalog
+    util_lib
+)
+set_target_properties(test_role_manager_simple PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests/Debug
+)
+
+# 如需为 CLI/Executor 建独立目标，请在它们模块就绪后启用：
+# add_executable(cli_test unit/CliTest.cpp)
+# target_link_libraries(cli_test cli_lib)  # 或者链接对应核心/依赖库
+# add_executable(executor_test unit/ExecutorTest.cpp)
+# target_link_libraries(executor_test executor_lib)
 

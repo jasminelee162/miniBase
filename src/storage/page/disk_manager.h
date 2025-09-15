@@ -48,7 +48,7 @@ namespace minidb
         void DeallocatePage(page_id_t page_id);
 
         // 统计信息
-        size_t GetNumPages() const { return next_page_id_.load(); }
+        size_t GetNumPages() const { return next_page_id_.load(); } // 返回下一个可用页面ID
         size_t GetNumReads() const { return num_reads_.load(); }
         size_t GetNumWrites() const { return num_writes_.load(); }
 

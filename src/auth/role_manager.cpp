@@ -10,8 +10,6 @@ RoleManager::RoleManager() {
 void RoleManager::initializeRolePermissions() {
     // DBA：所有权限
     role_permissions_[Role::DBA] = {
-        Permission::CREATE_DATABASE, Permission::DROP_DATABASE,
-        Permission::BACKUP, Permission::RESTORE,
         Permission::CREATE_TABLE, Permission::DROP_TABLE, Permission::ALTER_TABLE,
         Permission::CREATE_INDEX, Permission::DROP_INDEX,
         Permission::SELECT, Permission::INSERT, Permission::UPDATE, Permission::DELETE,
@@ -50,10 +48,6 @@ std::string RoleManager::roleToString(Role role) const {
 
 std::string RoleManager::permissionToString(Permission permission) const {
     switch (permission) {
-        case Permission::CREATE_DATABASE: return "CREATE_DATABASE";
-        case Permission::DROP_DATABASE: return "DROP_DATABASE";
-        case Permission::BACKUP: return "BACKUP";
-        case Permission::RESTORE: return "RESTORE";
         case Permission::CREATE_TABLE: return "CREATE_TABLE";
         case Permission::DROP_TABLE: return "DROP_TABLE";
         case Permission::ALTER_TABLE: return "ALTER_TABLE";

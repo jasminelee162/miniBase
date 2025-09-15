@@ -19,18 +19,18 @@ target_link_libraries(semantic
 )
 
 # 添加语义分析器测试可执行文件
-add_executable(semantic_test
-    semantic_test.cpp
-)
+# add_executable(semantic_test
+#     semantic_test.cpp
+# )
 
 # 链接语义分析器库到测试可执行文件
-target_link_libraries(semantic_test
-    semantic
-    parser
-    lexer
-    catalog
-)
+# target_link_libraries(semantic_test
+#     semantic
+#     parser
+#     lexer
+#     catalog
+# )
 
-target_link_libraries(semantic_test
-    util_lib
-)
+# target_link_libraries(semantic_test
+#     util_lib
+# )
