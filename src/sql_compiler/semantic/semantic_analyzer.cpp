@@ -328,3 +328,10 @@ void SemanticAnalyzer::visit(ShowTablesStatement& stmt) {
     }
     logger.log("[Semantic] ShowTables checks passed.");
 }
+void SemanticAnalyzer::visit(DropStatement& stmt) {
+    Logger logger("logs/semantic.log");
+    logger.log(std::string("[Semantic] Drop table: ") + stmt.getTableName());
+    // 检查表是否存在
+    checkTableExists(stmt.getTableName());
+    logger.log(std::string("[Semantic] Drop table checks passed for: ") + stmt.getTableName());
+}

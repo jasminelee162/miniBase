@@ -56,6 +56,9 @@ inline constexpr const char* EXPECT_SEMI_AFTER_SHOW_TABLES = "在 SHOW TABLES �
 inline constexpr const char* EXPECT_SHOW = "缺少关键字 'SHOW'"; 
 inline constexpr const char* EXPECT_TABLES_AFTER_SHOW = "在 'SHOW' 之后缺少关键字 'TABLES'";
 
+inline constexpr const char* EXPECT_DROP = "缺少关键字 'DROP'";
+inline constexpr const char* EXPECT_TABLE_AFTER_DROP = "在 'DROP' 之后缺少关键字 'TABLE'";
+inline constexpr const char* EXPECT_SEMI_AFTER_DROP = "在 DROP 语句末尾缺少 ';'";
 
 // VARCHAR length specific
 inline constexpr const char* EXPECT_VARCHAR_LENGTH = "在 'VARCHAR(' 之后期望长度";

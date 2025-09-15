@@ -86,6 +86,10 @@ std::unique_ptr<Statement> Parser::statement() {
     else if (token.type == TokenType::KEYWORD_SHOW) {
         return showTablesStatement();
     }
+    else if (token.type == TokenType::KEYWORD_DROP) {
+        return dropStatement();
+    }
+    
     
     throw ParseError(SqlErrors::EXPECT_STATEMENT, token.line, token.column);
 }
@@ -449,6 +453,19 @@ std::unique_ptr<ShowTablesStatement> Parser::showTablesStatement(){
         consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_SHOW_TABLES);
         
         return std::make_unique<ShowTablesStatement>();
+}
+
+//解析Drop语句
+std::unique_ptr<DropStatement> Parser::dropStatement(){
+        consume(TokenType::KEYWORD_DROP, SqlErrors::EXPECT_DROP);
+        consume(TokenType::KEYWORD_TABLE, SqlErrors::EXPECT_TABLE_AFTER_DROP);
+        
+        Token tableNameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
+        std::string tableName = tableNameToken.lexeme;
+        
+        consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_DROP);
+        
+        return std::make_unique<DropStatement>(tableName);
 }
 // 表达式解析
 std::unique_ptr<Expression> Parser::expression() {

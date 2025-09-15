@@ -51,7 +51,10 @@ enum class TokenType {
     //Show
     KEYWORD_SHOW,
     KEYWORD_TABLES,
-    
+
+    //DORP
+    KEYWORD_DROP,
+
     //数据类型
     KEYWORD_INT,
     KEYWORD_VARCHAR,

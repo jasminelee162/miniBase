@@ -37,3 +37,6 @@ void UpdateStatement::accept(ASTVisitor& visitor) {
 void ShowTablesStatement::accept(ASTVisitor& visitor) {
     visitor.visit(*this);
 }
+void DropStatement::accept(ASTVisitor& visitor) {
+    visitor.visit(*this);
+}

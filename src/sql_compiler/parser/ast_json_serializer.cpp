@@ -236,9 +236,18 @@ json ASTJson::toJson(const Statement* stmt)
         }
         return j;
     }
+    //SHOW
     if(auto show = dynamic_cast<const ShowTablesStatement*>(stmt)){
         json j;
         j["type"] = "ShowTables";
+        return j;
+
+    }
+    //DROP
+    if(auto drop = dynamic_cast<const DropStatement*>(stmt)){
+        json j;
+        j["type"] = "Drop";
+        j["table_name"] = drop->getTableName();
         return j;
     }
     throw std::runtime_error(SqlErrors::UNSUPPORTED_STMT_JSON);

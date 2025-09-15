@@ -327,12 +327,24 @@ public:
 
 //SHOW
 class ShowTablesStatement : public Statement {
+
+
 public:
     ShowTablesStatement(){};
 
     void accept(ASTVisitor& visitor) override;
 };
 
+//DORP
+class DropStatement : public Statement {
+private:
+    std::string tableName;
+public:
+    DropStatement(const std::string& table) : tableName(table) {}
+    const std::string& getTableName() const { return tableName; }
+    
+    void accept(ASTVisitor& visitor) override;
+};
 // AST访问者接口
 class ASTVisitor {
 public:
@@ -348,6 +360,7 @@ public:
     virtual void visit(DeleteStatement& stmt) = 0;
     virtual void visit(UpdateStatement& stmt) = 0;
     virtual void visit(ShowTablesStatement& stmt) = 0;
+    virtual void visit(DropStatement& stmt) = 0;
 };
 
 #endif // MINIBASE_AST_H

@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS teachers;
+DROP TABLE students;
 
 SHOW TABLES;
 
