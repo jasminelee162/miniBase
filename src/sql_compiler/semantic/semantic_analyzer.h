@@ -71,6 +71,7 @@ public:
     void visit(SelectStatement& stmt) override;
     void visit(DeleteStatement& stmt) override;
     void visit(UpdateStatement& stmt) override;
+    void visit(ShowTablesStatement& stmt) override;
     
 private:
     Catalog* catalog_;

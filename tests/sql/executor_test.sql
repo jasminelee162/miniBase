@@ -1,5 +1,7 @@
 DROP TABLE IF EXISTS teachers;
 
+SHOW TABLES;
+
 CREATE TABLE teachers (
     teacher_id INT,
     full_name VARCHAR(100),

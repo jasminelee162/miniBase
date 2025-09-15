@@ -52,6 +52,11 @@ inline constexpr const char* EXPECT_ON_AFTER_JOIN = "在 'JOIN' 之后缺少 'ON
 inline constexpr const char* EXPECT_DOT = "缺少 '.'";
 inline constexpr const char* EXPECT_EQUALS = "缺少 '='";
 
+inline constexpr const char* EXPECT_SEMI_AFTER_SHOW_TABLES = "在 SHOW TABLES 语句末尾缺少 ';'";
+inline constexpr const char* EXPECT_SHOW = "缺少关键字 'SHOW'"; 
+inline constexpr const char* EXPECT_TABLES_AFTER_SHOW = "在 'SHOW' 之后缺少关键字 'TABLES'";
+
+
 // VARCHAR length specific
 inline constexpr const char* EXPECT_VARCHAR_LENGTH = "在 'VARCHAR(' 之后期望长度";
 inline constexpr const char* EXPECT_RPAREN_AFTER_VARCHAR_LEN = "在 VARCHAR 长度之后期望出现 ')'";

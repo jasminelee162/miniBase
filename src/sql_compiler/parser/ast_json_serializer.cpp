@@ -204,6 +204,7 @@ json ASTJson::toJson(const Statement* stmt)
     return j;
     }
 
+    //Delete
     if (auto del = dynamic_cast<const DeleteStatement*>(stmt)) {
         json j;
         j["type"] = "Delete";
@@ -233,6 +234,11 @@ json ASTJson::toJson(const Statement* stmt)
             auto p = exprToJson(upd->getWhereClause());
             j["predicate"] = p.is_string() ? p.get<std::string>() : p.dump();
         }
+        return j;
+    }
+    if(auto show = dynamic_cast<const ShowTablesStatement*>(stmt)){
+        json j;
+        j["type"] = "ShowTables";
         return j;
     }
     throw std::runtime_error(SqlErrors::UNSUPPORTED_STMT_JSON);

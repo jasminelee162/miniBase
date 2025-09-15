@@ -44,6 +44,9 @@ Lexer::Lexer(const std::string& source)
     keywords["UPDATE"] = TokenType::KEYWORD_UPDATE;
     keywords["SET"] = TokenType::KEYWORD_SET;
 
+    keywords["SHOW"] = TokenType::KEYWORD_SHOW;
+    keywords["TABLES"] = TokenType::KEYWORD_TABLES;
+
 
     currentChar = input.empty() ? '\0' : input[0];
 }

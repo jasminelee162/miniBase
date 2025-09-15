@@ -1180,6 +1180,8 @@ namespace minidb
                 result.push_back(row);
             }
 
+            //输出结果
+            // TablePrinter::printResults(result, "SHOW TABLES");
             return result;
         }
 

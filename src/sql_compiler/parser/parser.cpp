@@ -83,6 +83,9 @@ std::unique_ptr<Statement> Parser::statement() {
     else if (token.type == TokenType::KEYWORD_UPDATE) {
         return updateStatement();
     }
+    else if (token.type == TokenType::KEYWORD_SHOW) {
+        return showTablesStatement();
+    }
     
     throw ParseError(SqlErrors::EXPECT_STATEMENT, token.line, token.column);
 }
@@ -383,6 +386,7 @@ std::string Parser::parseJoinCondition() {
     return leftTable.lexeme + "." + leftCol.lexeme + "=" + 
            rightTable.lexeme + "." + rightCol.lexeme;
 }
+
 // 解析DELETE语句
 std::unique_ptr<DeleteStatement> Parser::deleteStatement() {
     // DELETE FROM tableName WHERE condition
@@ -438,7 +442,14 @@ std::unique_ptr<UpdateStatement> Parser::updateStatement() {
 
 }
 
-
+//解析Show语句
+std::unique_ptr<ShowTablesStatement> Parser::showTablesStatement(){
+        consume(TokenType::KEYWORD_SHOW, SqlErrors::EXPECT_SHOW);
+        consume(TokenType::KEYWORD_TABLES, SqlErrors::EXPECT_TABLES_AFTER_SHOW);
+        consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_SHOW_TABLES);
+        
+        return std::make_unique<ShowTablesStatement>();
+}
 // 表达式解析
 std::unique_ptr<Expression> Parser::expression() {
     return comparison();

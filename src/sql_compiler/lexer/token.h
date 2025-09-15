@@ -47,7 +47,12 @@ enum class TokenType {
     //UPDATE
     KEYWORD_UPDATE,
     KEYWORD_SET,
-    //类型
+
+    //Show
+    KEYWORD_SHOW,
+    KEYWORD_TABLES,
+    
+    //数据类型
     KEYWORD_INT,
     KEYWORD_VARCHAR,
     

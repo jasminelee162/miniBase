@@ -51,6 +51,7 @@ private:
     std::unique_ptr<DeleteStatement> deleteStatement();
     std::unique_ptr<UpdateStatement> updateStatement();
     // std::unique_ptr<JoinStatement> joinStatement();
+    std::unique_ptr<ShowTablesStatement> showTablesStatement();
 
     // 表达式解析
     std::unique_ptr<Expression> expression();

@@ -295,7 +295,7 @@ private:
     std::unique_ptr<Expression> whereClause_;
 };
 
-//JOIN
+//JOIN(暂时不使用，后续可删)
 class JoinStatement : public Statement {
 private:
     std::vector<std::string> columns;
@@ -324,6 +324,15 @@ public:
 
     void accept(ASTVisitor& visitor) override;
 };
+
+//SHOW
+class ShowTablesStatement : public Statement {
+public:
+    ShowTablesStatement(){};
+
+    void accept(ASTVisitor& visitor) override;
+};
+
 // AST访问者接口
 class ASTVisitor {
 public:
@@ -338,6 +347,7 @@ public:
     virtual void visit(SelectStatement& stmt) = 0;
     virtual void visit(DeleteStatement& stmt) = 0;
     virtual void visit(UpdateStatement& stmt) = 0;
+    virtual void visit(ShowTablesStatement& stmt) = 0;
 };
 
 #endif // MINIBASE_AST_H

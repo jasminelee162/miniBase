@@ -318,3 +318,13 @@ void SemanticAnalyzer::visit(UpdateStatement& stmt) {
     currentTable_ = TableSchema();
     logger.log(std::string("[Semantic] Update checks passed for: ") + stmt.getTableName());
 }
+void SemanticAnalyzer::visit(ShowTablesStatement& stmt) {
+    Logger logger("logs/semantic.log");
+    logger.log("[Semantic] ShowTables statement - no semantic checks needed.");
+    // SHOW TABLES 语句不需要复杂的语义检查
+    // 只需确保 Catalog 存在即可
+    if (!catalog_) {
+        throw SemanticError(SemanticError::ErrorType::UNKNOWN, "Catalog is not set for SHOW TABLES");
+    }
+    logger.log("[Semantic] ShowTables checks passed.");
+}
