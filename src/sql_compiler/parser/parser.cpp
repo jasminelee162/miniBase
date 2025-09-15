@@ -2,6 +2,46 @@
 #include "parser.h"
 #include "../../util/logger.h"
 #include "../common/error_messages.h"
+#include <unordered_map>
+
+// ===== 智能提示辅助：将期望的 TokenType 映射为人类可读的关键词或符号 =====
+static inline const char* expectedKeywordForToken(TokenType type) {
+    switch (type) {
+        case TokenType::KEYWORD_SELECT: return "SELECT";
+        case TokenType::KEYWORD_FROM: return "FROM";
+        case TokenType::KEYWORD_WHERE: return "WHERE";
+        case TokenType::KEYWORD_GROUP_BY: return "GROUP BY";
+        case TokenType::KEYWORD_BY: return "BY";
+        case TokenType::KEYWORD_ORDER: return "ORDER";
+        case TokenType::KEYWORD_ASC: return "ASC";
+        case TokenType::KEYWORD_DESC: return "DESC";
+        case TokenType::KEYWORD_CREATE: return "CREATE";
+        case TokenType::KEYWORD_TABLE: return "TABLE";
+        case TokenType::KEYWORD_INSERT: return "INSERT";
+        case TokenType::KEYWORD_INTO: return "INTO";
+        case TokenType::KEYWORD_VALUES: return "VALUES";
+        case TokenType::KEYWORD_DELETE: return "DELETE";
+        case TokenType::KEYWORD_UPDATE: return "UPDATE";
+        case TokenType::KEYWORD_SET: return "SET";
+        case TokenType::KEYWORD_SHOW: return "SHOW";
+        case TokenType::KEYWORD_TABLES: return "TABLES";
+        case TokenType::KEYWORD_DROP: return "DROP";
+        case TokenType::KEYWORD_JOIN: return "JOIN";
+        case TokenType::KEYWORD_ON: return "ON";
+        case TokenType::KEYWORD_LEFT: return "LEFT";
+        case TokenType::KEYWORD_RIGHT: return "RIGHT";
+        case TokenType::KEYWORD_INNER: return "INNER";
+        case TokenType::KEYWORD_INT: return "INT";
+        case TokenType::KEYWORD_VARCHAR: return "VARCHAR";
+        case TokenType::DELIMITER_LPAREN: return "(";
+        case TokenType::DELIMITER_RPAREN: return ")";
+        case TokenType::DELIMITER_COMMA: return ",";
+        case TokenType::DELIMITER_SEMICOLON: return ";";
+        case TokenType::DELIMITER_DOT: return ".";
+        case TokenType::OPERATOR_EQ: return "=";
+        default: return "";
+    }
+}
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), current(0) {}
 
@@ -40,7 +80,30 @@ Token Parser::consume(TokenType type, const std::string& message) {
     }
 
     Token token = peek();
-    throw ParseError(message, token.line, token.column);
+    // 构造智能提示
+    std::string hint;
+    const char* expected = expectedKeywordForToken(type);
+    if (expected && expected[0] != '\0') {
+        // 期望关键字/符号，提供纠错建议
+        if (type == TokenType::DELIMITER_SEMICOLON && token.type == TokenType::END_OF_FILE) {
+            hint = SqlErrors::suggestMissingToken(";", "语句末尾");
+        } else if (type == TokenType::DELIMITER_RPAREN) {
+            hint = SqlErrors::suggestMissingToken(")", "子表达式/列定义结束处");
+        } else if (type == TokenType::DELIMITER_LPAREN) {
+            hint = SqlErrors::suggestMissingToken("(", "函数/列表开始处");
+        } else if (type == TokenType::KEYWORD_BY) {
+            hint = SqlErrors::suggestMissingToken("BY", "GROUP 或 ORDER 之后");
+        } else if (type == TokenType::KEYWORD_ON && (token.type == TokenType::IDENTIFIER || token.type == TokenType::KEYWORD_JOIN)) {
+            hint = SqlErrors::withHint("JOIN 缺少 ON 子句", SqlErrors::suggestMissingToken("ON", "JOIN 条件前"));
+        } else {
+            // 一般性关键词纠错
+            hint = SqlErrors::suggestKeyword(token.lexeme, expected);
+        }
+    } else if (type == TokenType::IDENTIFIER && token.type != TokenType::IDENTIFIER) {
+        hint = "此处需要标识符（表名/列名），检查是否少了空格或多余字符";
+    }
+
+    throw ParseError(SqlErrors::withHint(message, hint), token.line, token.column);
 }
 
 bool Parser::isAtEnd() const {
@@ -56,7 +119,7 @@ std::unique_ptr<Statement> Parser::parse() {
         // 确保所有输入都被消费
         if (!isAtEnd()) {
             Token token = peek();
-            throw ParseError(SqlErrors::UNEXPECTED_AFTER_STATEMENT, token.line, token.column);
+            throw ParseError(SqlErrors::withHint(SqlErrors::UNEXPECTED_AFTER_STATEMENT, "检查是否多写了额外内容，或在上一条语句末尾缺少 ';'"), token.line, token.column);
         }
         logger.log("[Parser] Parse successful");
         return stmt;
@@ -143,7 +206,8 @@ std::vector<ColumnDefinition> Parser::columnDefinitions() {
                 consume(TokenType::DELIMITER_RPAREN, SqlErrors::EXPECT_RPAREN_AFTER_VARCHAR_LEN);
             }
         } else {
-            throw ParseError(SqlErrors::EXPECT_DATA_TYPE, peek().line, peek().column);
+            Token t = peek();
+            throw ParseError(SqlErrors::withHint(SqlErrors::EXPECT_DATA_TYPE, "目前支持 INT 或 VARCHAR[(长度)]"), t.line, t.column);
         }
         
         columns.emplace_back(columnName, dataType);
@@ -241,7 +305,7 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
         // 需要至少一个列名
         if (!check(TokenType::IDENTIFIER)) {
             Token t = peek();
-            throw ParseError("Expected identifier after SELECT", t.line, t.column);
+            throw ParseError(SqlErrors::withHint("SELECT之后缺少标识符", "可使用 * 或列名，如: id, name"), t.line, t.column);
         }
         do {
             //检查是否是聚合函数
@@ -272,13 +336,13 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
     
     if (!check(TokenType::KEYWORD_FROM)) {
         Token t = peek();
-        throw ParseError("缺少'FROM' 在 '" + t.lexeme + "'之前", t.line, t.column);
+        throw ParseError(SqlErrors::withHint("缺少'FROM' 在 '" + t.lexeme + "'之前", SqlErrors::suggestMissingToken("FROM", "SELECT 列表之后")), t.line, t.column);
     }
     consume(TokenType::KEYWORD_FROM, SqlErrors::EXPECT_FROM_AFTER_COLS);
     
     if (!check(TokenType::IDENTIFIER)) {
         Token t = peek();
-        throw ParseError("FROM之后要有表名", t.line, t.column);
+        throw ParseError(SqlErrors::withHint("FROM之后要有表名", "例如: FROM student"), t.line, t.column);
     }
     Token mainTableNameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
     std::string mainTableName = mainTableNameToken.lexeme; //mainTableName=tableName
@@ -562,6 +626,6 @@ std::unique_ptr<Expression> Parser::primary() {
         return expr;
     }
     
-    throw ParseError(SqlErrors::EXPECT_EXPRESSION, peek().line, peek().column);
+    throw ParseError(SqlErrors::withHint(SqlErrors::EXPECT_EXPRESSION, "可使用常量(如 1, 'txt')、列名，或以 '(' 开始的子表达式"), peek().line, peek().column);
 }
 

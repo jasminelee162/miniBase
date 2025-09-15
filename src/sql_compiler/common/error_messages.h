@@ -91,4 +91,20 @@ inline std::string columnCountMismatch(size_t expected, size_t got) {
 }
 inline constexpr const char* WHERE_MUST_BE_BOOL = "WHERE 子句必须为布尔条件";
 
+// 带建议的错误消息（在不改变原错误码语义下，追加“可能的修复建议”）
+inline std::string withHint(const std::string& error, const std::string& hint) {
+    if (hint.empty()) return error;
+    return error + std::string("。建议: ") + hint;
+}
+
+// 针对关键词的纠错建议（例如 SELECT/SELET 拼写）
+inline std::string suggestKeyword(const std::string& near, const std::string& expected) {
+    return std::string("是否想写 '") + expected + "' 而不是 '" + near + "'？";
+}
+
+// 针对常见缺失符号的建议
+inline std::string suggestMissingToken(const std::string& token, const std::string& context) {
+    return std::string("在") + context + " 处补上 '" + token + "'";
+}
+
 } // namespace SqlErrors
