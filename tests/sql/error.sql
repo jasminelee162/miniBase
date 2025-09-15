@@ -1,6 +1,8 @@
 -- 缺少分号
 SELECT id FROM student
 INSERT INTO student VALUES (1,'A',20)
+--自动纠错
+slect;
 -- SELECT 缺列名或星号
 SELECT FROM student;
 SELECT , FROM student;

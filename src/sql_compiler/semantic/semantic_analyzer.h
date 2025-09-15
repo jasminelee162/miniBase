@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <stdexcept>
+// #include "../../catalog/catalog.h"
 #include "../parser/ast.h"
 
 namespace minidb
@@ -95,7 +97,9 @@ public:
 
 private:
     minidb::Catalog *catalog_;
-    minidb::TableSchema *currentTable_; // 用指针或引用
+    // minidb::TableSchema currentTable_;
+    std::unique_ptr<minidb::TableSchema> currentTable_;
+
 
     // 辅助方法
     std::string getExpressionType(Expression *expr);

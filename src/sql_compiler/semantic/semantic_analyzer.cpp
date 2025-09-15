@@ -1,4 +1,5 @@
 #include "semantic_analyzer.h"
+#include "../../catalog/catalog.h"
 #include "../../util/logger.h"
 #include "../common/error_messages.h"
 
@@ -20,7 +21,7 @@ std::string SemanticAnalyzer::getExpressionType(Expression *expr)
     else if (auto identifier = dynamic_cast<IdentifierExpression *>(expr))
     {
         // 检查当前表是否有效
-        if (currentTable_.table_name.empty())
+        if (!currentTable_ || currentTable_->table_name.empty())
         {
             throw SemanticError(SemanticError::ErrorType::UNKNOWN,
                                 SqlErrors::noCurrentTableForIdentifier(identifier->getName()));
@@ -29,7 +30,7 @@ std::string SemanticAnalyzer::getExpressionType(Expression *expr)
         // 查找列
         bool found = false;
         std::string columnType;
-        for (const auto &col : currentTable_.columns)
+        for (const auto &col : currentTable_->columns)
         {
             if (col.name == identifier->getName())
             {
@@ -165,12 +166,12 @@ void SemanticAnalyzer::visit(BinaryExpression &expr)
 void SemanticAnalyzer::visit(AggregateExpression &expr)
 {
     // 检查聚合函数的列是否存在
-    if (currentTable_.table_name.empty())
+    if (!currentTable_ || currentTable_->table_name.empty())
     {
         throw SemanticError(SemanticError::ErrorType::UNKNOWN,
                             SqlErrors::noCurrentTableForIdentifier(expr.getColumn()));
     }
-    checkColumnExists(currentTable_.table_name, expr.getColumn());
+    checkColumnExists(currentTable_->table_name, expr.getColumn());
 }
 
 void SemanticAnalyzer::visit(CreateTableStatement &stmt)
@@ -210,14 +211,14 @@ void SemanticAnalyzer::visit(InsertStatement &stmt)
     logger.log(std::string("[Semantic] Insert into: ") + stmt.getTableName());
     // 检查表是否存在
     checkTableExists(stmt.getTableName());
-    currentTable_ = catalog_->GetTable(stmt.getTableName());
+    currentTable_ = std::make_unique<TableSchema>(catalog_->GetTable(stmt.getTableName()));
 
     // 处理列名：如果没有指定列名，使用表的所有列
     std::vector<std::string> columnNames = stmt.getColumnNames();
     if (columnNames.empty())
     {
         // 如果没有指定列名，使用表的所有列
-        for (const auto &col : currentTable_.columns)
+        for (const auto &col : currentTable_->columns)
         {
             columnNames.push_back(col.name);
         }
@@ -248,7 +249,7 @@ void SemanticAnalyzer::visit(InsertStatement &stmt)
 
             // 查找列类型
             std::string colType;
-            for (const auto &col : currentTable_.columns)
+            for (const auto &col : currentTable_->columns)
             {
                 if (col.name == colName)
                 {
@@ -270,7 +271,7 @@ void SemanticAnalyzer::visit(InsertStatement &stmt)
     }
 
     // 清空当前表
-    currentTable_ = TableSchema();
+    currentTable_.reset();
     logger.log(std::string("[Semantic] Insert checks passed for: ") + stmt.getTableName());
 }
 
@@ -280,7 +281,7 @@ void SemanticAnalyzer::visit(SelectStatement &stmt)
     logger.log(std::string("[Semantic] Select from: ") + stmt.getTableName());
     // 检查表是否存在
     checkTableExists(stmt.getTableName());
-    currentTable_ = catalog_->GetTable(stmt.getTableName());
+    currentTable_ = std::make_unique<TableSchema>(catalog_->GetTable(stmt.getTableName()));
 
     // 检查列名是否存在
     // for (const auto& colName : stmt.getColumns()) {
@@ -311,7 +312,7 @@ void SemanticAnalyzer::visit(SelectStatement &stmt)
     }
 
     // 清空当前表
-    currentTable_ = TableSchema();
+    currentTable_.reset();
     logger.log(std::string("[Semantic] Select checks passed for: ") + stmt.getTableName());
 }
 
@@ -321,7 +322,7 @@ void SemanticAnalyzer::visit(DeleteStatement &stmt)
     logger.log(std::string("[Semantic] Delete from: ") + stmt.getTableName());
     // 检查表是否存在
     checkTableExists(stmt.getTableName());
-    currentTable_ = catalog_->GetTable(stmt.getTableName());
+    currentTable_ = std::make_unique<TableSchema>(catalog_->GetTable(stmt.getTableName()));
 
     // 检查WHERE子句
     if (stmt.getWhereClause())
@@ -338,7 +339,7 @@ void SemanticAnalyzer::visit(DeleteStatement &stmt)
     }
 
     // 清空当前表
-    currentTable_ = TableSchema();
+    currentTable_.reset();
     logger.log(std::string("[Semantic] Delete checks passed for: ") + stmt.getTableName());
 }
 
@@ -348,7 +349,7 @@ void SemanticAnalyzer::visit(UpdateStatement &stmt)
     logger.log(std::string("[Semantic] Update on: ") + stmt.getTableName());
     // 检查表是否存在
     checkTableExists(stmt.getTableName());
-    currentTable_ = catalog_->GetTable(stmt.getTableName());
+    currentTable_ = std::make_unique<TableSchema>(catalog_->GetTable(stmt.getTableName()));
 
     // 检查SET子句
     for (const auto &assignment : stmt.getAssignments())
@@ -373,7 +374,7 @@ void SemanticAnalyzer::visit(UpdateStatement &stmt)
     }
 
     // 清空当前表
-    currentTable_ = TableSchema();
+    currentTable_.reset();
     logger.log(std::string("[Semantic] Update checks passed for: ") + stmt.getTableName());
 }
 void SemanticAnalyzer::visit(ShowTablesStatement &stmt)

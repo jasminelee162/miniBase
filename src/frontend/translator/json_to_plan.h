@@ -3,7 +3,7 @@
 #include "../../util/json.hpp" // nlohmann/json 单头文件库
 #include "../../sql_compiler/lexer/lexer.h"
 #include "../../sql_compiler/parser/parser.h"
-#include "../../sql_compiler/semantic/semantic_analyzer.h"
+// #include "../../sql_compiler/semantic/semantic_analyzer.h"
 #include <string>
 #include <vector>
 #include <memory>
