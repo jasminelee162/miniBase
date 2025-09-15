@@ -9,6 +9,7 @@
 #include <functional>
 
 #include "../../util/logger.h"
+#include "../../catalog/catalog.h"          // Catalog
 #include "../../storage/storage_engine.h"   // 使用 StorageEngine
 #include "../../storage/index/bplus_tree.h" // 使用 BPlusTree
 #include "../../storage/page/page.h"
@@ -16,8 +17,9 @@
 #include "../operators/row.h"
 #include "../../util/config.h"      // PAGE_SIZE, DEFAULT_MAX_PAGES (如果有)
 #include "../../util/status.h"      // Status
-#include "../../catalog/catalog.h"  // Catalog
 #include "../../util/table_utils.h" // TableUtils
+#include "../../sql_compiler/parser/ast_json_serializer.h"
+
 namespace minidb
 {
 
@@ -1180,8 +1182,8 @@ namespace minidb
                 result.push_back(row);
             }
 
-            //输出结果
-            // TablePrinter::printResults(result, "SHOW TABLES");
+            // 输出结果
+            //  TablePrinter::printResults(result, "SHOW TABLES");
             return result;
         }
 
@@ -1218,6 +1220,88 @@ namespace minidb
 
             std::cout << "[Drop] 表 " << node->table_name << " 已被删除 (仅删除元数据)" << std::endl;
             return {};
+        }
+        case PlanType::CreateProcedure:
+        {
+            logger.log("CREATE PROCEDURE " + node->proc_name);
+            std::cout << "[Executor] 创建存储过程: " << node->proc_name << std::endl;
+
+            if (!catalog_)
+            {
+                std::cerr << "[Executor] Catalog 未初始化" << std::endl;
+                return {};
+            }
+
+            // 检查存储过程是否已经存在
+            if (catalog_->HasProcedure(node->proc_name))
+            {
+                std::cerr << "[Executor] 存储过程 " << node->proc_name << " 已存在" << std::endl;
+                return {};
+            }
+
+            // 组装过程定义
+            ProcedureDef proc;
+            proc.name = node->proc_name;
+            proc.params = node->proc_params;
+            proc.body = node->proc_body;
+
+            // 注册到 Catalog
+            catalog_->CreateProcedure(proc);
+            catalog_->SaveToStorage(); // 持久化存储
+
+            std::cout << "[Executor] 存储过程 " << node->proc_name << " 定义成功" << std::endl;
+            return {};
+        }
+
+        case PlanType::CallProcedure:
+        {
+            logger.log("CALL PROCEDURE " + node->proc_name);
+            std::cout << "[Executor] 调用存储过程: " << node->proc_name << std::endl;
+
+            if (!catalog_ || !catalog_->HasProcedure(node->proc_name))
+            {
+                std::cerr << "[Executor] 存储过程未定义: " << node->proc_name << std::endl;
+                return {};
+            }
+
+            const ProcedureDef &proc = catalog_->GetProcedure(node->proc_name);
+
+            // 展开 SQL：用 ? 占位符替换成实际参数
+            std::string sql = proc.body;
+            for (size_t i = 0; i < node->proc_args.size() && i < proc.params.size(); ++i)
+            {
+                size_t pos = sql.find("?");
+                if (pos != std::string::npos)
+                {
+                    const std::string &arg = node->proc_args[i];
+                    bool is_number = !arg.empty() && std::all_of(arg.begin(), arg.end(),
+                                                                 [](char c)
+                                                                 { return std::isdigit(c); });
+                    std::string replacement = is_number ? arg : ("'" + arg + "'");
+                    sql.replace(pos, 1, replacement);
+                }
+            }
+
+            std::cout << "[Executor] 展开后的 SQL: " << sql << std::endl;
+
+            try
+            {
+                Lexer l(sql);
+                auto tokens = l.tokenize();
+                Parser p(tokens);
+                auto stmt = p.parse();
+
+                // 生成 PlanNode
+                std::unique_ptr<PlanNode> plan_node = JsonToPlan::translate(ASTJson::toJson(stmt.get()));
+
+                // 调用已有的 execute(PlanNode*)
+                return execute(plan_node.get());
+            }
+            catch (const std::exception &e)
+            {
+                std::cerr << "[Executor] 执行存储过程失败: " << e.what() << std::endl;
+                return {};
+            }
         }
 
         default:

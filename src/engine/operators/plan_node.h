@@ -1,5 +1,5 @@
 #pragma once
-// #include "../../catalog/catalog.h" // Column
+
 #include "../../catalog/catalog.h" // Column
 #include <string>
 #include <vector>
@@ -8,8 +8,8 @@
 
 namespace minidb
 {
-    struct Column;
-} // 前向声明
+    struct Column; // 前向声明（catalog.h 应该定义 Column）
+} // namespace minidb
 
 enum class PlanType
 {
@@ -24,8 +24,10 @@ enum class PlanType
     Having,
     Join,
     OrderBy,
-    ShowTables, // 新增
-    Drop        // 新增
+    ShowTables,
+    Drop,
+    CreateProcedure, // 新增：定义存储过程
+    CallProcedure    // 新增：调用存储过程
 };
 
 struct AggregateExpr
@@ -55,4 +57,12 @@ struct PlanNode
     // 新增字段：OrderBy
     std::vector<std::string> order_by_cols; // 按哪些列排序
     bool order_by_desc{false};              // 是否降序
+
+    PlanNode() : type(PlanType::SeqScan) {} // 默认类型，构造时可改
+
+    // === 存储过程相关 ===
+    std::string proc_name;                // 存储过程名字
+    std::vector<std::string> proc_params; // 参数列表
+    std::vector<std::string> proc_args;   // 调用时的实参列表 ✅ 新增
+    std::string proc_body;                // 过程体（SQL语句块）
 };
