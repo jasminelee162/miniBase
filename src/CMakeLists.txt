@@ -21,6 +21,9 @@ add_subdirectory(frontend/translator)
 # CLI
 add_subdirectory(cli)
 
+# 权限管理模块
+add_subdirectory(auth)
+
 # 临时仅链接 util 与 storage，其他模块待实现后再启用
 add_library(minidb_core INTERFACE)
 target_link_libraries(minidb_core INTERFACE

@@ -1,5 +1,5 @@
-#include "auth_service.h"
-#include "permission_checker.h"
+#include "../../src/auth/auth_service.h"
+#include "../../src/auth/permission_checker.h"
 #include <iostream>
 #include <string>
 

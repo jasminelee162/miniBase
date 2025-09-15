@@ -4,6 +4,7 @@
 #include <cstring>
 #include <future>
 #include <algorithm>
+#include <iostream>
 #include "storage/page/page_header.h"
 #include "util/config.h"
 
@@ -54,6 +55,11 @@ static Logger g_storage_logger("storage.log");
         if (!LoadOrRecoverMeta()) {
             next_page_id_.store(0);
         }
+        
+        // 确保max_pages_至少等于next_page_id_，避免无法分配新页面
+        max_pages_ = std::max(max_pages_, static_cast<size_t>(next_page_id_.load() + 100));
+        
+        std::cout << "[DiskManager::DiskManager] Initialized next_page_id_=" << next_page_id_.load() << " (this=" << this << ")" << std::endl;
     }
 
     DiskManager::~DiskManager()
@@ -117,8 +123,10 @@ static Logger g_storage_logger("storage.log");
         file_stream_.flush();
         if (!file_stream_)
         {
+            std::cout << "[DiskManager::WritePage] Write failed for page_id=" << page_id << std::endl;
             return Status::IO_ERROR;
         }
+        std::cout << "[DiskManager::WritePage] Successfully wrote page_id=" << page_id << " at offset=" << offset << std::endl;
         num_writes_.fetch_add(1);
         if constexpr (ENABLE_STORAGE_LOG) {
             g_storage_logger.log(std::string("[DM] Write page ") + std::to_string((unsigned)page_id));
@@ -153,6 +161,7 @@ static Logger g_storage_logger("storage.log");
         {
             page_id_t pid = free_page_ids_.front();
             free_page_ids_.pop();
+            std::cout << "[DiskManager::AllocatePage] Reusing free page_id=" << pid << std::endl;
             return pid;
         }
         // 检查容量
@@ -164,7 +173,13 @@ static Logger g_storage_logger("storage.log");
             }
             return INVALID_PAGE_ID;
         }
-        return next_page_id_.fetch_add(1);
+        // 使用更显式的原子操作
+        page_id_t current = next_page_id_.load();
+        std::cout << "[DiskManager::AllocatePage] Before fetch_add: next_page_id_=" << current << std::endl;
+        page_id_t allocated = next_page_id_.fetch_add(1);
+        page_id_t after = next_page_id_.load();
+        std::cout << "[DiskManager::AllocatePage] After fetch_add: allocated=" << allocated << ", next_page_id_=" << after << " (this=" << this << ")" << std::endl;
+        return allocated;
     }
     // 释放页号（加入空闲队列)
     void DiskManager::DeallocatePage(page_id_t page_id)
@@ -255,9 +270,11 @@ static Logger g_storage_logger("storage.log");
     {
         MetaPageData m{};
         if (ReadMeta(m)) {
+            std::cout << "[DiskManager::LoadOrRecoverMeta] ReadMeta success, next_page_id=" << m.next_page_id << std::endl;
             next_page_id_.store(m.next_page_id);
             return true;
         }
+        std::cout << "[DiskManager::LoadOrRecoverMeta] ReadMeta failed, calling InitNewMeta" << std::endl;
         return InitNewMeta();
     }
 
@@ -268,7 +285,13 @@ static Logger g_storage_logger("storage.log");
         m.version = META_VERSION;
         m.page_size = static_cast<uint32_t>(PAGE_SIZE);
         m.next_page_id = next_page_id_.load();
-        m.catalog_root = INVALID_PAGE_ID;
+        // 保持现有的catalog_root，不要重置为INVALID_PAGE_ID
+        MetaPageData current_meta;
+        if (GetMetaInfo(current_meta)) {
+            m.catalog_root = current_meta.catalog_root;
+        } else {
+            m.catalog_root = INVALID_PAGE_ID;
+        }
         return WriteMeta(m);
     }
 

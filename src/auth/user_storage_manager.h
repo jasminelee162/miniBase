@@ -68,6 +68,7 @@ public:
     
     // 用户查询
     std::vector<std::string> listUsers();
+    std::vector<UserRecord> getAllUsers();
     UserRecord getUserInfo(const std::string& username);
     Role getUserRole(const std::string& username);
     

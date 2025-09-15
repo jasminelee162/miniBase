@@ -31,16 +31,18 @@ namespace minidb
     // 获取一页
     Page *StorageEngine::GetPage(page_id_t page_id)
     {
-        return buffer_pool_manager_->FetchPage(page_id);
+        Page* page = buffer_pool_manager_->FetchPage(page_id);
+        std::cout << "[StorageEngine::GetPage] page_id=" << page_id << " returned " << (page ? "valid" : "null") << std::endl;
+        return page;
     }
     // 申请新页
     Page *StorageEngine::CreatePage(page_id_t *page_id)
     {
         Page* page = buffer_pool_manager_->NewPage(page_id);
         if (page) {
-            // 确保新页面被正确初始化
-            page->InitializePage(PageType::DATA_PAGE);
+            std::cout << "[StorageEngine::CreatePage] Allocated page_id=" << *page_id << std::endl;
         }
+        // 不设置页面类型，让调用者设置
         return page;
     }
     // 用完页后归还缓存，标记脏否
@@ -368,23 +370,25 @@ namespace minidb
     {
         page_id_t catalog_page_id = INVALID_PAGE_ID;
         Page* catalog_page = CreatePage(&catalog_page_id);
+        std::cout << "[StorageEngine::CreateCatalogPage] CreatePage returned " << (catalog_page ? "valid" : "null") << " page_id=" << catalog_page_id << std::endl;
         if (!catalog_page) return nullptr;
         
         // 初始化目录页
         catalog_page->InitializePage(PageType::CATALOG_PAGE);
+        std::cout << "[StorageEngine::CreateCatalogPage] Initialized page as CATALOG_PAGE" << std::endl;
         
         // 更新元数据中的catalog_root
-        MetaInfo meta_info;
-        meta_info.magic = 0x4D696E6944425F4DULL; // "MiniDB_M"
-        meta_info.version = 1;
-        meta_info.page_size = PAGE_SIZE;
-        meta_info.next_page_id = static_cast<page_id_t>(disk_manager_->GetNumPages()); // 使用当前的next_page_id
+        MetaInfo meta_info = GetMetaInfo();
         meta_info.catalog_root = catalog_page_id;
+        // 确保使用最新的next_page_id
+        meta_info.next_page_id = disk_manager_->GetNumPages();
         UpdateMetaInfo(meta_info);
+        std::cout << "[StorageEngine::CreateCatalogPage] Updated meta_info.catalog_root=" << catalog_page_id << std::endl;
         
         // 确保页面被写入磁盘
         PutPage(catalog_page_id, true);
         
+        // 直接返回创建的页面，调用者需要自己管理
         return catalog_page;
     }
     

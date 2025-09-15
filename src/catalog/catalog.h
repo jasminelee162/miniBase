@@ -38,6 +38,10 @@ namespace minidb
 
         // 新增：记录表的首个数据页
         page_id_t first_page_id{INVALID_PAGE_ID};
+        
+        // 新增：表所有者信息
+        std::string owner;        // 表创建者
+        time_t created_at;        // 创建时间
 
         int getColumnIndex(const std::string &col_name) const
         {
@@ -68,12 +72,21 @@ namespace minidb
 
         // ===== 表管理 =====
         void CreateTable(const std::string &table_name, const std::vector<Column> &columns);
+        void CreateTable(const std::string &table_name, const std::vector<Column> &columns, const std::string &owner);
 
         void LoadFromStorage();
 
         std::vector<std::string> GetTableColumns(const std::string &table_name);
         bool HasTable(const std::string &table_name) const;
         TableSchema GetTable(const std::string &table_name) const;
+        
+        // 表所有者相关接口
+        std::string GetTableOwner(const std::string &table_name) const;
+        bool IsTableOwner(const std::string &table_name, const std::string &username) const;
+        std::vector<std::string> GetTablesByOwner(const std::string &username) const;
+        
+        // 获取所有表名
+        std::vector<std::string> GetAllTableNames() const;
 
         void SaveToStorage();
 

@@ -1,6 +1,7 @@
 #include "storage/buffer/buffer_pool_manager.h"
 #include "util/logger.h"
 #include <cassert>
+#include <iostream>
 
 namespace minidb {
 
@@ -67,7 +68,8 @@ bool BufferPoolManager::FlushFrameToPages(frame_id_t frame_id) {
 Page* BufferPoolManager::FetchPage(page_id_t page_id) {
     std::unique_lock<std::shared_mutex> lock(latch_);
     // Guard: reject fetching pages beyond allocated range
-    if (page_id == INVALID_PAGE_ID || static_cast<size_t>(page_id) >= disk_manager_->GetNumPages()) {
+    if (page_id == INVALID_PAGE_ID || static_cast<size_t>(page_id) > disk_manager_->GetNumPages()) {
+        std::cout << "[BufferPoolManager::FetchPage] Page ID " << page_id << " >= GetNumPages()=" << disk_manager_->GetNumPages() << std::endl;
         return nullptr;
     }
     num_accesses_.fetch_add(1);
@@ -99,8 +101,10 @@ Page* BufferPoolManager::FetchPage(page_id_t page_id) {
 
     // 从磁盘读入目标页
     Status s = disk_manager_->ReadPage(page_id, frame_page.GetData());
+    std::cout << "[BufferPoolManager::FetchPage] ReadPage page_id=" << page_id << " returned status=" << (int)s << std::endl;
     if (s != Status::OK) {
         // 读失败，回收该帧到空闲列表
+        std::cout << "[BufferPoolManager::FetchPage] ReadPage failed for page_id=" << page_id << std::endl;
         std::lock_guard<std::mutex> guard(free_list_mutex_);
         free_list_.push_front(fid);
         return nullptr;
@@ -121,7 +125,9 @@ Page* BufferPoolManager::NewPage(page_id_t* page_id) {
     if (page_id == nullptr) return nullptr;
     std::unique_lock<std::shared_mutex> lock(latch_);
     frame_id_t fid = FindVictimFrame();
+    std::cout << "[BufferPoolManager::NewPage] FindVictimFrame returned " << fid << " (pool_size=" << pool_size_ << ")" << std::endl;
     if (fid == INVALID_FRAME_ID) {
+        std::cout << "[BufferPoolManager::NewPage] No available frame!" << std::endl;
         return nullptr;
     }
     // 淘汰旧页

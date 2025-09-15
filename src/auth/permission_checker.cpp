@@ -16,10 +16,8 @@ bool PermissionChecker::checkPermission(Permission permission) const {
 bool PermissionChecker::checkTablePermission(const std::string& table_name, Permission permission) const {
     if (!auth_service_) return false;
     
-    // 这里可以添加表级别的权限检查
-    // 目前只检查基本权限
-    (void)table_name; // 避免未使用参数警告
-    return auth_service_->hasPermission(permission);
+    // 使用AuthService的表权限检查方法
+    return auth_service_->checkTablePermission(table_name, permission);
 }
 
 bool PermissionChecker::checkSQLPermission(const std::string& sql) const {

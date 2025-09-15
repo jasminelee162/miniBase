@@ -1,5 +1,5 @@
 #pragma once
-#include <unordered_map>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -12,11 +12,12 @@ enum class Role {
     ANALYST     // 数据分析人员
 };
 
+// 为Role枚举添加比较操作符，使std::unordered_map可以正常工作
+inline bool operator==(Role a, Role b) {
+    return static_cast<int>(a) == static_cast<int>(b);
+}
+
 enum class Permission {
-    // 数据库管理权限
-    CREATE_DATABASE, DROP_DATABASE,
-    BACKUP, RESTORE,
-    
     // 表结构权限
     CREATE_TABLE, DROP_TABLE, ALTER_TABLE,
     CREATE_INDEX, DROP_INDEX,
@@ -32,9 +33,14 @@ enum class Permission {
     SHOW_VARIABLES, SET_VARIABLES
 };
 
+// 为Permission枚举添加比较操作符，使std::set可以正常工作
+inline bool operator<(Permission a, Permission b) {
+    return static_cast<int>(a) < static_cast<int>(b);
+}
+
 class RoleManager {
 private:
-    std::unordered_map<Role, std::set<Permission>> role_permissions_;
+    std::map<Role, std::set<Permission>> role_permissions_;
     
     void initializeRolePermissions();
     

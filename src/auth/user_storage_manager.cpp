@@ -173,6 +173,17 @@ std::vector<std::string> UserStorageManager::listUsers() {
     return usernames;
 }
 
+std::vector<UserRecord> UserStorageManager::getAllUsers() {
+    if (!initialized_) return {};
+    
+    try {
+        return getAllUserRecords();
+    } catch (...) {
+        // 忽略错误，返回空列表
+        return {};
+    }
+}
+
 UserRecord UserStorageManager::getUserInfo(const std::string& username) {
     if (!initialized_) return UserRecord();
     
@@ -204,11 +215,13 @@ bool UserStorageManager::insertUserRecord(const UserRecord& user) {
     try {
         // 获取用户表的第一个数据页
         TableSchema table_schema = catalog_->GetTable(USER_TABLE_NAME);
+        std::cout << "[UserStorageManager] Getting user table page, first_page_id=" << table_schema.first_page_id << std::endl;
         Page* page = storage_engine_->GetDataPage(table_schema.first_page_id);
         if (!page) {
             std::cerr << "[UserStorageManager] Failed to get user table page" << std::endl;
             return false;
         }
+        std::cout << "[UserStorageManager] Successfully got user table page" << std::endl;
         
         // 序列化用户记录
         std::string user_data = serializeUserRecord(user);

@@ -5,31 +5,26 @@
 
 namespace minidb {
 
-AuthService::AuthService() : current_user_(""), is_logged_in_(false), use_storage_engine_(false) {
-    // 加载用户数据
-    loadFromFile("users.dat");
-}
-
 AuthService::AuthService(StorageEngine* storage_engine, Catalog* catalog) 
-    : current_user_(""), is_logged_in_(false), use_storage_engine_(true) {
+    : catalog_(catalog), current_user_(""), is_logged_in_(false) {
     // 使用存储引擎初始化用户管理
     user_storage_manager_ = std::make_unique<UserStorageManager>(storage_engine, catalog);
     if (!user_storage_manager_->initialize()) {
         std::cerr << "[AuthService] Failed to initialize user storage manager" << std::endl;
-        use_storage_engine_ = false;
+        throw std::runtime_error("Failed to initialize user storage manager");
     }
 }
 
 bool AuthService::login(const std::string& username, const std::string& password) {
-    bool success = false;
-    
-    if (use_storage_engine_ && user_storage_manager_) {
-        success = user_storage_manager_->authenticate(username, password);
-    } else {
-        success = user_manager_.authenticate(username, password);
+    // 安全检查：如果已经登录，不允许重复登录
+    if (is_logged_in_) {
+        std::cerr << "[AuthService] Already logged in as: " << current_user_ 
+                  << ". Please logout first before logging in as another user." << std::endl;
+        return false;
     }
     
-    if (success) {
+    // 使用存储引擎进行认证
+    if (user_storage_manager_->authenticate(username, password)) {
         current_user_ = username;
         is_logged_in_ = true;
         return true;
@@ -51,82 +46,97 @@ std::string AuthService::getCurrentUser() const {
 }
 
 bool AuthService::createUser(const std::string& username, const std::string& password, Role role) {
-    // 检查当前用户是否有权限创建用户
-    if (!isDBA()) {
+    // 安全检查：必须先登录
+    if (!is_logged_in_) {
+        std::cerr << "[AuthService] Must be logged in to create users." << std::endl;
         return false;
     }
     
-    if (use_storage_engine_ && user_storage_manager_) {
-        return user_storage_manager_->createUser(username, password, role);
-    } else {
-        return user_manager_.createUser(username, password, role);
+    // 检查当前用户是否有权限创建用户
+    if (!isDBA()) {
+        std::cerr << "[AuthService] Only DBA users can create other users." << std::endl;
+        return false;
     }
+    
+    return user_storage_manager_->createUser(username, password, role);
 }
 
 bool AuthService::userExists(const std::string& username) const {
-    if (use_storage_engine_ && user_storage_manager_) {
-        return user_storage_manager_->userExists(username);
-    } else {
-        return user_manager_.userExists(username);
-    }
+    return user_storage_manager_->userExists(username);
 }
 
 bool AuthService::deleteUser(const std::string& username) {
-    // 检查当前用户是否有权限删除用户
-    if (!isDBA()) {
+    // 安全检查：必须先登录
+    if (!is_logged_in_) {
+        std::cerr << "[AuthService] Must be logged in to delete users." << std::endl;
         return false;
     }
     
-    if (use_storage_engine_ && user_storage_manager_) {
-        return user_storage_manager_->deleteUser(username);
-    } else {
-        return user_manager_.deleteUser(username);
+    // 检查当前用户是否有权限删除用户
+    if (!isDBA()) {
+        std::cerr << "[AuthService] Only DBA users can delete other users." << std::endl;
+        return false;
     }
+    
+    return user_storage_manager_->deleteUser(username);
 }
 
 std::vector<std::string> AuthService::listUsers() const {
-    // 检查当前用户是否有权限查看用户列表
-    if (!isDBA()) {
+    // 安全检查：必须先登录
+    if (!is_logged_in_) {
+        std::cerr << "[AuthService] Must be logged in to list users." << std::endl;
         return {};
     }
     
-    if (use_storage_engine_ && user_storage_manager_) {
-        return user_storage_manager_->listUsers();
-    } else {
-        return user_manager_.listUsers();
+    // 检查当前用户是否有权限查看用户列表
+    if (!isDBA()) {
+        std::cerr << "[AuthService] Only DBA users can list other users." << std::endl;
+        return {};
     }
+    
+    return user_storage_manager_->listUsers();
 }
 
 std::vector<UserInfo> AuthService::getAllUsers() const {
-    // 检查当前用户是否有权限查看用户列表
-    if (!isDBA()) {
+    // 安全检查：必须先登录
+    if (!is_logged_in_) {
+        std::cerr << "[AuthService] Must be logged in to get user information." << std::endl;
         return {};
     }
     
-    return user_manager_.getAllUsers();
+    // 检查当前用户是否有权限查看用户列表
+    if (!isDBA()) {
+        std::cerr << "[AuthService] Only DBA users can get user information." << std::endl;
+        return {};
+    }
+    
+    auto user_records = user_storage_manager_->getAllUsers();
+    std::vector<UserInfo> user_infos;
+    for (const auto& record : user_records) {
+        UserInfo info;
+        info.username = record.username;
+        info.password_hash = record.password_hash;
+        info.role = record.role;
+        info.created_at = record.created_at;
+        info.last_login = record.last_login;
+        user_infos.push_back(info);
+    }
+    return user_infos;
 }
 
 bool AuthService::hasPermission(Permission permission) const {
     if (!is_logged_in_) return false;
     
-    if (use_storage_engine_ && user_storage_manager_) {
-        // 从存储引擎获取用户角色
-        Role user_role = user_storage_manager_->getUserRole(current_user_);
-        RoleManager role_manager;
-        return role_manager.hasPermission(user_role, permission);
-    } else {
-        return user_manager_.hasPermission(current_user_, permission);
-    }
+    // 从存储引擎获取用户角色
+    Role user_role = user_storage_manager_->getUserRole(current_user_);
+    RoleManager role_manager;
+    return role_manager.hasPermission(user_role, permission);
 }
 
 Role AuthService::getCurrentUserRole() const {
     if (!is_logged_in_) return Role::ANALYST;
     
-    if (use_storage_engine_ && user_storage_manager_) {
-        return user_storage_manager_->getUserRole(current_user_);
-    } else {
-        return user_manager_.getUserRole(current_user_);
-    }
+    return user_storage_manager_->getUserRole(current_user_);
 }
 
 bool AuthService::isDBA() const {
@@ -145,17 +155,39 @@ std::vector<Permission> AuthService::getCurrentUserPermissions() const {
     return role_manager.getRolePermissions(getCurrentUserRole());
 }
 
-bool AuthService::saveToFile(const std::string& filename) const {
-    return user_manager_.saveToFile(filename);
-}
-
-bool AuthService::loadFromFile(const std::string& filename) {
-    return user_manager_.loadFromFile(filename);
-}
+// 文件持久化方法已移除，数据通过存储引擎自动持久化
 
 void AuthService::setCurrentUser(const std::string& username) {
     current_user_ = username;
     is_logged_in_ = !username.empty();
+}
+
+bool AuthService::checkTablePermission(const std::string& table_name, Permission permission) const {
+    if (!is_logged_in_ || !catalog_) return false;
+    
+    // 获取当前用户和角色
+    std::string current_user = getCurrentUser();
+    Role user_role = getCurrentUserRole();
+    
+    // DBA可以操作所有表
+    if (user_role == Role::DBA) {
+        return hasPermission(permission);
+    }
+    
+    // DEVELOPER只能操作自己创建的表
+    if (user_role == Role::DEVELOPER) {
+        if (catalog_->IsTableOwner(table_name, current_user)) {
+            return hasPermission(permission);
+        }
+        return false; // 不能操作其他用户的表
+    }
+    
+    // ANALYST只能查看所有表
+    if (user_role == Role::ANALYST) {
+        return permission == Permission::SELECT;
+    }
+    
+    return false;
 }
 
 std::string AuthService::permissionToString(Permission permission) const {

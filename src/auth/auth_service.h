@@ -1,8 +1,9 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "user_manager.h"
+#include <ctime>
 #include "user_storage_manager.h"
+#include "role_manager.h"
 
 // 前向声明
 namespace minidb {
@@ -12,16 +13,28 @@ namespace minidb {
 
 namespace minidb {
 
+// 用户信息结构体（与UserRecord兼容）
+struct UserInfo {
+    std::string username;
+    std::string password_hash;
+    Role role;
+    time_t created_at;
+    time_t last_login;
+    
+    UserInfo() : role(Role::ANALYST), created_at(0), last_login(0) {}
+    
+    UserInfo(const std::string& uname, const std::string& phash, Role r)
+        : username(uname), password_hash(phash), role(r), created_at(time(nullptr)), last_login(0) {}
+};
+
 class AuthService {
 private:
-    UserManager user_manager_;
     std::unique_ptr<UserStorageManager> user_storage_manager_;
+    Catalog* catalog_;  // 用于表权限检查
     std::string current_user_;
     bool is_logged_in_;
-    bool use_storage_engine_;
     
 public:
-    AuthService();
     AuthService(StorageEngine* storage_engine, Catalog* catalog);
     
     // 认证相关
@@ -47,12 +60,13 @@ public:
     std::vector<Permission> getCurrentUserPermissions() const;
     std::string permissionToString(Permission permission) const;
     
-    // 持久化
-    bool saveToFile(const std::string& filename) const;
-    bool loadFromFile(const std::string& filename);
+    // 持久化（通过存储引擎自动处理）
     
     // 工具方法
     void setCurrentUser(const std::string& username);
+    
+    // 表权限检查（需要Catalog访问）
+    bool checkTablePermission(const std::string& table_name, Permission permission) const;
 };
 
 } // namespace minidb
