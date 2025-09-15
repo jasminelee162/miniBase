@@ -1,50 +1,102 @@
-# 忽略编译产物
-/build/
-out/
-
-# CMake
-CMakeCache.txt
-CMakeFiles/
-cmake_install.cmake
-install_manifest.txt
-DependInfo.cmake
-Makefile
-
-# 忽略所有 .bin 文件
-*.bin
-
-# 忽略 data/ 目录下的所有内容
-/data/
-
-# 常见二进制/中间文件
-*.o
-*.obj
-*.so
-*.dll
-*.exe
-*.lib
-*.a
-*.pdb
-*.db
-*.log
-
-# IDE / 编辑器
-.vscode/
-.vs/
-.idea/
-*.suo
-*.user
-*.sln
-*.vcxproj*
-
-# OS
+# OS / editor
 .DS_Store
 Thumbs.db
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+.idea/
+*.code-workspace
 
-# 日志 / 临时
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.ncb
+*.aps
+*.pch
+*.opendb
+*.VC.db
+*.VC.opendb
+*.ipch
+ipch/
+
+# Build directories
+build/
+**/CMakeFiles/
+**/CMakeScratch/
+
+# CMake generated files
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+**/CMakeCache.txt
+**/cmake_install.cmake
+**/CTestTestfile.cmake
+**/Testing/
+
+# Visual Studio generator outputs from CMake
+*.sln
+*.vcxproj
+*.vcxproj.filters
+ZERO_CHECK.vcxproj
+ZERO_CHECK.vcxproj.filters
+ALL_BUILD.vcxproj
+ALL_BUILD.vcxproj.filters
+RUN_TESTS.vcxproj
+RUN_TESTS.vcxproj.filters
+
+# MSBuild/CL intermediates
+**/Debug/
+**/Release/
+**/RelWithDebInfo/
+**/MinSizeRel/
+**/*.dir/
+**/*.obj
+**/*.o
+**/*.tlog
+**/*.lastbuildstate
+**/*.recipe
+**/*.ilk
+**/*.pdb
+**/*.idb
+
+# Binaries and libraries
+**/*.exe
+**/*.dll
+**/*.lib
+**/*.exp
+**/*.a
+**/*.so
+**/*.dylib
+
+# Architecture-specific output
+**/x64/
+
+# Project outputs
+out/
+
+# Logs and temporary outputs
 *.log
-*.tmp
+logs/
 
-# 语言运行时缓存
-__pycache__/
-node_modules/
+# Local/test databases and artifacts (keep curated data/)
+/test_*.db
+/test*.db
+/test*.dat
+/*.dat
+*.db
+!data/**
+
+# Misc caches/temp
+*.tmp
+*.cache
+
+# # Keep sources, tests, docs, and config tracked
+# !src/**
+# !tests/**
+# !docs/**
+# !README.md
+# !CMakeLists.txt
