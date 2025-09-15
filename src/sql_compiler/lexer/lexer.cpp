@@ -23,7 +23,13 @@ Lexer::Lexer(const std::string& source)
     keywords["ORDER"] = TokenType::KEYWORD_ORDER;
     keywords["ASC"] = TokenType::KEYWORD_ASC;
     keywords["DESC"] = TokenType::KEYWORD_DESC;
-    
+
+    keywords["JOIN"] = TokenType::KEYWORD_JOIN;
+    keywords["ON"] = TokenType::KEYWORD_ON;
+    keywords["INNER"] = TokenType::KEYWORD_INNER;
+    keywords["LEFT"] = TokenType::KEYWORD_LEFT;
+    keywords["RIGHT"] = TokenType::KEYWORD_RIGHT;
+
     keywords["CREATE"] = TokenType::KEYWORD_CREATE;
     keywords["TABLE"] = TokenType::KEYWORD_TABLE;
 

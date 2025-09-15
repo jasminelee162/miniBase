@@ -8,7 +8,14 @@
 
 // 前向声明
 class ASTVisitor;
-
+struct JoinClause {
+    std::string joinType;     // "INNER", "LEFT", "RIGHT", "FULL"
+    std::string tableName;    // 要连接的表名
+    std::string condition;    // 连接条件，如 "teachers.subject = departments.dept_name"
+    
+    JoinClause(const std::string& type, const std::string& table, const std::string& cond)
+        : joinType(type), tableName(table), condition(cond) {}
+};
 // AST节点基类
 class ASTNode {
 public:
@@ -183,19 +190,34 @@ class SelectStatement : public Statement {
 public:
     SelectStatement(std::vector<std::string> cols, 
                    std::vector<std::unique_ptr<AggregateExpression>> aggs,
-                   const std::string& table, 
+                   const std::string& mainTable,
+                   std::vector<JoinClause> joinList = {},
                    std::unique_ptr<Expression> where = nullptr,
                    std::vector<std::string> groupBy = {},
                    std::unique_ptr<Expression> having = nullptr,
                    std::vector<std::string> orderBy = {},
                    bool orderDesc = false)
-        : columns(std::move(cols)), aggregates(std::move(aggs)), tableName(table), 
-          whereClause(std::move(where)), groupByColumns(std::move(groupBy)), 
-          havingClause(std::move(having)), orderByColumns(std::move(orderBy)),
-          orderByDesc(orderDesc) {}
+        : columns(std::move(cols)), 
+          aggregates(std::move(aggs)), 
+          mainTableName(mainTable),
+          joins(std::move(joinList)),
+          whereClause(std::move(where)), 
+          groupByColumns(std::move(groupBy)), 
+          havingClause(std::move(having)),
+          orderByColumns(std::move(orderBy)),
+          orderByDesc(orderDesc) 
+    {
+        // 构建完整的表列表
+        fromTables.push_back(mainTableName);
+        for (const auto& join : joins) {
+            fromTables.push_back(join.tableName);
+        }
+    }
     
     const std::vector<std::string>& getColumns() const { return columns; }
-    const std::string& getTableName() const { return tableName; }
+    const std::string& getMainTableName() const { return mainTableName; }
+    const std::string& getTableName() const { return mainTableName; } // 向后兼容
+    
     Expression* getWhereClause() const { return whereClause.get(); }
     //Group by
     const std::vector<std::unique_ptr<AggregateExpression>>& getAggregates() const { return aggregates; }
@@ -206,11 +228,17 @@ public:
     const std::vector<std::string>& getOrderByColumns() const { return orderByColumns; }
     bool isOrderByDesc() const { return orderByDesc; }
 
+    //JOIN
+    const std::vector<std::string>& getFromTables() const { return fromTables; }
+    const std::vector<JoinClause>& getJoins() const { return joins; }
+        // 判断是否包含 JOIN
+    bool hasJoins() const { return !joins.empty(); }
+
     void accept(ASTVisitor& visitor) override;
 
 private:
     std::vector<std::string> columns;
-    std::string tableName;
+    // std::string tableName;
     std::unique_ptr<Expression> whereClause;
 
     //Group by
@@ -221,7 +249,15 @@ private:
     // Order by
     std::vector<std::string> orderByColumns;
     bool orderByDesc;
+
+    //join
+    // FROM 部分
+    std::string mainTableName;                    // 主表名，等同于tableName
+    std::vector<std::string> fromTables;          // 所有涉及的表（包括主表和 JOIN 表）
+    std::vector<JoinClause> joins;                // JOIN 子句列表
+    
 };
+
 
 // DELETE语句
 class DeleteStatement : public Statement {
@@ -259,6 +295,35 @@ private:
     std::unique_ptr<Expression> whereClause_;
 };
 
+//JOIN
+class JoinStatement : public Statement {
+private:
+    std::vector<std::string> columns;
+    std::vector<std::string> fromTables;
+    std::string joinType;  // "INNER", "LEFT", "RIGHT"
+    std::string joinCondition;
+    std::unique_ptr<Expression> whereClause;
+
+public:
+    JoinStatement(std::vector<std::string> cols,
+                  std::vector<std::string> tables,
+                  const std::string& joinType,
+                  const std::string& condition,
+                  std::unique_ptr<Expression> where = nullptr)
+        : columns(std::move(cols)), 
+          fromTables(std::move(tables)), 
+          joinType(joinType),
+          joinCondition(condition),
+          whereClause(std::move(where)) {}
+
+    const std::vector<std::string>& getColumns() const { return columns; }
+    const std::vector<std::string>& getFromTables() const { return fromTables; }
+    const std::string& getJoinType() const { return joinType; }
+    const std::string& getJoinCondition() const { return joinCondition; }
+    const Expression* getWhereClause() const { return whereClause.get(); }
+
+    void accept(ASTVisitor& visitor) override;
+};
 // AST访问者接口
 class ASTVisitor {
 public:

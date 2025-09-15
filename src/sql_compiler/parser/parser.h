@@ -50,6 +50,7 @@ private:
     std::unique_ptr<SelectStatement> selectStatement();
     std::unique_ptr<DeleteStatement> deleteStatement();
     std::unique_ptr<UpdateStatement> updateStatement();
+    // std::unique_ptr<JoinStatement> joinStatement();
 
     // 表达式解析
     std::unique_ptr<Expression> expression();
@@ -62,6 +63,10 @@ private:
     std::vector<ColumnDefinition> columnDefinitions();
     std::vector<std::string> columnNames();
     std::vector<ValueList> valueLists();
+
+    std::string parseJoinCondition(); // 解析JOIN条件
+    std::unique_ptr<JoinClause> parseJoinClause(); // 解析单个JOIN
+    // bool isJoinStatement() const;
 };
 
 #endif // MINIBASE_PARSER_H
