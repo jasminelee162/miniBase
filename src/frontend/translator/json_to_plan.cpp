@@ -1,7 +1,9 @@
 #include "json_to_plan.h"
-#include "../../engine/operators/plan_node.h"
+#include "../../engine/operators/plan_node.h" // path 根据你的工程实际路径调整
 #include <stdexcept>
 #include <iostream>
+
+using json = nlohmann::json;
 
 std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
 {
@@ -179,6 +181,45 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
         // 不需要子节点，也没有其他参数
         node->children.clear();
     }
+    else if (type == "CreateProcedure")
+    {
+        node->type = PlanType::CreateProcedure;
+
+        if (!j.contains("name") || !j["name"].is_string())
+            throw std::runtime_error("CreateProcedure plan must have name");
+        node->proc_name = j["name"].get<std::string>();
+
+        // 参数列表（可选）
+        if (j.contains("params") && j["params"].is_array())
+        {
+            for (auto &param : j["params"])
+                node->proc_params.push_back(param.get<std::string>());
+        }
+
+        // 过程体（必须）
+        if (!j.contains("body") || !j["body"].is_string())
+            throw std::runtime_error("CreateProcedure plan must have body");
+        node->proc_body = j["body"].get<std::string>();
+
+        node->children.clear(); // 定义过程不需要子节点
+    }
+    else if (type == "CallProcedure")
+    {
+        node->type = PlanType::CallProcedure;
+
+        if (!j.contains("name") || !j["name"].is_string())
+            throw std::runtime_error("CallProcedure plan must have name");
+        node->proc_name = j["name"].get<std::string>();
+
+        // 调用实参（可选）
+        if (j.contains("args") && j["args"].is_array())
+        {
+            for (auto &arg : j["args"])
+                node->proc_args.push_back(arg.get<std::string>());
+        }
+
+        node->children.clear(); // 调用过程不需要子节点
+    }
 
     else
         throw std::runtime_error("Unknown plan type: " + type);
@@ -219,8 +260,10 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
 
     if (j.contains("set_values"))
     {
-        for (auto &[col, val] : j["set_values"].items())
-            node->set_values[col] = val.get<std::string>();
+        for (auto it = j["set_values"].begin(); it != j["set_values"].end(); ++it)
+        {
+            node->set_values[it.key()] = it.value().get<std::string>();
+        }
     }
 
     if (j.contains("predicate"))

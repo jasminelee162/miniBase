@@ -30,6 +30,14 @@ namespace minidb
         page_id_t root_page_id{INVALID_PAGE_ID}; // 索引入口页（B+ 树 root）
     };
 
+    // 存储过程定义
+    struct ProcedureDef
+    {
+        std::string name;
+        std::vector<std::string> params; // 形参
+        std::string body;                // SQL 体
+    };
+
     // 表定义
     struct TableSchema
     {
@@ -107,6 +115,22 @@ namespace minidb
         // ===== 删除接口 =====
         void DropTable(const std::string &table_name);
         void DropIndex(const std::string &index_name);
+
+        std::unordered_map<std::string, ProcedureDef> procedures_;
+        void CreateProcedure(const ProcedureDef &proc)
+        {
+            procedures_[proc.name] = proc;
+        }
+
+        bool HasProcedure(const std::string &name) const
+        {
+            return procedures_.find(name) != procedures_.end();
+        }
+
+        const ProcedureDef &GetProcedure(const std::string &name) const
+        {
+            return procedures_.at(name);
+        }
 
     private:
         StorageEngine *storage_engine_{nullptr}; // 如果通过构造或 Set 注入则使用
