@@ -55,6 +55,35 @@ json ASTJson::toJson(const Statement* stmt)
     // SELECT
     if (auto sel = dynamic_cast<const SelectStatement*>(stmt)) {
         json j;
+        // 检查是否有 JOIN
+        if (sel->hasJoins()) {
+            j["type"] = "Join";
+            j["from_tables"] = sel->getFromTables();
+            
+            // 假设只有一个 JOIN（可以扩展支持多个）
+            if (!sel->getJoins().empty()) {
+                j["predicate"] = sel->getJoins()[0].condition;
+            }
+            
+            // 创建子节点结构
+            json child;
+            child["type"] = "SeqScan";
+            child["table_name"] = sel->getMainTableName();
+            j["child"] = child;
+            
+            // 创建 children 数组
+            json children = json::array();
+            for (const auto& joinClause : sel->getJoins()) {
+                json joinChild;
+                joinChild["type"] = "SeqScan";
+                joinChild["table_name"] = joinClause.tableName;
+                children.push_back(joinChild);
+            }
+            j["children"] = children;
+            
+            return j;
+        }
+
         // 检查是否有 ORDER BY
         if (!sel->getOrderByColumns().empty()) {
             // 如果有 ORDER BY，创建嵌套结构

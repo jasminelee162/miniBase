@@ -57,8 +57,7 @@ INSERT INTO departments (dept_id, dept_name, building) VALUES
     (4, 'History', 'Liberal Arts Hall'),
     (5, 'Chemistry', 'Science Hall');
 SELECT * FROM departments;
-SELECT * FROM teachers 
-JOIN departments ON teachers.subject = departments.dept_name;
+SELECT * FROM teachers JOIN departments ON teachers.subject = departments.dept_name;
 --------------------------------
 
 DROP TABLE IF EXISTS employees_914;

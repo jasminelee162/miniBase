@@ -46,6 +46,12 @@ inline constexpr const char* EXPECT_BY_AFTER_GROUP = "在 'GROUP' 之后缺少�
 inline constexpr const char* EXPECT_IDENTIFIER = "缺少标识符";
 inline constexpr const char* EXPECT_COMMA_OR_FROM = "缺少逗号或关键字 'FROM'";
 inline constexpr const char* EXPECT_BY_AFTER_ORDER = "在 'ORDER' 之后缺少关键字 'BY'";
+
+inline constexpr const char* EXPECT_JOIN_AFTER_TYPE = "在 'JOIN' 之后缺少连接类型";
+inline constexpr const char* EXPECT_ON_AFTER_JOIN = "在 'JOIN' 之后缺少 'ON' 子句";
+inline constexpr const char* EXPECT_DOT = "缺少 '.'";
+inline constexpr const char* EXPECT_EQUALS = "缺少 '='";
+
 // VARCHAR length specific
 inline constexpr const char* EXPECT_VARCHAR_LENGTH = "在 'VARCHAR(' 之后期望长度";
 inline constexpr const char* EXPECT_RPAREN_AFTER_VARCHAR_LEN = "在 VARCHAR 长度之后期望出现 ')'";

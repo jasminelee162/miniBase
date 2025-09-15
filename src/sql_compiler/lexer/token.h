@@ -26,6 +26,13 @@ enum class TokenType {
     KEYWORD_ORDER,
     KEYWORD_ASC,
     KEYWORD_DESC,  
+
+    //Join
+    KEYWORD_JOIN,
+    KEYWORD_ON,
+    KEYWORD_INNER,
+    KEYWORD_LEFT,
+    KEYWORD_RIGHT,
       
     //CREATE
     KEYWORD_CREATE,

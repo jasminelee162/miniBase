@@ -224,7 +224,7 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
     
     // 解析列名列表
     std::vector<std::string> columns;
-    //聚合函数
+        //聚合函数
     std::vector<std::unique_ptr<AggregateExpression>> aggregates;
 
     //解析列表过程
@@ -265,17 +265,17 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
     
     if (!check(TokenType::KEYWORD_FROM)) {
         Token t = peek();
-        throw ParseError("Expected 'FROM' before '" + t.lexeme + "'", t.line, t.column);
+        throw ParseError("缺少'FROM' 在 '" + t.lexeme + "'之前", t.line, t.column);
     }
     consume(TokenType::KEYWORD_FROM, SqlErrors::EXPECT_FROM_AFTER_COLS);
     
     if (!check(TokenType::IDENTIFIER)) {
         Token t = peek();
-        throw ParseError("Expected table name after FROM", t.line, t.column);
+        throw ParseError("FROM之后要有表名", t.line, t.column);
     }
-    Token tableNameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
-    std::string tableName = tableNameToken.lexeme;
-    
+    Token mainTableNameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
+    std::string mainTableName = mainTableNameToken.lexeme; //mainTableName=tableName
+
     // 可选的WHERE子句
     std::unique_ptr<Expression> whereClause = nullptr;
     if (match(TokenType::KEYWORD_WHERE)) {
@@ -320,19 +320,69 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
         }
         // 如果都没有，保持默认的 orderByDesc = false (ASC)
     }
+    //可选的join子句
+    // ===== 解析 JOIN 子句 =====
+    std::vector<JoinClause> joins;
+    
+    while (check(TokenType::KEYWORD_JOIN) || check(TokenType::KEYWORD_INNER) || 
+           check(TokenType::KEYWORD_LEFT) || check(TokenType::KEYWORD_RIGHT)) {
+        
+        std::string joinType = "INNER"; // 默认
+        
+        // 解析 JOIN 类型
+        if (match(TokenType::KEYWORD_INNER)) {
+            joinType = "INNER";
+            consume(TokenType::KEYWORD_JOIN, SqlErrors::EXPECT_JOIN_AFTER_TYPE);
+        } else if (match(TokenType::KEYWORD_LEFT)) {
+            joinType = "LEFT";
+            consume(TokenType::KEYWORD_JOIN, SqlErrors::EXPECT_JOIN_AFTER_TYPE);
+        } else if (match(TokenType::KEYWORD_RIGHT)) {
+            joinType = "RIGHT";
+            consume(TokenType::KEYWORD_JOIN, SqlErrors::EXPECT_JOIN_AFTER_TYPE);
+        } else if (match(TokenType::KEYWORD_JOIN)) {
+            joinType = "INNER";
+        }
 
+        // 解析连接的表名
+        Token joinTableToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
+        std::string joinTableName = joinTableToken.lexeme;
+
+        // 解析 ON 条件
+        consume(TokenType::KEYWORD_ON, SqlErrors::EXPECT_ON_AFTER_JOIN);
+        std::string joinCondition = parseJoinCondition();
+
+        // 添加到 JOIN 列表
+        joins.emplace_back(joinType, joinTableName, joinCondition);
+    }
+
+    /* -------在上方增加功能----------*/
     consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_SELECT);
     return std::make_unique<SelectStatement>(
         std::move(columns), 
         std::move(aggregates), 
-        tableName, 
+        mainTableName, 
+        std::move(joins),
         std::move(whereClause), 
         std::move(groupByColumns), 
         std::move(havingClause),
         std::move(orderByColumns), 
         orderByDesc);
 }
+std::string Parser::parseJoinCondition() {
+    // 解析 table1.column = table2.column 格式
+    Token leftTable = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
+    consume(TokenType::DELIMITER_DOT, SqlErrors::EXPECT_DOT);
+    Token leftCol = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
+    
+    consume(TokenType::OPERATOR_EQ, SqlErrors::EXPECT_EQUALS);
+    
+    Token rightTable = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
+    consume(TokenType::DELIMITER_DOT, SqlErrors::EXPECT_DOT);
+    Token rightCol = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
 
+    return leftTable.lexeme + "." + leftCol.lexeme + "=" + 
+           rightTable.lexeme + "." + rightCol.lexeme;
+}
 // 解析DELETE语句
 std::unique_ptr<DeleteStatement> Parser::deleteStatement() {
     // DELETE FROM tableName WHERE condition
@@ -352,6 +402,8 @@ std::unique_ptr<DeleteStatement> Parser::deleteStatement() {
     
     return std::make_unique<DeleteStatement>(tableName, std::move(whereClause));
 }
+
+//解析update语句
 std::unique_ptr<UpdateStatement> Parser::updateStatement() {
     // UPDATE tableName SET col1 = val1, col2 = val2 WHERE condition
     consume(TokenType::KEYWORD_UPDATE, SqlErrors::EXPECT_UPDATE);
@@ -383,7 +435,10 @@ std::unique_ptr<UpdateStatement> Parser::updateStatement() {
     consume(TokenType::DELIMITER_SEMICOLON, SqlErrors::EXPECT_SEMI_AFTER_UPDATE);
     
     return std::make_unique<UpdateStatement>(tableName, std::move(assignments), std::move(whereClause));
+
 }
+
+
 // 表达式解析
 std::unique_ptr<Expression> Parser::expression() {
     return comparison();
@@ -481,3 +536,4 @@ std::unique_ptr<Expression> Parser::primary() {
     
     throw ParseError(SqlErrors::EXPECT_EXPRESSION, peek().line, peek().column);
 }
+
