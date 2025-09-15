@@ -360,6 +360,23 @@ public:
 
     void accept(ASTVisitor& visitor) override;
 };
+
+// CREATE PROCEDURE 语句
+class CreateProcedureStatement : public Statement {
+private:
+    std::string procName;
+    std::vector<std::string> params;
+    std::string body;
+public:
+    CreateProcedureStatement(const std::string& name, std::vector<std::string> p, const std::string& b)
+        : procName(name), params(std::move(p)), body(b) {}
+
+    const std::string& getProcName() const { return procName; }
+    const std::vector<std::string>& getParams() const { return params; }
+    const std::string& getBody() const { return body; }
+
+    void accept(ASTVisitor& visitor) override;
+};
 // AST访问者接口
 class ASTVisitor {
 public:
@@ -377,6 +394,7 @@ public:
     virtual void visit(ShowTablesStatement& stmt) = 0;
     virtual void visit(DropStatement& stmt) = 0;
     virtual void visit(CallProcedureStatement& stmt) = 0;
+    virtual void visit(CreateProcedureStatement& stmt) = 0;
 };
 
 #endif // MINIBASE_AST_H

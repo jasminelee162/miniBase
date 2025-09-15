@@ -258,6 +258,15 @@ json ASTJson::toJson(const Statement* stmt)
         j["proc_args"] = call->getArgs();
         return j;
     }
+    // CREATE PROCEDURE
+    if (auto createProc = dynamic_cast<const CreateProcedureStatement*>(stmt)) {
+        json j;
+        j["type"] = "CreateProcedure";
+        j["proc_name"] = createProc->getProcName();
+        j["proc_params"] = createProc->getParams();
+        j["proc_body"] = createProc->getBody();
+        return j;
+    }
     throw std::runtime_error(SqlErrors::UNSUPPORTED_STMT_JSON);
 }
 

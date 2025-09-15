@@ -35,6 +35,19 @@ static void print_help()
 using minidb::cliutil::autocorrect_leading_keyword;
 using minidb::cliutil::can_terminate_without_semicolon;
 
+static int count_substring(const std::string &s, const std::string &pat)
+{
+    if (pat.empty()) return 0;
+    int cnt = 0;
+    size_t pos = 0;
+    while ((pos = s.find(pat, pos)) != std::string::npos)
+    {
+        cnt++;
+        pos += pat.size();
+    }
+    return cnt;
+}
+
 int main(int argc, char **argv)
 {
 #ifdef _WIN32
@@ -109,7 +122,12 @@ int main(int argc, char **argv)
             continue;
 
         buffer += line;
-        if (buffer.find(';') == std::string::npos)
+        // 若存在未闭合的 BEGIN/END 块，则继续读入，直至匹配的 END; 出现
+        int beginCount = count_substring(buffer, "BEGIN");
+        int endCount = count_substring(buffer, "END");
+        bool hasUnclosedBlock = beginCount > endCount;
+
+        if (buffer.find(';') == std::string::npos || hasUnclosedBlock)
         {
             if (can_terminate_without_semicolon(buffer, line))
             {

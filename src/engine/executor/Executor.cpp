@@ -1263,7 +1263,28 @@ namespace minidb
             ProcedureDef proc;
             proc.name = node->proc_name;
             proc.params = node->proc_params;
-            proc.body = node->proc_body;
+            
+            // 处理过程体：将参数名替换为 ? 占位符
+            std::string processedBody = node->proc_body;
+            for (const auto& param : node->proc_params) {
+                // 简单的字符串替换，将参数名替换为 ?
+                size_t pos = 0;
+                while ((pos = processedBody.find(param, pos)) != std::string::npos) {
+                    // 确保是完整的单词匹配
+                    bool isWordStart = (pos == 0 || !std::isalnum(processedBody[pos-1]) && processedBody[pos-1] != '_');
+                    bool isWordEnd = (pos + param.length() >= processedBody.length() || 
+                                    !std::isalnum(processedBody[pos + param.length()]) && processedBody[pos + param.length()] != '_');
+                    
+                    if (isWordStart && isWordEnd) {
+                        processedBody.replace(pos, param.length(), "?");
+                        pos += 1; // 跳过替换的 ?
+                    } else {
+                        pos += param.length();
+                    }
+                }
+            }
+            
+            proc.body = processedBody;
 
             // 注册到 Catalog
             catalog_->CreateProcedure(proc);

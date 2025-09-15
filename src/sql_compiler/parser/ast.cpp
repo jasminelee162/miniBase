@@ -55,4 +55,8 @@ void CallProcedureStatement::accept(ASTVisitor &visitor)
 {
     visitor.visit(*this);
 }
+void CreateProcedureStatement::accept(ASTVisitor &visitor)
+{
+    visitor.visit(*this);
+}
  

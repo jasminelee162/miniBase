@@ -59,6 +59,13 @@ Token Parser::advance() {
     return tokens[current - 1];
 }
 
+Token Parser::peekNext() const {
+    if (current + 1 >= tokens.size()) {
+        return Token(TokenType::END_OF_FILE, "", 0, 0);
+    }
+    return tokens[current + 1];
+}
+
 bool Parser::match(TokenType type) {
     if (check(type)) {
         advance();
@@ -135,6 +142,14 @@ std::unique_ptr<Statement> Parser::statement() {
     Token token = peek();
     
     if (token.type == TokenType::KEYWORD_CREATE) {
+        // 根据下一个 token 决定 CREATE 的子类型
+        Token next = peekNext();
+        if (next.type == TokenType::KEYWORD_TABLE) {
+            return createStatement();
+        } else if (next.type == TokenType::KEYWORD_PROCEDURE) {
+            return createProcedureStatement();
+        }
+        // 兜底：仍走 createStatement() 以复用错误提示，但提示里不应强制 TABLE
         return createStatement();
     } else if (token.type == TokenType::KEYWORD_INSERT) {
         return insertStatement();
@@ -155,6 +170,9 @@ std::unique_ptr<Statement> Parser::statement() {
     else if (token.type == TokenType::KEYWORD_CALL) {
         return callProcedureStatement();
     }
+    else if (token.type == TokenType::KEYWORD_CREATE && peek().type == TokenType::KEYWORD_PROCEDURE) {
+        return createProcedureStatement();
+    }
     
     
     throw ParseError(SqlErrors::EXPECT_STATEMENT, token.line, token.column);
@@ -164,6 +182,7 @@ std::unique_ptr<Statement> Parser::statement() {
 std::unique_ptr<CreateTableStatement> Parser::createStatement() {
     // CREATE TABLE tableName ( columnDef, columnDef, ... )
     consume(TokenType::KEYWORD_CREATE, SqlErrors::EXPECT_CREATE);
+    // 放宽：允许 CREATE 后不是 TABLE 时，由外层逻辑分支去处理（这里仍保留原校验）
     consume(TokenType::KEYWORD_TABLE, SqlErrors::EXPECT_TABLE_AFTER_CREATE);
     
     Token tableNameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
@@ -569,6 +588,90 @@ std::vector<std::string> Parser::parseCallArgs(){
         }
     } while (match(TokenType::DELIMITER_COMMA));
     return args;
+}
+
+// 解析 CREATE PROCEDURE 语句: CREATE PROCEDURE name(param1 type1, param2 type2) BEGIN ... END;
+std::unique_ptr<CreateProcedureStatement> Parser::createProcedureStatement(){
+    consume(TokenType::KEYWORD_CREATE, "期望 'CREATE'");
+    consume(TokenType::KEYWORD_PROCEDURE, "期望 'PROCEDURE'");
+    
+    Token nameTok = consume(TokenType::IDENTIFIER, "PROCEDURE 之后需要过程名");
+    std::string procName = nameTok.lexeme;
+    
+    std::vector<std::string> params;
+    if (match(TokenType::DELIMITER_LPAREN)) {
+        params = parseProcedureParams();
+        consume(TokenType::DELIMITER_RPAREN, "PROCEDURE 参数列表缺少 ')'");
+    }
+    
+    // 解析 BEGIN ... END 块（并基于参数名做替换）
+    std::string body = parseProcedureBody(params);
+    
+    consume(TokenType::DELIMITER_SEMICOLON, "CREATE PROCEDURE 语句末尾需要 ';'");
+    return std::make_unique<CreateProcedureStatement>(procName, std::move(params), body);
+}
+
+std::vector<std::string> Parser::parseProcedureParams(){
+    std::vector<std::string> params;
+    if (check(TokenType::DELIMITER_RPAREN)) return params; // 空参数
+    
+    do {
+        Token paramTok = consume(TokenType::IDENTIFIER, "期望参数名");
+        params.push_back(paramTok.lexeme);
+        
+        // 跳过类型声明 (VARCHAR, INT 等)
+        if (match(TokenType::KEYWORD_VARCHAR) || match(TokenType::KEYWORD_INT)) {
+            // 类型已消费，继续
+        }
+    } while (match(TokenType::DELIMITER_COMMA));
+    
+    return params;
+}
+
+std::string Parser::parseProcedureBody(const std::vector<std::string>& paramNames){
+    consume(TokenType::KEYWORD_BEGIN, "期望 'BEGIN'");
+    
+    std::string body;
+    int braceCount = 0;
+    
+    while (!isAtEnd()) {
+        Token token = advance();
+        
+        if (token.type == TokenType::KEYWORD_BEGIN) {
+            braceCount++;
+        } else if (token.type == TokenType::KEYWORD_END) {
+            if (braceCount == 0) {
+                // 找到匹配的 END
+                break;
+            }
+            braceCount--;
+        }
+        
+        // 仅当是参数名时，替换为 ?；否则保持原 token
+        if (token.type == TokenType::IDENTIFIER) {
+            bool isParam = false;
+            for (const auto& p : paramNames) {
+                if (p == token.lexeme) { isParam = true; break; }
+            }
+            body += (isParam ? std::string("?") : token.lexeme);
+        } else if (token.type == TokenType::CONST_STRING) {
+            // 还原为带引号的字符串
+            body += std::string("'") + token.lexeme + std::string("'");
+        } else {
+            body += token.lexeme;
+        }
+        
+        if (!body.empty() && body.back() != ' ') {
+            body += " ";
+        }
+    }
+    
+    // 去掉末尾多余空格
+    while (!body.empty() && body.back() == ' ') {
+        body.pop_back();
+    }
+    
+    return body;
 }
 // 表达式解析
 std::unique_ptr<Expression> Parser::expression() {

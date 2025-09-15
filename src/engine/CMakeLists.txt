@@ -9,4 +9,5 @@ target_include_directories(executor_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(executor_lib PUBLIC
     storage_lib
     util_lib
+    auth_lib
 )

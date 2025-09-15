@@ -62,6 +62,12 @@ INSERT INTO departments (dept_id, dept_name, building) VALUES
 SELECT * FROM departments;
 SELECT * FROM teachers JOIN departments ON teachers.subject = departments.dept_name;
 
+-- 存储过程
+CREATE PROCEDURE test_proc (teacher_name VARCHAR)
+BEGIN
+    INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (1, teacher_name, 'Math', 5);
+END;
+
 CALL test_proc('John Smith'); 
 --------------------------------
 

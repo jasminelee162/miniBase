@@ -185,21 +185,31 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
     {
         node->type = PlanType::CreateProcedure;
 
-        if (!j.contains("name") || !j["name"].is_string())
+        // 兼容两种键名：{name,params,body} 或 {proc_name,proc_params,proc_body}
+        if (j.contains("name") && j["name"].is_string())
+            node->proc_name = j["name"].get<std::string>();
+        else if (j.contains("proc_name") && j["proc_name"].is_string())
+            node->proc_name = j["proc_name"].get<std::string>();
+        else
             throw std::runtime_error("CreateProcedure plan must have name");
-        node->proc_name = j["name"].get<std::string>();
 
-        // 参数列表（可选）
         if (j.contains("params") && j["params"].is_array())
         {
-            for (auto &param : j["params"])
+            for (auto &param : j["params"]) 
+                node->proc_params.push_back(param.get<std::string>());
+        }
+        else if (j.contains("proc_params") && j["proc_params"].is_array())
+        {
+            for (auto &param : j["proc_params"]) 
                 node->proc_params.push_back(param.get<std::string>());
         }
 
-        // 过程体（必须）
-        if (!j.contains("body") || !j["body"].is_string())
+        if (j.contains("body") && j["body"].is_string())
+            node->proc_body = j["body"].get<std::string>();
+        else if (j.contains("proc_body") && j["proc_body"].is_string())
+            node->proc_body = j["proc_body"].get<std::string>();
+        else
             throw std::runtime_error("CreateProcedure plan must have body");
-        node->proc_body = j["body"].get<std::string>();
 
         node->children.clear(); // 定义过程不需要子节点
     }

@@ -57,6 +57,9 @@ enum class TokenType {
 
     // PROCEDURE
     KEYWORD_CALL,
+    KEYWORD_PROCEDURE,
+    KEYWORD_BEGIN,
+    KEYWORD_END,
 
     //数据类型
     KEYWORD_INT,

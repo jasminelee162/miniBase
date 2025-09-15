@@ -37,6 +37,7 @@ private:
 
     // 辅助方法
     Token peek() const;
+    Token peekNext() const;
     Token advance();
     bool match(TokenType type);
     bool check(TokenType type) const;
@@ -54,6 +55,7 @@ private:
     std::unique_ptr<ShowTablesStatement> showTablesStatement();
     std::unique_ptr<DropStatement> dropStatement();
     std::unique_ptr<CallProcedureStatement> callProcedureStatement();
+    std::unique_ptr<CreateProcedureStatement> createProcedureStatement();
 
     // 表达式解析
     std::unique_ptr<Expression> expression();
@@ -69,6 +71,10 @@ private:
 
     // CALL 参数解析
     std::vector<std::string> parseCallArgs();
+    
+    // CREATE PROCEDURE 参数解析
+    std::vector<std::string> parseProcedureParams();
+    std::string parseProcedureBody(const std::vector<std::string>& paramNames);
 
     std::string parseJoinCondition(); // 解析JOIN条件
     std::unique_ptr<JoinClause> parseJoinClause(); // 解析单个JOIN

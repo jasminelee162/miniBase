@@ -408,3 +408,15 @@ void SemanticAnalyzer::visit(CallProcedureStatement &stmt)
         throw SemanticError(SemanticError::ErrorType::UNKNOWN, "Catalog is not set for CALL");
     }
 }
+
+void SemanticAnalyzer::visit(CreateProcedureStatement &stmt)
+{
+    Logger logger("logs/semantic.log");
+    logger.log(std::string("[Semantic] Create procedure: ") + stmt.getProcName());
+    // CREATE PROCEDURE 暂不进行复杂的语义检查，由执行阶段处理
+    // 可选：这里可以检查过程名是否已存在
+    if (!catalog_)
+    {
+        throw SemanticError(SemanticError::ErrorType::UNKNOWN, "Catalog is not set for CREATE PROCEDURE");
+    }
+}
