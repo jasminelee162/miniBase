@@ -476,5 +476,16 @@ namespace minidb
         
         return table_names;
     }
+        std::vector<std::string> Catalog::GetAllTables() const
+    {
+        std::lock_guard<std::recursive_mutex> guard(latch_);
+        std::vector<std::string> result;
+        result.reserve(tables_.size());
+        for (const auto &kv : tables_)
+        {
+            result.push_back(kv.first);
+        }
+        return result;
+    }
 
 } // namespace minidb

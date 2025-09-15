@@ -34,14 +34,14 @@ int main(int argc, char** argv) {
     bool doExec = true;            // default execute
     bool outputJsonOnly = false;   // --json overrides
     std::string dbFile = "data/mini.db"; //文件存储位置
-    std::string catalogFile = "catalog.dat";
+    // std::string catalogFile = "catalog.dat";
 
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--exec") { doExec = true; outputJsonOnly = false; }
         else if (arg == "--json") { outputJsonOnly = true; doExec = false; }
         else if (arg == "--db" && i + 1 < argc) { dbFile = argv[++i]; }
-        else if (arg == "--catalog" && i + 1 < argc) { catalogFile = argv[++i]; }
+        // else if (arg == "--catalog" && i + 1 < argc) { catalogFile = argv[++i]; }
         else if (arg == "-h" || arg == "--help") { print_help(); return 0; }
         else {
             std::cerr << "Unknown argument: " << arg << std::endl;
