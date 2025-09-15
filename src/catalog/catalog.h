@@ -38,10 +38,10 @@ namespace minidb
 
         // 新增：记录表的首个数据页
         page_id_t first_page_id{INVALID_PAGE_ID};
-        
+
         // 新增：表所有者信息
-        std::string owner;        // 表创建者
-        time_t created_at;        // 创建时间
+        std::string owner; // 表创建者
+        time_t created_at; // 创建时间
 
         int getColumnIndex(const std::string &col_name) const
         {
@@ -79,12 +79,12 @@ namespace minidb
         std::vector<std::string> GetTableColumns(const std::string &table_name);
         bool HasTable(const std::string &table_name) const;
         TableSchema GetTable(const std::string &table_name) const;
-        
+
         // 表所有者相关接口
         std::string GetTableOwner(const std::string &table_name) const;
         bool IsTableOwner(const std::string &table_name, const std::string &username) const;
         std::vector<std::string> GetTablesByOwner(const std::string &username) const;
-        
+
         // 获取所有表名
         std::vector<std::string> GetAllTableNames() const;
 
@@ -103,6 +103,10 @@ namespace minidb
         std::string FindIndexByColumn(const std::string &table_name, const std::string &col) const;
 
         std::vector<std::string> GetAllTables() const; // 导出中使用
+
+        // ===== 删除接口 =====
+        void DropTable(const std::string &table_name);
+        void DropIndex(const std::string &index_name);
 
     private:
         StorageEngine *storage_engine_{nullptr}; // 如果通过构造或 Set 注入则使用

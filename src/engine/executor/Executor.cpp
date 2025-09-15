@@ -1185,6 +1185,41 @@ namespace minidb
             return result;
         }
 
+        case PlanType::Drop:
+        {
+            logger.log("DROP TABLE " + node->table_name);
+            std::cout << "[Executor] 删除整张表: " << node->table_name << std::endl;
+
+            if (!storage_engine_ || !catalog_)
+            {
+                std::cerr << "[Drop] Catalog 或 StorageEngine 未初始化" << std::endl;
+                return {};
+            }
+
+            // 检查表是否存在
+            if (!catalog_->HasTable(node->table_name))
+            {
+                std::cerr << "[Drop] 表 " << node->table_name << " 不存在" << std::endl;
+                return {};
+            }
+
+            // 删除该表相关索引
+            auto idxs = catalog_->GetTableIndexes(node->table_name);
+            for (auto &idx_schema : idxs)
+            {
+                catalog_->DropIndex(idx_schema.index_name);
+            }
+
+            // 删除表元数据
+            catalog_->DropTable(node->table_name);
+
+            // 保存 Catalog
+            catalog_->SaveToStorage();
+
+            std::cout << "[Drop] 表 " << node->table_name << " 已被删除 (仅删除元数据)" << std::endl;
+            return {};
+        }
+
         default:
             std::cerr << "[Executor] 未知 PlanNode 类型" << std::endl;
             return {};

@@ -166,6 +166,19 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
         node->type = PlanType::ShowTables;
         // SHOW TABLES 不需要额外参数
     }
+    else if (type == "Drop")
+    {
+        node->type = PlanType::Drop;
+
+        // DROP TABLE 一般 JSON 会有 table_name
+        if (!j.contains("table_name"))
+            throw std::runtime_error("Drop plan must have table_name");
+
+        node->table_name = j["table_name"].get<std::string>();
+
+        // 不需要子节点，也没有其他参数
+        node->children.clear();
+    }
 
     else
         throw std::runtime_error("Unknown plan type: " + type);

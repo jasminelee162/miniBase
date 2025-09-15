@@ -52,11 +52,28 @@ int main()
         exec.execute(&ct);
     }
 
-    /* 2. 测试 SHOW TABLES */
+    /* 2. SHOW TABLES (删除前) */
     {
         PlanNode show;
         show.type = PlanType::ShowTables;
-        std::cout << "\n== SHOW TABLES ==\n";
+        std::cout << "\n== SHOW TABLES (before drop) ==\n";
+        printResult(exec.execute(&show));
+    }
+
+    /* 3. DROP TABLE students */
+    {
+        PlanNode drop;
+        drop.type = PlanType::Drop;
+        drop.table_name = "students";
+        std::cout << "\n== DROP TABLE students ==\n";
+        exec.execute(&drop);
+    }
+
+    /* 4. SHOW TABLES (删除后) */
+    {
+        PlanNode show;
+        show.type = PlanType::ShowTables;
+        std::cout << "\n== SHOW TABLES (after drop) ==\n";
         printResult(exec.execute(&show));
     }
 

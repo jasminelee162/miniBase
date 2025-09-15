@@ -89,7 +89,7 @@ namespace minidb
 
         // ===== 统一使用 SaveToStorage() 更新 CatalogPage =====
         SaveToStorage();
-        
+
         // 更新元数据中的next_page_id，确保新分配的页面ID被正确保存
         // 直接更新StorageEngine的元数据，确保next_page_id正确递增
         storage_engine_->SetNextPageId(pid + 1);
@@ -97,73 +97,6 @@ namespace minidb
         std::cout << "[CreateTable] 表 " << table_name
                   << " 创建成功，目录已保存，首个数据页 = " << pid << std::endl;
     }
-
-    // CatalogData Catalog::SerializeTables()
-    // {
-    //     CatalogData cd;
-    //     std::ostringstream oss;
-
-    //     for (const auto &[name, schema] : tables_)
-    //     {
-    //         oss << schema.table_name << "|"
-    //             << schema.first_page_id;
-    //         for (const auto &col : schema.columns)
-    //         {
-    //             oss << "|" << col.name << ":" << col.type << ":" << col.length;
-    //         }
-    //         oss << "\n";
-    //     }
-
-    //     std::string tmp = oss.str();
-    //     cd.data = std::vector<char>(tmp.begin(), tmp.end());
-    //     return cd;
-    // }
-
-    // void Catalog::DeserializeTables(const CatalogData &cd)
-    // {
-    //     tables_.clear();
-    //     std::string tmp(cd.data.begin(), cd.data.end());
-    //     std::istringstream iss(tmp);
-
-    //     std::string line;
-
-    //     while (std::getline(iss, line))
-    //     {
-    //         if (line.empty())
-    //             continue;
-
-    //         std::istringstream ls(line);
-    //         std::string token;
-
-    //         // 先读表名和first_page_id
-    //         std::getline(ls, token, '|');
-    //         std::string table_name = token;
-
-    //         std::getline(ls, token, '|');
-    //         page_id_t first_pid = std::stoi(token);
-
-    //         TableSchema schema;
-    //         schema.table_name = table_name;
-    //         schema.first_page_id = first_pid;
-
-    //         // 继续解析列
-    //         while (std::getline(ls, token, '|'))
-    //         {
-    //             size_t p1 = token.find(':');
-    //             size_t p2 = token.find(':', p1 + 1);
-    //             if (p1 == std::string::npos || p2 == std::string::npos)
-    //                 continue;
-
-    //             Column col;
-    //             col.name = token.substr(0, p1);
-    //             col.type = token.substr(p1 + 1, p2 - p1 - 1);
-    //             col.length = std::stoi(token.substr(p2 + 1));
-    //             schema.columns.push_back(col);
-    //         }
-
-    //         tables_[table_name] = schema;
-    //     }
-    // }
 
     bool Catalog::HasTable(const std::string &table_name) const
     {
@@ -257,14 +190,18 @@ namespace minidb
 
             // first_page_id
             std::getline(ls, token, '|');
-            if (token.empty()) {
+            if (token.empty())
+            {
                 std::cerr << "[Catalog::LoadFromStorage] Empty first_page_id for table: " << table_name << std::endl;
                 continue;
             }
             page_id_t first_pid;
-            try {
+            try
+            {
                 first_pid = std::stoi(token);
-            } catch (const std::exception& e) {
+            }
+            catch (const std::exception &e)
+            {
                 std::cerr << "[Catalog::LoadFromStorage] Invalid first_page_id '" << token << "' for table: " << table_name << std::endl;
                 continue;
             }
@@ -276,10 +213,14 @@ namespace minidb
             // created_at
             std::getline(ls, token, '|');
             time_t created_at = 0;
-            if (!token.empty()) {
-                try {
+            if (!token.empty())
+            {
+                try
+                {
                     created_at = std::stoll(token);
-                } catch (const std::exception& e) {
+                }
+                catch (const std::exception &e)
+                {
                     std::cerr << "[Catalog::LoadFromStorage] Invalid created_at '" << token << "' for table: " << table_name << std::endl;
                     created_at = 0;
                 }
@@ -302,9 +243,12 @@ namespace minidb
                 Column col;
                 col.name = token.substr(0, p1);
                 col.type = token.substr(p1 + 1, p2 - p1 - 1);
-                try {
+                try
+                {
                     col.length = std::stoi(token.substr(p2 + 1));
-                } catch (const std::exception& e) {
+                }
+                catch (const std::exception &e)
+                {
                     std::cerr << "[Catalog::LoadFromStorage] Invalid column length '" << token.substr(p2 + 1) << "' for column: " << col.name << std::endl;
                     col.length = -1; // 默认值
                 }
@@ -316,7 +260,7 @@ namespace minidb
 
         std::cout << "[Catalog::LoadFromStorage] 加载完成，共 "
                   << tables_.size() << " 张表" << std::endl;
-        
+
         // 释放CatalogPage
         storage_engine_->PutPage(catalog_page->GetPageId(), false);
     }
@@ -430,7 +374,7 @@ namespace minidb
     }
 
     // ===== 表所有者相关方法 =====
-    
+
     std::string Catalog::GetTableOwner(const std::string &table_name) const
     {
         std::lock_guard<std::recursive_mutex> lock(latch_);
@@ -452,7 +396,7 @@ namespace minidb
     {
         std::lock_guard<std::recursive_mutex> lock(latch_);
         std::vector<std::string> tables;
-        
+
         for (const auto &pair : tables_)
         {
             if (pair.second.owner == username)
@@ -460,7 +404,7 @@ namespace minidb
                 tables.push_back(pair.first);
             }
         }
-        
+
         return tables;
     }
 
@@ -468,15 +412,15 @@ namespace minidb
     {
         std::lock_guard<std::recursive_mutex> lock(latch_);
         std::vector<std::string> table_names;
-        
+
         for (const auto &pair : tables_)
         {
             table_names.push_back(pair.first);
         }
-        
+
         return table_names;
     }
-        std::vector<std::string> Catalog::GetAllTables() const
+    std::vector<std::string> Catalog::GetAllTables() const
     {
         std::lock_guard<std::recursive_mutex> guard(latch_);
         std::vector<std::string> result;
@@ -486,6 +430,36 @@ namespace minidb
             result.push_back(kv.first);
         }
         return result;
+    }
+
+    void Catalog::DropTable(const std::string &table_name)
+    {
+        std::lock_guard<std::recursive_mutex> guard(latch_);
+        auto it = tables_.find(table_name);
+        if (it != tables_.end())
+        {
+            tables_.erase(it);
+            std::cout << "[Catalog] 已删除表: " << table_name << std::endl;
+        }
+        else
+        {
+            std::cerr << "[Catalog] 删除表失败，未找到: " << table_name << std::endl;
+        }
+    }
+
+    void Catalog::DropIndex(const std::string &index_name)
+    {
+        std::lock_guard<std::recursive_mutex> guard(latch_);
+        auto it = indexes_.find(index_name);
+        if (it != indexes_.end())
+        {
+            indexes_.erase(it);
+            std::cout << "[Catalog] 已删除索引: " << index_name << std::endl;
+        }
+        else
+        {
+            std::cerr << "[Catalog] 删除索引失败，未找到: " << index_name << std::endl;
+        }
     }
 
 } // namespace minidb

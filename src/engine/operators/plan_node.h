@@ -24,7 +24,8 @@ enum class PlanType
     Having,
     Join,
     OrderBy,
-    ShowTables // 新增
+    ShowTables, // 新增
+    Drop        // 新增
 };
 
 struct AggregateExpr
