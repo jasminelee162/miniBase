@@ -132,6 +132,11 @@ namespace minidb
             return procedures_.at(name);
         }
 
+        StorageEngine *GetStorageEngine() const
+        {
+            return storage_engine_;
+        }
+
     private:
         StorageEngine *storage_engine_{nullptr}; // 如果通过构造或 Set 注入则使用
         std::unordered_map<std::string, TableSchema> tables_;

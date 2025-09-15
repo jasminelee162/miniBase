@@ -9,7 +9,9 @@
 #include "../../storage/page/page.h"      // Page
 #include "../operators/row.h"             // Row, ColumnValue
 #include "../../util/logger.h"
+#include "../../optimizer/index_optimizer.h" // 新增：索引优化器
 #include "../../auth/permission_checker.h"
+
 #include <iostream>
 
 namespace minidb
@@ -58,6 +60,7 @@ namespace minidb
         std::shared_ptr<Catalog> catalog_; // 新增
 
         PermissionChecker *permissionChecker_; // 权限检查器
+        std::unique_ptr<IndexOptimizer> optimizer_;
     };
 
 } // namespace minidb
