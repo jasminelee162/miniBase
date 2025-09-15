@@ -1418,7 +1418,35 @@ namespace minidb
 
         const auto &schema = catalog_->GetTable(table_name);
 
-        // 1) 尝试找到可用的单列 B+ 索引（优先第一个满足条件的）
+        // ------------------------
+        // 1) 优化器尝试选择最佳索引
+        // ------------------------
+        BPlusTree *best_index = nullptr;
+        if (optimizer_)
+        {
+            // 使用优化器选择代价最优的索引（范围为整表遍历）
+            best_index = optimizer_->ChooseBestIndex(table_name, INT32_MIN, INT32_MAX);
+        }
+
+        if (best_index)
+        {
+            // 使用优化器选择的 B+ 树做全表扫描
+            auto rids = best_index->Range(INT32_MIN, INT32_MAX);
+            all_rows.reserve(rids.size());
+
+            for (const RID &rid : rids)
+            {
+                auto maybe_row = FetchRowByRID(storage_engine_.get(), rid, schema);
+                if (maybe_row.has_value())
+                    all_rows.push_back(std::move(maybe_row.value()));
+            }
+
+            return all_rows; // 成功用索引完成扫描
+        }
+
+        // ------------------------
+        // 2) 原有逻辑：尝试第一个单列 B+ 树索引做叶链扫描
+        // ------------------------
         std::vector<IndexSchema> idxs = catalog_->GetTableIndexes(table_name);
         IndexSchema usable_idx;
         bool found_idx = false;
@@ -1426,7 +1454,6 @@ namespace minidb
         {
             if (idx.type == "BPLUS" && idx.cols.size() == 1)
             {
-                // 这里只简单认为单列索引可以直接用于全表遍历（叶链遍历）
                 usable_idx = idx;
                 found_idx = true;
                 break;
@@ -1435,11 +1462,9 @@ namespace minidb
 
         if (found_idx && usable_idx.root_page_id != INVALID_PAGE_ID)
         {
-            // 使用 B+ 树做全表扫描（通过 range 从最小键到最大键）
             BPlusTree bpt(storage_engine_.get());
             bpt.SetRoot(usable_idx.root_page_id);
 
-            // Range 用 int32 的边界进行整表遍历（你的 BPlusTree.Range 返回 RID 列表）
             auto rids = bpt.Range(INT32_MIN, INT32_MAX);
             all_rows.reserve(rids.size());
 
@@ -1448,13 +1473,14 @@ namespace minidb
                 auto maybe_row = FetchRowByRID(storage_engine_.get(), rid, schema);
                 if (maybe_row.has_value())
                     all_rows.push_back(std::move(maybe_row.value()));
-                // 否则跳过（可能索引指向已删除或损坏的行）
             }
 
             return all_rows;
         }
 
-        // 回退：原有的页链式全表扫描
+        // ------------------------
+        // 3) 原有页链扫描回退
+        // ------------------------
         page_id_t first_page_id = schema.first_page_id;
         auto pages = storage_engine_->GetPageChain(first_page_id);
 
