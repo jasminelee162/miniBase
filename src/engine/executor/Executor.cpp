@@ -355,6 +355,7 @@ namespace minidb
      */
     std::vector<Row> Executor::execute(PlanNode *node)
     {
+        txn_mgr_ = std::make_shared<TransactionManager>(storage_engine_);
         if (!node)
         {
             std::cerr << "[Executor] Null PlanNode" << std::endl;
@@ -397,7 +398,7 @@ namespace minidb
             TableSchema schema = catalog_->GetTable(node->table_name);
             page_id_t first_page_id = schema.first_page_id;
 
-            // 如果表还没有首页，则创建一个数据页并写回 schema
+            // === 确保有首页 ===
             Page *cur_page = nullptr;
             if (first_page_id == INVALID_PAGE_ID)
             {
@@ -409,18 +410,15 @@ namespace minidb
                     return {};
                 }
                 first_page_id = new_pid;
-                // 更新 catalog 内存，再持久化到页0（稍后统一保存）
                 schema.first_page_id = first_page_id;
-                // update internal map (catalog_ holds its own copy)
-                // 如果你的 Catalog::GetTable 返回的是副本，需要一个 SetTable 或直接操作内部 map；这里假设有方法 SaveToStorage 会覆盖
-                catalog_->CreateTable(schema.table_name, schema.columns); // 如果 CreateTable 已处理重复则改成直接更新内部 map
+                catalog_->CreateTable(schema.table_name, schema.columns); // 更新内存
+                // 首页事务追踪改为统一通知 BPlusTree 不直接调用 txn_mgr_
             }
             else
             {
                 cur_page = storage_engine_->GetDataPage(first_page_id);
                 if (!cur_page)
                 {
-                    // 首页丢失或被覆盖，尝试重新创建并设置
                     page_id_t new_pid = INVALID_PAGE_ID;
                     cur_page = storage_engine_->CreateDataPage(&new_pid);
                     if (!cur_page)
@@ -430,17 +428,17 @@ namespace minidb
                     }
                     first_page_id = new_pid;
                     schema.first_page_id = first_page_id;
-                    catalog_->CreateTable(schema.table_name, schema.columns); // 同上，确保 catalog 内存更新
+                    catalog_->CreateTable(schema.table_name, schema.columns);
+                    // 首页事务追踪改为统一通知 BPlusTree
                 }
             }
 
-            // 为每条插入记录保存它实际写入的 page id（对应 node->values 顺序）
+            // 保存每条记录的 page_id 用于索引插入
             std::vector<page_id_t> inserted_pids;
             inserted_pids.reserve(node->values.size());
 
             for (size_t row_idx = 0; row_idx < node->values.size(); ++row_idx)
             {
-                // build Row from PlanNode row values
                 Row row;
                 for (size_t i = 0; i < node->columns.size(); ++i)
                 {
@@ -450,15 +448,12 @@ namespace minidb
                     row.columns.push_back(cv);
                 }
 
-                // 将 Row 序列化为字节（你需要实现 Row::Serialize 或等价函数）
                 std::vector<char> buf;
-                row.Serialize(buf, schema); // 必须实现：按 schema 将 row 转为 bytes（连续记录），返回 buf.size()
+                row.Serialize(buf, schema);
 
-                // 尝试追加到当前页
                 bool appended = storage_engine_->AppendRecordToPage(cur_page, buf.data(), static_cast<uint16_t>(buf.size()));
                 if (!appended)
                 {
-                    // 当前页满：分配新页，链接，然后写入新页
                     page_id_t new_pid = INVALID_PAGE_ID;
                     Page *new_page = storage_engine_->CreateDataPage(&new_pid);
                     if (!new_page)
@@ -466,36 +461,29 @@ namespace minidb
                         std::cerr << "[Executor] 无法分配新数据页" << std::endl;
                         return {};
                     }
-                    // 链接旧页 -> 新页
+
                     storage_engine_->LinkPages(cur_page->GetPageId(), new_pid);
-                    // 记得 unpin 旧页（如果需要），但 AppendRecordToPage/PutPage 负责
                     cur_page = new_page;
 
-                    // 再次尝试追加（若仍失败说明记录超大）
                     appended = storage_engine_->AppendRecordToPage(cur_page, buf.data(), static_cast<uint16_t>(buf.size()));
                     if (!appended)
                     {
-                        std::cerr << "[Executor] 单条记录太大，无法写入空页，跳过或报错" << std::endl;
-                        // 选择：跳过这条或中止整个插入；这里中止
+                        std::cerr << "[Executor] 单条记录太大，无法写入空页" << std::endl;
                         return {};
                     }
                 }
 
-                // 记录该行写入的 page id（slot 暂定 0）
                 inserted_pids.push_back(cur_page->GetPageId());
 
-                // 将当前页 unpin（不要标脏这里——AppendRecordToPage 可能已设置脏）
+                // 数据页事务追踪不再每次调用 txn_mgr_
                 storage_engine_->PutPage(cur_page->GetPageId(), true);
-                // 将 cur_page 重新 fetch 回来以便后续追加（可选优化）
                 cur_page = storage_engine_->GetDataPage(cur_page->GetPageId());
             }
 
-            // 更新内存的 TableSchema（如果需要）
-            // 假设 catalog_ 内部存的是副本，确保写回 first_page_id
-            // 推荐提供 Catalog::UpdateTableFirstPageId() 或 SaveToStorage 会序列化当前内存结构
-            catalog_->SaveToStorage(); // 写回页0的Catalog元数据（含首页信息）
+            // 更新 catalog 首页信息
+            catalog_->SaveToStorage();
 
-            // ========== 更新索引（逐条对应 inserted_pids） ==========
+            // ====== 索引更新 ======
             std::vector<IndexSchema> indexes = catalog_->GetTableIndexes(node->table_name);
             for (auto &index : indexes)
             {
@@ -516,24 +504,39 @@ namespace minidb
                     bpt.SetRoot(index.root_page_id);
                 }
 
-                // 用每条插入记录对应的 page id 构造 RID，插入索引
                 for (size_t i = 0; i < inserted_pids.size() && i < node->values.size(); ++i)
                 {
-                    const std::string &key_str = node->values[i][col_idx];
-                    int32_t key = std::stoi(key_str);
-                    RID rid{inserted_pids[i], 0}; // slot=0 暂定
-                    bpt.Insert(key, rid);
+                    try
+                    {
+                        const std::string &key_str = node->values[i][col_idx];
+                        int32_t key = std::stoi(key_str);
+                        RID rid{inserted_pids[i], 0};
+                        bpt.Insert(key, rid);
+                    }
+                    catch (const std::exception &e)
+                    {
+                        std::cerr << "[Executor] 索引插入异常: " << e.what() << std::endl;
+                        return {};
+                    }
                 }
 
-                // 可能根页发生变化（分裂），需要更新 index.root_page_id
                 index.root_page_id = bpt.GetRoot();
+
+                // === 统一事务通知 BPlusTree 修改页 ===
+                if (txn_mgr_ && txn_mgr_->IsActive())
+                {
+                    for (auto pid : bpt.GetModifiedPages())
+                        txn_mgr_->RecordPageModification(pid);
+                    bpt.ClearModifiedPages();
+                }
             }
 
-            // 最后把 catalog（包含更新后的 index.root_page_id）写回页0
+            // 最后写回 catalog（含索引 root_page_id）
             catalog_->SaveToStorage();
 
             return {};
         }
+
         // SeqScan（修复）
         case PlanType::SeqScan:
         {
@@ -570,93 +573,40 @@ namespace minidb
             const auto &schema = catalog_->GetTable(node->table_name);
             size_t deleted = 0;
 
-            // ===== 优先查找索引 =====
-            // 这里假设 predicate 是 "col = value" 这种简单形式
-            std::string col, value;
-            if (parsePredicate(node->predicate, col, value)) // 你需要写个 parsePredicate 简单解析
-            {
-                auto idx_name = catalog_->FindIndexByColumn(node->table_name, col);
-                if (!idx_name.empty())
-                {
-                    const auto &idx_schema = catalog_->GetIndex(idx_name);
-                    if (idx_schema.type == "BPLUS")
-                    {
-                        BPlusTree bpt(storage_engine_.get()); // ✅ 构造函数只接受 StorageEngine*
-
-                        // 用索引定位要删除的 key
-                        int64_t key = std::stoll(value);
-                        auto rid_opt = bpt.Search(static_cast<int32_t>(key)); // 返回 optional<RID>
-
-                        if (rid_opt.has_value())
-                        {
-                            RID rid = rid_opt.value();
-
-                            Page *p = storage_engine_->GetDataPage(rid.page_id);
-                            if (p)
-                            {
-                                auto records = storage_engine_->GetPageRecords(p);
-                                std::vector<std::pair<const void *, uint16_t>> new_records;
-
-                                const minidb::TableSchema &schema = catalog_->GetTable(node->table_name);
-                                for (auto &rec : records)
-                                {
-                                    auto row = Row::Deserialize(
-                                        reinterpret_cast<const unsigned char *>(rec.first),
-                                        rec.second,
-                                        schema);
-                                    if (!matchesPredicate(row, node->predicate))
-                                    {
-                                        new_records.push_back(rec);
-                                    }
-                                    else
-                                    {
-                                        ++deleted;
-                                        // 从 B+ 树索引中删除 key
-                                        bpt.Delete(static_cast<int32_t>(key));
-                                    }
-                                }
-
-                                // 重写数据页
-                                p->InitializePage(PageType::DATA_PAGE);
-                                for (auto &rec : new_records)
-                                {
-                                    storage_engine_->AppendRecordToPage(p, rec.first, rec.second);
-                                }
-                                storage_engine_->PutPage(rid.page_id, true);
-                            }
-                        }
-
-                        std::cout << "[Delete] 使用索引共删除 " << deleted << " 行" << std::endl;
-                        return {}; // ✅ 用索引删除完直接返回
-                    }
-                }
-            }
-
-            // ===== 没有索引，退回全表扫描 =====
-            size_t num_pages = storage_engine_->GetNumPages();
-            for (page_id_t pid = 1; pid < static_cast<page_id_t>(num_pages); ++pid)
+            // ===== 封装处理页逻辑 =====
+            auto handlePage = [&](page_id_t pid, BPlusTree *bpt_ptr = nullptr, int32_t key = 0)
             {
                 Page *p = storage_engine_->GetDataPage(pid);
                 if (!p)
-                    continue;
+                    return;
 
                 auto records = storage_engine_->GetPageRecords(p);
                 std::vector<std::pair<const void *, uint16_t>> new_records;
 
+                bool page_modified = false;
+
                 for (auto &rec : records)
                 {
                     auto row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first), rec.second, schema);
+
                     if (!matchesPredicate(row, node->predicate))
                     {
+                        std::cout << "[DEBUG] Row matched predicate: " << row.toString() << std::endl;
                         new_records.push_back(rec);
                     }
                     else
                     {
                         ++deleted;
+                        page_modified = true;
+
+                        if (bpt_ptr)
+                        {
+                            bpt_ptr->Delete(key); // 删除索引
+                        }
                     }
                 }
 
-                if (deleted > 0)
+                if (page_modified)
                 {
                     p->InitializePage(PageType::DATA_PAGE);
                     for (auto &rec : new_records)
@@ -664,11 +614,73 @@ namespace minidb
                         storage_engine_->AppendRecordToPage(p, rec.first, rec.second);
                     }
                     storage_engine_->PutPage(pid, true);
+
+                    // ===== 事务管理：统一通过 BPlusTree 记录 =====
+                    if (txn_mgr_ && txn_mgr_->IsActive())
+                    {
+                        if (bpt_ptr)
+                            bpt_ptr->RecordModifiedPage(pid);
+                        else
+                            txn_mgr_->RecordPageModification(pid);
+                    }
                 }
                 else
                 {
                     storage_engine_->PutPage(pid, false);
                 }
+            };
+
+            // ===== 尝试使用索引 =====
+            std::string col, value;
+            BPlusTree bpt(storage_engine_.get());
+            bool use_index = false;
+            int32_t key = 0;
+
+            if (parsePredicate(node->predicate, col, value))
+            {
+                auto idx_name = catalog_->FindIndexByColumn(node->table_name, col);
+                if (!idx_name.empty())
+                {
+                    const auto &idx_schema = catalog_->GetIndex(idx_name);
+                    if (idx_schema.type == "BPLUS")
+                    {
+                        use_index = true;
+                        bpt.SetRoot(idx_schema.root_page_id);
+                        key = static_cast<int32_t>(std::stoll(value));
+
+                        auto rid_opt = bpt.Search(key);
+                        if (rid_opt.has_value())
+                        {
+                            handlePage(rid_opt->page_id, &bpt, key);
+
+                            // ===== 事务管理器统一通知 =====
+                            if (txn_mgr_ && txn_mgr_->IsActive())
+                            {
+                                for (auto pid : bpt.GetModifiedPages())
+                                    txn_mgr_->RecordPageModification(pid);
+                                bpt.ClearModifiedPages();
+                            }
+
+                            std::cout << "[Delete] 使用索引共删除 " << deleted << " 行" << std::endl;
+                            return {};
+                        }
+                    }
+                }
+            }
+
+            // ===== 没有索引，全表扫描 =====
+            size_t num_pages = storage_engine_->GetNumPages();
+            for (page_id_t pid = 1; pid < static_cast<page_id_t>(num_pages); ++pid)
+            {
+                handlePage(pid);
+            }
+
+            // ===== 全表扫描后的事务通知 =====
+            if (txn_mgr_ && txn_mgr_->IsActive() && use_index)
+            {
+                for (auto pid : bpt.GetModifiedPages())
+                    txn_mgr_->RecordPageModification(pid);
+                bpt.ClearModifiedPages();
             }
 
             std::cout << "[Delete] 共删除 " << deleted << " 行" << std::endl;
@@ -1183,6 +1195,25 @@ namespace minidb
             return result;
         }
 
+        case PlanType::StartTransaction:
+        {
+            if (txn_mgr_)
+                txn_mgr_->Begin();
+            return {};
+        }
+        case PlanType::Commit:
+        {
+            if (txn_mgr_)
+                txn_mgr_->Commit();
+            return {};
+        }
+        case PlanType::Rollback:
+        {
+            if (txn_mgr_)
+                txn_mgr_->Rollback();
+            return {};
+        }
+
         default:
             std::cerr << "[Executor] 未知 PlanNode 类型" << std::endl;
             return {};
@@ -1321,15 +1352,15 @@ namespace minidb
 
         const auto &schema = catalog_->GetTable(plan.table_name);
         size_t num_pages = storage_engine_->GetNumPages();
-        int updated_count = 0;
+        size_t updated_count = 0;
 
-        // ===== 尝试使用索引 =====
-        std::string col, value;
+        // ===== 尝试解析 predicate =====
+        std::string col, val;
         bool use_index = false;
-        BPlusTree *bpt_ptr = nullptr;
+        BPlusTree bpt(storage_engine_.get());
         IndexSchema idx_schema;
 
-        if (parsePredicate(plan.predicate, col, value))
+        if (parsePredicate(plan.predicate, col, val))
         {
             auto idx_name = catalog_->FindIndexByColumn(plan.table_name, col);
             if (!idx_name.empty())
@@ -1341,145 +1372,99 @@ namespace minidb
                 if (is_int_col && idx_schema.type == "BPLUS")
                 {
                     use_index = true;
-                    bpt_ptr = new BPlusTree(storage_engine_.get());
-                    bpt_ptr->SetRoot(idx_schema.root_page_id);
+                    bpt.SetRoot(idx_schema.root_page_id);
                 }
             }
         }
 
-        if (use_index && bpt_ptr)
+        // ===== 处理单页修改 =====
+        auto handlePage = [&](page_id_t pid)
         {
-            // 通过索引找到对应 RID
-            int32_t key = static_cast<int32_t>(std::stoll(value));
-            auto rid_opt = bpt_ptr->Search(key);
-            if (rid_opt.has_value())
+            Page *p = storage_engine_->GetDataPage(pid);
+            if (!p)
+                return;
+
+            auto records = storage_engine_->GetPageRecords(p);
+            bool page_modified = false;
+            std::vector<std::vector<char>> new_records;
+
+            for (auto &rec : records)
             {
-                RID rid = rid_opt.value();
-                Page *p = storage_engine_->GetDataPage(rid.page_id);
-                if (p)
+                auto row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first),
+                                            rec.second, schema);
+
+                if (matchesPredicate(row, plan.predicate))
                 {
-                    auto records = storage_engine_->GetPageRecords(p);
-                    std::vector<std::vector<char>> new_records;
-                    bool page_modified = false;
+                    for (const auto &kv : plan.set_values)
+                        row.setValue(kv.first, kv.second);
 
-                    for (auto &rec : records)
-                    {
-                        auto row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first),
-                                                    rec.second, schema);
+                    std::vector<char> buf;
+                    row.Serialize(buf, schema);
+                    new_records.push_back(std::move(buf));
 
-                        if (matchesPredicate(row, plan.predicate))
-                        {
-                            int32_t old_key = key;
-                            int32_t new_key = old_key;
-                            bool update_index = false;
-
-                            for (const auto &kv : plan.set_values)
-                            {
-                                row.setValue(kv.first, kv.second);
-                                if (kv.first == col)
-                                {
-                                    update_index = true;
-                                    new_key = static_cast<int32_t>(std::stoll(row.getValue(col)));
-                                }
-                            }
-
-                            std::vector<char> buf;
-                            row.Serialize(buf, schema);
-                            new_records.push_back(std::move(buf));
-
-                            page_modified = true;
-                            ++updated_count;
-
-                            // 更新索引
-                            if (update_index)
-                            {
-                                bpt_ptr->Delete(old_key);
-                                bpt_ptr->Insert(new_key, rid);
-                            }
-                        }
-                        else
-                        {
-                            // 保留原始记录
-                            new_records.emplace_back(
-                                reinterpret_cast<const char *>(rec.first),
-                                reinterpret_cast<const char *>(rec.first) + rec.second);
-                        }
-                    }
-
-                    // 写回页
-                    if (page_modified)
-                    {
-                        p->InitializePage(PageType::DATA_PAGE);
-                        for (auto &rec : new_records)
-                            storage_engine_->AppendRecordToPage(p, rec.data(), rec.size());
-                        storage_engine_->PutPage(rid.page_id, true);
-                    }
-                    else
-                    {
-                        storage_engine_->PutPage(rid.page_id, false);
-                    }
+                    page_modified = true;
+                    ++updated_count;
                 }
+                else
+                {
+                    // 保留原记录
+                    new_records.emplace_back(
+                        reinterpret_cast<const char *>(rec.first),
+                        reinterpret_cast<const char *>(rec.first) + rec.second);
+                }
+            }
+
+            if (page_modified)
+            {
+                p->InitializePage(PageType::DATA_PAGE);
+                for (auto &rec : new_records)
+                    storage_engine_->AppendRecordToPage(p, rec.data(), rec.size());
+
+                storage_engine_->PutPage(pid, true);
+
+                // ===== 事务管理器记录修改页 =====
+                if (txn_mgr_ && txn_mgr_->IsActive())
+                    txn_mgr_->RecordPageModification(pid);
             }
             else
             {
-                // 如果索引没有找到，fallback 全表扫描
+                storage_engine_->PutPage(pid, false);
+            }
+        };
+
+        // ===== 使用索引 =====
+        if (use_index)
+        {
+            try
+            {
+                int32_t key = std::stoi(val);
+                auto rid_opt = bpt.Search(key);
+                if (rid_opt.has_value())
+                {
+                    handlePage(rid_opt->page_id);
+                }
+                else
+                {
+                    // 索引未命中，回退全表扫描
+                    use_index = false;
+                }
+            }
+            catch (...)
+            {
+                // 转换失败，回退全表扫描
                 use_index = false;
             }
         }
 
+        // ===== 全表扫描 =====
         if (!use_index)
         {
-            // ===== 全表扫描更新 =====
             for (page_id_t pid = 1; pid < static_cast<page_id_t>(num_pages); ++pid)
             {
-                Page *p = storage_engine_->GetDataPage(pid);
-                if (!p)
-                    continue;
-
-                auto records = storage_engine_->GetPageRecords(p);
-                std::vector<std::vector<char>> new_records;
-                bool page_modified = false;
-
-                for (auto &rec : records)
-                {
-                    auto row = Row::Deserialize(reinterpret_cast<const unsigned char *>(rec.first),
-                                                rec.second, schema);
-
-                    if (matchesPredicate(row, plan.predicate))
-                    {
-                        for (const auto &kv : plan.set_values)
-                            row.setValue(kv.first, kv.second);
-
-                        std::vector<char> buf;
-                        row.Serialize(buf, schema);
-                        new_records.push_back(std::move(buf));
-
-                        page_modified = true;
-                        ++updated_count;
-                    }
-                    else
-                    {
-                        new_records.emplace_back(
-                            reinterpret_cast<const char *>(rec.first),
-                            reinterpret_cast<const char *>(rec.first) + rec.second);
-                    }
-                }
-
-                if (page_modified)
-                {
-                    p->InitializePage(PageType::DATA_PAGE);
-                    for (auto &rec : new_records)
-                        storage_engine_->AppendRecordToPage(p, rec.data(), rec.size());
-                    storage_engine_->PutPage(pid, true);
-                }
-                else
-                {
-                    storage_engine_->PutPage(pid, false);
-                }
+                handlePage(pid);
             }
         }
 
-        delete bpt_ptr; // 释放 BPlusTree
         std::cout << "[Update] 成功更新 " << updated_count << " 行" << std::endl;
     }
 

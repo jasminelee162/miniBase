@@ -9,6 +9,7 @@
 #include "../../storage/page/page.h"      // Page
 #include "../operators/row.h"             // Row, ColumnValue
 #include "../../util/logger.h"
+#include "../../transaction/transaction_manager.h"
 #include <iostream>
 
 namespace minidb
@@ -44,16 +45,21 @@ namespace minidb
             // std::cout << "[Executor] SetCatalog called, catalog ptr=" << catalog_.get() << std::endl;
         }
 
-        // ✅ 新增 Getter
         std::shared_ptr<StorageEngine> GetStorageEngine() const
         {
             return storage_engine_;
+        }
+
+        void SetTransactionManager(std::shared_ptr<TransactionManager> txn_mgr)
+        {
+            txn_mgr_ = txn_mgr;
         }
 
     private:
         std::shared_ptr<StorageEngine> storage_engine_;
         static Logger logger;
         std::shared_ptr<Catalog> catalog_; // 新增
+        std::shared_ptr<minidb::TransactionManager> txn_mgr_;
     };
 
 } // namespace minidb

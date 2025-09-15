@@ -48,6 +48,10 @@ namespace minidb
         template <typename KeyType>
         bool DeleteGeneric(const KeyType &key);
 
+        void RecordModifiedPage(page_id_t pid) { modified_pages_.push_back(pid); }
+        const std::vector<page_id_t> &GetModifiedPages() const { return modified_pages_; }
+        void ClearModifiedPages() { modified_pages_.clear(); }
+
     private:
         // 节点页内布局（存放在 Page 的数据区内，紧随 PageHeader 之后）
         struct NodeHeader
@@ -131,6 +135,9 @@ namespace minidb
 
         StorageEngine *engine_;
         page_id_t root_page_id_{INVALID_PAGE_ID};
+
+        // ===== 内部变量 =====
+        std::vector<page_id_t> modified_pages_;
     };
 
 } // namespace minidb

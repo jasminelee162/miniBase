@@ -155,26 +155,33 @@ namespace minidb
 
     void BPlusTree::PromoteNewRoot(Page *left_leaf, Page *right_leaf, int32_t separator_key)
     {
-        // root 可能是旧叶子，创建新根（internal）
         page_id_t new_root_id = INVALID_PAGE_ID;
         Page *root = engine_->CreatePage(&new_root_id);
         if (!root)
             return;
+
         root->InitializePage(PageType::INDEX_PAGE);
         InitializeInternal(root);
         NodeHeader *rnh = GetNodeHeader(root);
         auto ia = GetInternalArrays(root);
-        // children: [left, right]; keys: [separator]
+
         ia.children[0] = left_leaf->GetPageId();
         ia.children[1] = right_leaf->GetPageId();
         ia.keys[0] = separator_key;
         rnh->key_count = 1;
-        // 更新叶子父指针
+
         NodeHeader *lnh = GetNodeHeader(left_leaf);
         NodeHeader *rnh_leaf = GetNodeHeader(right_leaf);
         lnh->parent = new_root_id;
         rnh_leaf->parent = new_root_id;
+
         engine_->PutPage(root->GetPageId(), true);
+        RecordModifiedPage(root->GetPageId()); // ✅ 记录根
+        engine_->PutPage(left_leaf->GetPageId(), true);
+        RecordModifiedPage(left_leaf->GetPageId()); // ✅ 记录左叶
+        engine_->PutPage(right_leaf->GetPageId(), true);
+        RecordModifiedPage(right_leaf->GetPageId()); // ✅ 记录右叶
+
         root_page_id_ = new_root_id;
     }
 
@@ -357,17 +364,21 @@ namespace minidb
         uint16_t n = nh->key_count;
         uint16_t cap = GetLeafMaxEntries();
         LeafEntry *arr = GetLeafEntries(leaf);
+
         // 找位置
         uint16_t pos = 0;
         while (pos < n && arr[pos].key < key)
             ++pos;
+
         if (pos < n && arr[pos].key == key)
         {
             arr[pos].rid_page = rid.page_id;
             arr[pos].rid_slot = rid.slot;
             engine_->PutPage(leaf->GetPageId(), true);
+            RecordModifiedPage(leaf->GetPageId()); // ✅ 记录修改
             return true;
         }
+
         if (n < cap)
         {
             for (uint16_t i = n; i > pos; --i)
@@ -378,9 +389,11 @@ namespace minidb
             arr[pos].pad = 0;
             nh->key_count = static_cast<uint16_t>(n + 1);
             engine_->PutPage(leaf->GetPageId(), true);
+            RecordModifiedPage(leaf->GetPageId()); // ✅ 记录修改
             return true;
         }
-        // 分裂：一半移动到新叶
+
+        // 分裂逻辑保持不变
         page_id_t new_leaf_id = INVALID_PAGE_ID;
         Page *new_leaf = engine_->CreatePage(&new_leaf_id);
         if (!new_leaf)
@@ -391,9 +404,8 @@ namespace minidb
         new_leaf->InitializePage(PageType::INDEX_PAGE);
         InitializeLeaf(new_leaf);
         LeafEntry *arr_new = GetLeafEntries(new_leaf);
-        uint16_t left_sz = n / 2;
-        uint16_t right_sz = static_cast<uint16_t>(n - left_sz);
-        // 先确定插入后应处于哪边，再搬迁
+
+        // 构建临时数组，插入新 key
         std::vector<LeafEntry> tmp(n + 1);
         for (uint16_t i = 0; i < n; ++i)
             tmp[i] = arr[i];
@@ -403,21 +415,26 @@ namespace minidb
         tmp[pos].rid_page = rid.page_id;
         tmp[pos].rid_slot = rid.slot;
         tmp[pos].pad = 0;
+
         uint16_t total = static_cast<uint16_t>(n + 1);
-        left_sz = total / 2;
-        right_sz = static_cast<uint16_t>(total - left_sz);
-        // 左边回写到原叶，右边写到新叶
+        uint16_t left_sz = total / 2;
+        uint16_t right_sz = total - left_sz;
+
+        // 左边回写原叶，右边写新叶
         for (uint16_t i = 0; i < left_sz; ++i)
             arr[i] = tmp[i];
         for (uint16_t i = 0; i < right_sz; ++i)
             arr_new[i] = tmp[left_sz + i];
+
         nh->key_count = left_sz;
         NodeHeader *nh_new = GetNodeHeader(new_leaf);
         nh_new->key_count = right_sz;
+
         // 连接兄弟指针
         nh_new->next = nh->next;
         nh_new->prev = leaf->GetPageId();
         nh->next = new_leaf_id;
+
         if (nh_new->next != INVALID_PAGE_ID)
         {
             Page *nn = engine_->GetPage(nh_new->next);
@@ -426,22 +443,26 @@ namespace minidb
                 NodeHeader *nh_nn = GetNodeHeader(nn);
                 nh_nn->prev = new_leaf_id;
                 engine_->PutPage(nn->GetPageId(), true);
+                RecordModifiedPage(nn->GetPageId());
             }
         }
-        // 分隔键：右叶最小键
+
         int32_t sep = arr_new[0].key;
-        // 根处理或向上插入
+
         if (leaf->GetPageId() == root_page_id_)
         {
             PromoteNewRoot(leaf, new_leaf, sep);
         }
         else
         {
-            // 将分隔键插入到父节点（可能级联分裂）
             InsertIntoParent(leaf->GetPageId(), new_leaf_id, sep);
         }
+
         engine_->PutPage(leaf->GetPageId(), true);
         engine_->PutPage(new_leaf_id, true);
+        RecordModifiedPage(leaf->GetPageId()); // ✅ 记录原叶
+        RecordModifiedPage(new_leaf_id);       // ✅ 记录新叶
+
         return true;
     }
 
@@ -753,8 +774,7 @@ namespace minidb
         engine_->PutPage(parent_id, false);
     }
 
-
-// ===== 增强操作实现 =====
+    // ===== 增强操作实现 =====
 
     void BPlusTree::RebalanceInternal(page_id_t node_id)
     {
