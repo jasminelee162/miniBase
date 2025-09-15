@@ -23,7 +23,8 @@ enum class PlanType
     GroupBy,
     Having,
     Join,
-    OrderBy // 新增
+    OrderBy,
+    ShowTables // 新增
 };
 
 struct AggregateExpr

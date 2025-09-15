@@ -41,47 +41,24 @@ int main()
         exec.execute(&ct);
     }
 
-    /* 2. 插入多行数据以便测试排序 */
     {
-        std::vector<std::vector<std::string>> vals = {
-            {"201", "Alice Smith", "Math", "5"},
-            {"202", "Bob Johnson", "English", "8"},
-            {"203", "Charlie Lee", "Math", "3"},
-            {"204", "Diana King", "English", "7"},
-            {"205", "Eve Adams", "Math", "10"}};
-
-        for (auto &v : vals)
-        {
-            PlanNode ins;
-            ins.type = PlanType::Insert;
-            ins.table_name = "teachers";
-            ins.columns = {"teacher_id", "full_name", "subject", "experience"};
-            ins.values = {v};
-            exec.execute(&ins);
-        }
+        PlanNode ct;
+        ct.type = PlanType::CreateTable;
+        ct.table_name = "students";
+        ct.table_columns = {
+            {"student_id", "INT", -1},
+            {"name", "VARCHAR", 100},
+            {"age", "INT", -1}};
+        exec.execute(&ct);
     }
 
-    /* 3. OrderBy 测试 */
-    auto orderByTest = [&](const std::string &col, bool desc)
+    /* 2. 测试 SHOW TABLES */
     {
-        std::cout << "\n== OrderBy " << col << (desc ? " DESC" : " ASC") << " ==\n";
-
-        auto scan = std::make_unique<PlanNode>();
-        scan->type = PlanType::SeqScan;
-        scan->table_name = "teachers";
-
-        PlanNode ob;
-        ob.type = PlanType::OrderBy;
-        ob.order_by_cols = {col};
-        ob.order_by_desc = desc;
-        ob.children.push_back(std::move(scan));
-
-        printResult(exec.execute(&ob));
-    };
-
-    orderByTest("experience", false); // 升序
-    orderByTest("full_name", true);   // 降序
-    orderByTest("teacher_id", false); // 升序
+        PlanNode show;
+        show.type = PlanType::ShowTables;
+        std::cout << "\n== SHOW TABLES ==\n";
+        printResult(exec.execute(&show));
+    }
 
     return 0;
 }
