@@ -2,6 +2,7 @@
 #include "../../engine/operators/plan_node.h" // path 根据你的工程实际路径调整
 #include <stdexcept>
 #include <iostream>
+#include "../../util/logger.h"
 
 using json = nlohmann::json;
 
@@ -44,7 +45,7 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
             if (columns.is_array() && columns.size() == 1 && columns[0] == "*")
             {
                 // SELECT * 的情况 - 不设置 columns，让执行器处理所有列
-                std::cout << "[JsonToPlan] 处理 SELECT *" << std::endl;
+                global_log_debug("[JsonToPlan] 处理 SELECT *");
                 project->columns.clear(); // 空的 columns 表示选择所有列
             }
             else

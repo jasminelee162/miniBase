@@ -5,6 +5,7 @@
 
 #include "catalog.h"
 #include <iostream>
+#include "util/logger.h"
 #include <sstream>
 #include <cstring> // memset
 #include <stdexcept>
@@ -44,12 +45,12 @@ namespace minidb
                               const std::vector<Column> &columns,
                               const std::string &owner)
     {
-        std::cout << "[CreateTable] 开始创建表: " << table_name << " (所有者: " << owner << ")" << std::endl;
+        global_log_info(std::string("[CreateTable] 开始创建表: ") + table_name + " (所有者: " + owner + ")");
         std::lock_guard<std::recursive_mutex> lock(latch_);
 
         if (tables_.find(table_name) != tables_.end())
         {
-            std::cerr << "[Catalog] 表已存在: " << table_name << std::endl;
+            global_log_warn(std::string("[Catalog] 表已存在: ") + table_name);
             return;
         }
 
@@ -63,8 +64,7 @@ namespace minidb
             {
                 throw std::runtime_error("CreateTable failed: cannot create CatalogPage");
             }
-            std::cout << "[Catalog] 自动创建 CatalogPage (pid="
-                      << catalog_page->GetPageId() << ")" << std::endl;
+            global_log_info(std::string("[Catalog] 自动创建 CatalogPage (pid=") + std::to_string(catalog_page->GetPageId()) + ")");
         }
 
         // 构造 schema
@@ -94,15 +94,15 @@ namespace minidb
         // 直接更新StorageEngine的元数据，确保next_page_id正确递增
         storage_engine_->SetNextPageId(pid + 1);
 
-        std::cout << "[CreateTable] 表 " << table_name
-                  << " 创建成功，目录已保存，首个数据页 = " << pid << std::endl;
+        std::cout << "[CreateTable] 表 " << table_name << " 创建成功" << std::endl;
+        global_log_info(std::string("[CreateTable] 表 ") + table_name + " 创建成功，目录已保存，首个数据页 = " + std::to_string(pid));
     }
 
     bool Catalog::HasTable(const std::string &table_name) const
     {
         std::lock_guard<std::recursive_mutex> guard(latch_);
         bool found = (tables_.find(table_name) != tables_.end());
-        std::cout << "[Catalog::HasTable] table=" << table_name << " found=" << (found ? "yes" : "no") << std::endl;
+        global_log_debug(std::string("[Catalog::HasTable] table=") + table_name + " found=" + (found ? "yes" : "no"));
         return found;
     }
 
@@ -115,6 +115,16 @@ namespace minidb
             throw std::runtime_error("[Catalog] 表不存在: " + table_name);
         }
         return it->second;
+    }
+
+    bool Catalog::UpdateTableFirstPageId(const std::string &table_name, page_id_t first_page_id)
+    {
+        std::lock_guard<std::recursive_mutex> lock(latch_);
+        auto it = tables_.find(table_name);
+        if (it == tables_.end()) return false;
+        it->second.first_page_id = first_page_id;
+        SaveToStorage();
+        return true;
     }
 
     // ================= 序列化并写入 CatalogPage =================
@@ -162,8 +172,7 @@ namespace minidb
         std::memcpy(page_data, data.data(), copy_size);
 
         storage_engine_->PutPage(catalog_page->GetPageId(), true);
-        std::cout << "[Catalog::SaveToStorage] 成功写入目录，共 "
-                  << tables_.size() << " 张表" << std::endl;
+        global_log_info(std::string("[Catalog::SaveToStorage] 成功写入目录，共 ") + std::to_string(tables_.size()) + " 张表");
     }
 
     // ================= 从 CatalogPage 加载并反序列化 =================
@@ -174,7 +183,7 @@ namespace minidb
         Page *catalog_page = storage_engine_->GetCatalogPage();
         if (!catalog_page)
         {
-            std::cerr << "[Catalog::LoadFromStorage] catalog 页不存在" << std::endl;
+            global_log_error("[Catalog::LoadFromStorage] catalog 页不存在");
             return;
         }
 
@@ -203,7 +212,7 @@ namespace minidb
             std::getline(ls, token, '|');
             if (token.empty())
             {
-                std::cerr << "[Catalog::LoadFromStorage] Empty first_page_id for table: " << table_name << std::endl;
+                global_log_warn(std::string("[Catalog::LoadFromStorage] Empty first_page_id for table: ") + table_name);
                 continue;
             }
             page_id_t first_pid;
@@ -213,7 +222,7 @@ namespace minidb
             }
             catch (const std::exception &e)
             {
-                std::cerr << "[Catalog::LoadFromStorage] Invalid first_page_id '" << token << "' for table: " << table_name << std::endl;
+                global_log_warn(std::string("[Catalog::LoadFromStorage] Invalid first_page_id '") + token + "' for table: " + table_name);
                 continue;
             }
 
@@ -232,7 +241,7 @@ namespace minidb
                 }
                 catch (const std::exception &e)
                 {
-                    std::cerr << "[Catalog::LoadFromStorage] Invalid created_at '" << token << "' for table: " << table_name << std::endl;
+                    global_log_warn(std::string("[Catalog::LoadFromStorage] Invalid created_at '") + token + "' for table: " + table_name);
                     created_at = 0;
                 }
             }
@@ -262,7 +271,7 @@ namespace minidb
                 try {
                     col.length = std::stoi(len_str);
                 } catch (const std::exception &e) {
-                    std::cerr << "[Catalog::LoadFromStorage] Invalid column length '" << len_str << "' for column: " << col.name << std::endl;
+                    global_log_warn(std::string("[Catalog::LoadFromStorage] Invalid column length '") + len_str + "' for column: " + col.name);
                     col.length = -1;
                 }
                 // 解析后续 flags
@@ -286,8 +295,7 @@ namespace minidb
             tables_[table_name] = schema;
         }
 
-        std::cout << "[Catalog::LoadFromStorage] 加载完成，共 "
-                  << tables_.size() << " 张表" << std::endl;
+        global_log_info(std::string("[Catalog::LoadFromStorage] 加载完成，共 ") + std::to_string(tables_.size()) + " 张表");
 
         // 释放CatalogPage
         storage_engine_->PutPage(catalog_page->GetPageId(), false);
@@ -296,19 +304,19 @@ namespace minidb
     std::vector<std::string> Catalog::GetTableColumns(const std::string &table_name)
     {
         std::lock_guard<std::recursive_mutex> guard(latch_);
-        std::cout << "[Catalog::GetTableColumns] tables_.size=" << tables_.size() << " looking for: " << table_name << std::endl;
+        global_log_debug(std::string("[Catalog::GetTableColumns] lookup: ") + table_name);
         auto it = tables_.find(table_name);
         if (it != tables_.end())
         {
             std::vector<std::string> cols;
             for (auto &c : it->second.columns)
             {
-                std::cout << "[Catalog::GetTableColumns] col=" << c.name << std::endl;
+                /* noisy per-column log -> to file if needed */
                 cols.push_back(c.name);
             }
             return cols;
         }
-        std::cout << "[Catalog::GetTableColumns] table not found: " << table_name << std::endl;
+        global_log_warn(std::string("[Catalog::GetTableColumns] table not found: ") + table_name);
         return {};
     }
 
@@ -321,7 +329,7 @@ namespace minidb
 
         if (indexes_.find(index_name) != indexes_.end())
         {
-            std::cerr << "[Catalog] 索引已存在: " << index_name << std::endl;
+            global_log_warn(std::string("[Catalog] 索引已存在: ") + index_name);
             return;
         }
         if (tables_.find(table_name) == tables_.end())
@@ -467,11 +475,11 @@ namespace minidb
         if (it != tables_.end())
         {
             tables_.erase(it);
-            std::cout << "[Catalog] 已删除表: " << table_name << std::endl;
+            global_log_info(std::string("[Catalog] 已删除表: ") + table_name);
         }
         else
         {
-            std::cerr << "[Catalog] 删除表失败，未找到: " << table_name << std::endl;
+            global_log_warn(std::string("[Catalog] 删除表失败，未找到: ") + table_name);
         }
     }
 
@@ -482,11 +490,11 @@ namespace minidb
         if (it != indexes_.end())
         {
             indexes_.erase(it);
-            std::cout << "[Catalog] 已删除索引: " << index_name << std::endl;
+            global_log_info(std::string("[Catalog] 已删除索引: ") + index_name);
         }
         else
         {
-            std::cerr << "[Catalog] 删除索引失败，未找到: " << index_name << std::endl;
+            global_log_warn(std::string("[Catalog] 删除索引失败，未找到: ") + index_name);
         }
     }
 

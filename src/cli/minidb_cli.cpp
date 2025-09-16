@@ -47,6 +47,8 @@ int main(int argc, char **argv)
     bool doExec = true;
     bool outputJsonOnly = false;
     std::string dbFile = "data/mini.db";
+    std::string logFile = "logs/cli_debug.log";
+    bool quietAst = true; // 默认不在终端打印 AST JSON
 
     for (int i = 1; i < argc; ++i)
     {
@@ -65,6 +67,14 @@ int main(int argc, char **argv)
         {
             dbFile = argv[++i];
         }
+        else if (arg == "--log" && i + 1 < argc)
+        {
+            logFile = argv[++i];
+        }
+        else if (arg == "--verbose")
+        {
+            quietAst = false; // 允许在终端显示更多信息
+        }
         else if (arg == "-h" || arg == "--help")
         {
             minidb::cli::print_help();
@@ -77,6 +87,16 @@ int main(int argc, char **argv)
             minidb::cli::print_help();
             return 1;
         }
+    }
+
+    // 初始化 CLI 日志
+    try {
+        minidb::cli::init_cli_logger(logFile);
+        minidb::cli::set_cli_log_level(static_cast<Logger::Level>(0));
+        init_global_logger(logFile, static_cast<Logger::Level>(0));
+        minidb::cli::log_info("=================minidb_cli started=================");
+    } catch (...) {
+        // best-effort: 即便日志初始化失败也不阻止 CLI 运行
     }
 
     std::shared_ptr<minidb::StorageEngine> se;
@@ -95,7 +115,7 @@ int main(int argc, char **argv)
         exec->SetStorageEngine(se);
     }
 
-    std::cout << "MiniDB CLI ready. Type .help for help.\n";
+    std::cout << "MiniDB CLI 准备就绪，输入 .help 查看帮助\n";
     if (doExec)
     {
         std::cout << "请先登录以使用数据库功能 (默认 root / root)" << std::endl;
@@ -111,13 +131,15 @@ int main(int argc, char **argv)
             if (password.empty()) { std::cout << "密码不能为空！" << std::endl; continue; }
             if (authService->login(username, password))
             {
-                std::cout << "[Auth] 登录成功！欢迎 " << username << std::endl;
-                std::cout << "[Auth] 用户角色: " << minidb::cli::role_to_cn(authService->getCurrentUserRoleString()) << std::endl;
+                minidb::cli::log_info(std::string("login success: ") + username);
+                std::cout << "登录成功" << std::endl;
+                std::cout << "角色: " << minidb::cli::role_to_cn(authService->getCurrentUserRoleString()) << std::endl;
                 break;
             }
             else
             {
-                std::cout << "[Auth] 登录失败！用户名或密码错误" << std::endl;
+                minidb::cli::log_warn(std::string("login failed: ") + username);
+                std::cout << "登录失败：用户名或密码错误" << std::endl;
             }
         }
     }
@@ -212,6 +234,25 @@ int main(int argc, char **argv)
             if (minidb::cli::handle_import_cmd(line, exec.get(), catalog.get())) continue;
         }
         
+        // 调试命令：全盘扫描 & 设置首页
+        if (line.rfind(".debug_fullscan ", 0) == 0)
+        {
+            if (!minidb::cli::require_exec_mode(doExec, "Error: Requires execution mode. Use --exec flag.")) continue;
+            if (minidb::cli::handle_debug_fullscan(line, catalog.get(), se.get())) continue;
+        }
+
+        if (line.rfind(".debug_set_firstpage ", 0) == 0)
+        {
+            if (!minidb::cli::require_exec_mode(doExec, "Error: Requires execution mode. Use --exec flag.")) continue;
+            if (minidb::cli::handle_debug_set_firstpage(line, catalog.get())) continue;
+        }
+
+        if (line.rfind(".debug_guess_firstpage ", 0) == 0)
+        {
+            if (!minidb::cli::require_exec_mode(doExec, "Error: Requires execution mode. Use --exec flag.")) continue;
+            if (minidb::cli::handle_debug_guess_firstpage(line, catalog.get(), se.get())) continue;
+        }
+
         
         if (line.empty())
             continue;

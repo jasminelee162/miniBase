@@ -32,7 +32,7 @@ namespace minidb
     Page *StorageEngine::GetPage(page_id_t page_id)
     {
         Page* page = buffer_pool_manager_->FetchPage(page_id);
-        std::cout << "[StorageEngine::GetPage] page_id=" << page_id << " returned " << (page ? "valid" : "null") << std::endl;
+        global_log_debug(std::string("[StorageEngine::GetPage] page_id=") + std::to_string(page_id) + (page ? " returned valid" : " returned null"));
         return page;
     }
     // 申请新页
@@ -40,7 +40,7 @@ namespace minidb
     {
         Page* page = buffer_pool_manager_->NewPage(page_id);
         if (page) {
-            std::cout << "[StorageEngine::CreatePage] Allocated page_id=" << *page_id << std::endl;
+            global_log_info(std::string("[StorageEngine::CreatePage] Allocated page_id=") + std::to_string(*page_id));
         }
         // 不设置页面类型，让调用者设置
         return page;
@@ -370,12 +370,12 @@ namespace minidb
     {
         page_id_t catalog_page_id = INVALID_PAGE_ID;
         Page* catalog_page = CreatePage(&catalog_page_id);
-        std::cout << "[StorageEngine::CreateCatalogPage] CreatePage returned " << (catalog_page ? "valid" : "null") << " page_id=" << catalog_page_id << std::endl;
+        global_log_info(std::string("[StorageEngine::CreateCatalogPage] CreatePage returned ") + (catalog_page ? "valid" : "null") + " page_id=" + std::to_string(catalog_page_id));
         if (!catalog_page) return nullptr;
         
         // 初始化目录页
         catalog_page->InitializePage(PageType::CATALOG_PAGE);
-        std::cout << "[StorageEngine::CreateCatalogPage] Initialized page as CATALOG_PAGE" << std::endl;
+        global_log_debug("[StorageEngine::CreateCatalogPage] Initialized page as CATALOG_PAGE");
         
         // 更新元数据中的catalog_root（在元数据缺失时做健壮初始化）
         MetaInfo meta_info = GetMetaInfo();
@@ -395,7 +395,7 @@ namespace minidb
         }
         meta_info.catalog_root = catalog_page_id;
         UpdateMetaInfo(meta_info);
-        std::cout << "[StorageEngine::CreateCatalogPage] Updated meta_info.catalog_root=" << catalog_page_id << std::endl;
+        global_log_info(std::string("[StorageEngine::CreateCatalogPage] Updated meta_info.catalog_root=") + std::to_string(catalog_page_id));
         
         // 确保页面被写入磁盘
         PutPage(catalog_page_id, true);

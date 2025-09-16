@@ -96,6 +96,8 @@ namespace minidb
         std::vector<std::string> GetTableColumns(const std::string &table_name);
         bool HasTable(const std::string &table_name) const;
         TableSchema GetTable(const std::string &table_name) const;
+        // 更新表的首页ID并持久化
+        bool UpdateTableFirstPageId(const std::string &table_name, page_id_t first_page_id);
 
         // 表所有者相关接口
         std::string GetTableOwner(const std::string &table_name) const;

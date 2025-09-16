@@ -4,6 +4,7 @@
 #include "../storage/page/page_utils.h"
 #include "../engine/operators/row.h"
 #include <iostream>
+#include "util/logger.h"
 #include <sstream>
 #include <functional>
 
@@ -23,15 +24,15 @@ UserStorageManager::UserStorageManager(StorageEngine* storage_engine, Catalog* c
 
 bool UserStorageManager::initialize() {
     if (!storage_engine_ || !catalog_) {
-        std::cerr << "[UserStorageManager] StorageEngine or Catalog not provided" << std::endl;
+         global_log_error("[UserStorageManager] StorageEngine or Catalog not provided" );
         return false;
     }
     
     // 检查用户表是否存在，如果不存在则创建
     if (!catalog_->HasTable(USER_TABLE_NAME)) {
-        std::cout << "[UserStorageManager] Creating user table..." << std::endl;
+        global_log_info("[UserStorageManager] Creating user table...");
         if (!createUserTable()) {
-            std::cerr << "[UserStorageManager] Failed to create user table" << std::endl;
+            global_log_error("[UserStorageManager] Failed to create user table");
             return false;
         }
     }
@@ -42,13 +43,13 @@ bool UserStorageManager::initialize() {
     // 检查是否有用户数据，如果没有则创建默认root用户
     auto users = getAllUserRecords();
     if (users.empty()) {
-        std::cout << "[UserStorageManager] Creating default root user..." << std::endl;
+        global_log_info("[UserStorageManager] Creating default root user...");
         if (!createUser("root", "root", Role::DBA)) {
-            std::cerr << "[UserStorageManager] Failed to create default root user" << std::endl;
+            global_log_error("[UserStorageManager] Failed to create default root user");
             return false;
         }
     }
-    std::cout << "[UserStorageManager] Initialized successfully" << std::endl;
+    global_log_info("[UserStorageManager] Initialized successfully");
     return true;
 }
 
@@ -64,22 +65,22 @@ bool UserStorageManager::createUserTable() {
     
     try {
         catalog_->CreateTable(USER_TABLE_NAME, columns);
-        std::cout << "[UserStorageManager] User table created successfully" << std::endl;
+        global_log_info("[UserStorageManager] User table created successfully");
         return true;
     } catch (const std::exception& e) {
-        std::cerr << "[UserStorageManager] Failed to create user table: " << e.what() << std::endl;
+        global_log_error(std::string("[UserStorageManager] Failed to create user table: ") + e.what());
         return false;
     }
 }
 
 bool UserStorageManager::createUser(const std::string& username, const std::string& password, Role role) {
     if (!initialized_) {
-        std::cerr << "[UserStorageManager] Not initialized" << std::endl;
+        global_log_error("[UserStorageManager] Not initialized");
         return false;
     }
     
     if (userExists(username)) {
-        std::cerr << "[UserStorageManager] User already exists: " << username << std::endl;
+        global_log_warn(std::string("[UserStorageManager] User already exists: ") + username);
         return false;
     }
     
@@ -216,13 +217,13 @@ bool UserStorageManager::insertUserRecord(const UserRecord& user) {
     try {
         // 获取用户表的第一个数据页
         TableSchema table_schema = catalog_->GetTable(USER_TABLE_NAME);
-        std::cout << "[UserStorageManager] Getting user table page, first_page_id=" << table_schema.first_page_id << std::endl;
+        global_log_debug(std::string("[UserStorageManager] Getting user table page, first_page_id=") + std::to_string(table_schema.first_page_id));
         Page* page = storage_engine_->GetDataPage(table_schema.first_page_id);
         if (!page) {
-            std::cerr << "[UserStorageManager] Failed to get user table page" << std::endl;
+            global_log_error("[UserStorageManager] Failed to get user table page");
             return false;
         }
-        std::cout << "[UserStorageManager] Successfully got user table page" << std::endl;
+        global_log_info("[UserStorageManager] Successfully got user table page");
         
         // 序列化用户记录
         std::string user_data = serializeUserRecord(user);
@@ -232,7 +233,7 @@ bool UserStorageManager::insertUserRecord(const UserRecord& user) {
         storage_engine_->PutPage(table_schema.first_page_id, success);
         
         if (success) {
-            std::cout << "[UserStorageManager] User record inserted: " << user.username << std::endl;
+            global_log_debug(std::string("[UserStorageManager] User record inserted: ") + user.username);
         }
         
         return success;
@@ -273,14 +274,14 @@ bool UserStorageManager::deleteUserRecord(const std::string& username) {
             
             if (user.username == username) {
                 found = true;
-                std::cout << "[UserStorageManager] Found user to delete: " << username << std::endl;
+                global_log_info(std::string("[UserStorageManager] Found user to delete: ") + username);
             } else if (!user.username.empty()) {
                 remaining_users.push_back(user);
             }
         }
         
         if (!found) {
-            std::cout << "[UserStorageManager] User not found: " << username << std::endl;
+            global_log_warn(std::string("[UserStorageManager] User not found: ") + username);
             storage_engine_->PutPage(table_schema.first_page_id, false);
             return false;
         }
@@ -298,7 +299,7 @@ bool UserStorageManager::deleteUserRecord(const std::string& username) {
         }
         
         storage_engine_->PutPage(table_schema.first_page_id, true);
-        std::cout << "[UserStorageManager] User record deleted successfully: " << username << std::endl;
+        global_log_info(std::string("[UserStorageManager] User record deleted successfully: ") + username);
         return true;
         
     } catch (const std::exception& e) {

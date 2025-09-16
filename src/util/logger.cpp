@@ -75,3 +75,23 @@ Logger::Level Logger::getLevel() const
 {
     return current_level;
 }
+
+// ---- Global logger impl ----
+static std::unique_ptr<Logger> g_global_logger;
+
+void init_global_logger(const std::string &filename, Logger::Level level)
+{
+    g_global_logger = std::make_unique<Logger>(filename);
+    g_global_logger->setLevel(level);
+}
+
+Logger* get_global_logger()
+{
+    return g_global_logger.get();
+}
+
+void global_log(Logger::Level level, const std::string &msg)
+
+{
+    if (g_global_logger) g_global_logger->log(level, msg);
+}

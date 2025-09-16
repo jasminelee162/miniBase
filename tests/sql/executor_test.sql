@@ -80,34 +80,34 @@ INSERT INTO users VALUES(2,'Bob',20); -- 唯一性冲突
 INSERT INTO users VALUES(3,'Bob',NULL); -- 非空冲突
 --------------------------------
 
-DROP TABLE IF EXISTS employees_914;
+DROP TABLE IF EXISTS employees;
 
-CREATE TABLE employees_914 (
+CREATE TABLE employees (
     emp_id INT,
     emp_name VARCHAR(50),
     department VARCHAR(50),
     age INT
 );
 
-INSERT INTO employees_914 (emp_id, emp_name, department, age) VALUES (301, 'John Doe', 'Engineering', 28);
-INSERT INTO employees_914 (emp_id, emp_name, department, age) VALUES (302, 'Jane Roe', 'Marketing', 35);
-INSERT INTO employees_914 (emp_id, emp_name, department, age) VALUES (303, 'Sam Black', 'HR', 40);
-INSERT INTO employees_914 (emp_id, emp_name, department, age) VALUES (304, 'Lily White', 'Engineering', 25);
-INSERT INTO employees_914 (emp_id, emp_name, department, age) VALUES (305, 'Tom Brown', 'Marketing', 30);
-INSERT INTO employees_914 (emp_id, emp_name, department, age) VALUES (306, 'Emma Green', 'HR', 45);
-INSERT INTO employees_914 (emp_id, emp_name, department, age) VALUES (307, 'Alex Gray', 'Engineering', 32);
+INSERT INTO employees (emp_id, emp_name, department, age) VALUES (301, 'John Doe', 'Engineering', 28);
+INSERT INTO employees (emp_id, emp_name, department, age) VALUES (302, 'Jane Roe', 'Marketing', 35);
+INSERT INTO employees (emp_id, emp_name, department, age) VALUES (303, 'Sam Black', 'HR', 40);
+INSERT INTO employees (emp_id, emp_name, department, age) VALUES (304, 'Lily White', 'Engineering', 25);
+INSERT INTO employees (emp_id, emp_name, department, age) VALUES (305, 'Tom Brown', 'Marketing', 30);
+INSERT INTO employees (emp_id, emp_name, department, age) VALUES (306, 'Emma Green', 'HR', 45);
+INSERT INTO employees (emp_id, emp_name, department, age) VALUES (307, 'Alex Gray', 'Engineering', 32);
 
-SELECT emp_name, department FROM employees_914;
+SELECT emp_name, department FROM employees;
 
-SELECT emp_name, age FROM employees_914 WHERE age > 30;
+SELECT emp_name, age FROM employees  WHERE age > 30;
 
-UPDATE employees_914 SET age = 29 WHERE emp_name = 'Lily White';
+UPDATE employees SET age = 29 WHERE emp_name = 'Lily White';
 
-DELETE FROM employees_914 WHERE emp_id = 303;
+DELETE FROM employees WHERE emp_id = 303;
 
-SELECT emp_name, age FROM employees_914;
+SELECT emp_name, age FROM employees;
 
-SELECT department, SUM(age) AS total_age FROM employees_914 GROUP BY department;
+SELECT department, SUM(age) AS total_age FROM employees GROUP BY department;
 
-SELECT department, SUM(age) AS total_age FROM employees_914 GROUP BY department HAVING total_age > 60;
+SELECT department, SUM(age) AS total_age FROM employees GROUP BY department HAVING total_age > 60;
 
