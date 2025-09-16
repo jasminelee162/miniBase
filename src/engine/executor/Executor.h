@@ -11,6 +11,7 @@
 #include "../../util/logger.h"
 #include "../../optimizer/index_optimizer.h" // 新增：索引优化器
 #include "../../auth/permission_checker.h"
+#include "../../auth/auth_service.h" // AuthService
 
 #include <iostream>
 
@@ -23,6 +24,7 @@ namespace minidb
         std::vector<std::string> expandWildcardColumns(const PlanNode *node);
         // ✅ 改构造函数
         std::vector<Row> execute(PlanNode *node);
+        Executor(StorageEngine *storage_engine, Catalog *catalog, AuthService *auth_service); // 构造函数
         std::string parseColumnFromBuffer(const void *data, size_t &offset, const std::string &col_name, const std::string &table_name);
         Row parseRowFromPage(Page *page, const std::vector<std::string> &columns, const std::string &table_name);
 
@@ -61,6 +63,7 @@ namespace minidb
 
         PermissionChecker *permissionChecker_; // 权限检查器
         std::unique_ptr<IndexOptimizer> optimizer_;
+        AuthService *auth_service_; // ✅ 新增
     };
 
 } // namespace minidb

@@ -23,6 +23,9 @@
 namespace minidb
 {
 
+    Executor::Executor(StorageEngine *storage_engine, Catalog *catalog, AuthService *auth_service)
+        : storage_engine_(storage_engine), catalog_(catalog), auth_service_(auth_service) {}
+
     Logger Executor::logger("minidb.log");
 
     // 假设你有表的列名 schema，这里直接写死，也可以从 StorageEngine 获取
@@ -375,10 +378,10 @@ namespace minidb
             logger.log("CREATE TABLE " + node->table_name);
             std::cout << "[Executor] 创建表: " << node->table_name << std::endl;
 
-            if (catalog_)
+            if (catalog_ && auth_service_) // ✅ 确保有 auth_service_
             {
-                // 直接使用 PlanNode 保存的完整列信息
-                catalog_->CreateTable(node->table_name, node->table_columns);
+                std::string owner = auth_service_->getCurrentUser(); // ✅ 从 AuthService 拿当前用户
+                catalog_->CreateTable(node->table_name, node->table_columns, owner);
             }
             return {};
         }
