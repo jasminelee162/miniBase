@@ -33,6 +33,7 @@ private:
     Catalog* catalog_;  // 用于表权限检查
     std::string current_user_;
     bool is_logged_in_;
+    StorageEngine* storage_engine_{}; // 用于在变更后触发刷盘
     
 public:
     AuthService(StorageEngine* storage_engine, Catalog* catalog);

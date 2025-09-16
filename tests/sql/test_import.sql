@@ -1,3 +1,4 @@
+-- 使用.import tests\sql\test_import.sql
 CREATE TABLE import_test (
     teacher_id INT,
     full_name VARCHAR(100)
@@ -22,3 +23,5 @@ INSERT INTO import_test (teacher_id, full_name) VALUES (201, 'Alice Smith');
 --     (3, 'Physics', 'Research Center'),
 --     (4, 'History', 'Liberal Arts Hall'),
 --     (5, 'Chemistry', 'Science Hall');
+
+-- 导出 .dump export.sql

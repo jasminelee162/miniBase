@@ -7,7 +7,7 @@ namespace minidb
 {
 
     AuthService::AuthService(StorageEngine *storage_engine, Catalog *catalog)
-        : catalog_(catalog), current_user_(""), is_logged_in_(false)
+        : catalog_(catalog), current_user_(""), is_logged_in_(false), storage_engine_(storage_engine)
     {
         // 使用存储引擎初始化用户管理
         user_storage_manager_ = std::make_unique<UserStorageManager>(storage_engine, catalog);
@@ -70,7 +70,12 @@ namespace minidb
             return false;
         }
 
-        return user_storage_manager_->createUser(username, password, role);
+        bool ok = user_storage_manager_->createUser(username, password, role);
+        if (ok && storage_engine_) {
+            // 立即刷盘，确保意外退出也能保存
+            storage_engine_->Checkpoint();
+        }
+        return ok;
     }
 
     bool AuthService::userExists(const std::string &username) const
@@ -202,6 +207,12 @@ namespace minidb
         // 获取当前用户和角色
         std::string current_user = getCurrentUser();
         Role user_role = getCurrentUserRole();
+
+        // 系统表保护：__users__ 仅 DBA 可见/可操作
+        if (table_name == "__users__")
+        {
+            return user_role == Role::DBA && hasPermission(permission);
+        }
 
         // DBA可以操作所有表
         if (user_role == Role::DBA)

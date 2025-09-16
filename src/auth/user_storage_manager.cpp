@@ -2,6 +2,7 @@
 #include "../storage/storage_engine.h"
 #include "../catalog/catalog.h"
 #include "../storage/page/page_utils.h"
+#include "../engine/operators/row.h"
 #include <iostream>
 #include <sstream>
 #include <functional>
@@ -346,47 +347,62 @@ UserRecord UserStorageManager::getUserRecord(const std::string& username) {
 }
 
 std::string UserStorageManager::serializeUserRecord(const UserRecord& user) const {
-    std::ostringstream oss;
-    oss << user.username << "|" 
-        << user.password_hash << "|" 
-        << static_cast<int>(user.role) << "|" 
-        << user.created_at << "|" 
-        << user.last_login;
-    return oss.str();
+    // 使用与执行器一致的 Row 序列化格式，确保 SeqScan 可反序列化
+    try {
+        const minidb::TableSchema schema = catalog_->GetTable(USER_TABLE_NAME);
+        Row row;
+        row.columns = {
+            {USERNAME_COL, user.username},
+            {PASSWORD_COL, user.password_hash},
+            {ROLE_COL, std::to_string(static_cast<int>(user.role))},
+            {CREATED_AT_COL, std::to_string(static_cast<long long>(user.created_at))},
+            {LAST_LOGIN_COL, std::to_string(static_cast<long long>(user.last_login))}
+        };
+        std::vector<char> buf;
+        row.Serialize(buf, schema);
+        return std::string(buf.begin(), buf.end());
+    } catch (...) {
+        // 兜底为老格式（不建议），避免崩溃
+        std::ostringstream oss;
+        oss << user.username << "|" 
+            << user.password_hash << "|" 
+            << static_cast<int>(user.role) << "|" 
+            << user.created_at << "|" 
+            << user.last_login;
+        return oss.str();
+    }
 }
 
 UserRecord UserStorageManager::deserializeUserRecord(const std::string& data) const {
     UserRecord user;
-    std::istringstream iss(data);
-    std::string token;
-    
-    // 解析用户名
-    if (std::getline(iss, token, '|')) {
-        user.username = token;
+    try {
+        const minidb::TableSchema schema = catalog_->GetTable(USER_TABLE_NAME);
+        const unsigned char* ptr = reinterpret_cast<const unsigned char*>(data.data());
+        Row row = Row::Deserialize(ptr, static_cast<uint16_t>(data.size()), schema);
+        if (row.columns.empty()) return user;
+        auto get = [&](const std::string& col) -> std::string {
+            for (const auto& c: row.columns) {
+                if (c.col_name == col) return c.value;
+            }
+            return std::string();
+        };
+        user.username = get(USERNAME_COL);
+        user.password_hash = get(PASSWORD_COL);
+        try { user.role = static_cast<Role>(std::stoi(get(ROLE_COL))); } catch (...) { user.role = Role::ANALYST; }
+        try { user.created_at = static_cast<time_t>(std::stoll(get(CREATED_AT_COL))); } catch (...) { user.created_at = 0; }
+        try { user.last_login = static_cast<time_t>(std::stoll(get(LAST_LOGIN_COL))); } catch (...) { user.last_login = 0; }
+        return user;
+    } catch (...) {
+        // 兼容老格式
+        std::istringstream iss(data);
+        std::string token;
+        if (std::getline(iss, token, '|')) user.username = token;
+        if (std::getline(iss, token, '|')) user.password_hash = token;
+        if (std::getline(iss, token, '|')) { try { user.role = static_cast<Role>(std::stoi(token)); } catch (...) {} }
+        if (std::getline(iss, token, '|')) { try { user.created_at = std::stol(token); } catch (...) {} }
+        if (std::getline(iss, token, '|')) { try { user.last_login = std::stol(token); } catch (...) {} }
+        return user;
     }
-    
-    // 解析密码哈希
-    if (std::getline(iss, token, '|')) {
-        user.password_hash = token;
-    }
-    
-    // 解析角色
-    if (std::getline(iss, token, '|')) {
-        int role_int = std::stoi(token);
-        user.role = static_cast<Role>(role_int);
-    }
-    
-    // 解析创建时间
-    if (std::getline(iss, token, '|')) {
-        user.created_at = std::stol(token);
-    }
-    
-    // 解析最后登录时间
-    if (std::getline(iss, token, '|')) {
-        user.last_login = std::stol(token);
-    }
-    
-    return user;
 }
 
 } // namespace minidb

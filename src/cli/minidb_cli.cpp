@@ -20,6 +20,9 @@
 #include "../auth/permission_checker.h"
 #include "../auth/auth_service.h"
 #include <sstream>
+#include <ctime>
+#include <cstdio>
+#include <filesystem>
 #ifdef _WIN32
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -39,6 +42,7 @@ static void print_help()
               << "  .users          Manage users (DBA only)\n"
               << "  .exit           Quit\n"
               << "  .dump <file>    Export database to SQL file\n"
+              << "  .export <path>  Export database to SQL, path can be dir or file\n"
               << "  .import <file>  Import SQL file to database\n"
               << "Enter SQL terminated by ';' to run.\n";
 }
@@ -172,6 +176,99 @@ static int count_substring(const std::string &s, const std::string &pat)
         pos += pat.size();
     }
     return cnt;
+}
+
+static std::string trim_copy(const std::string &s)
+{
+    size_t start = 0, end = s.size();
+    while (start < end && std::isspace(static_cast<unsigned char>(s[start]))) start++;
+    while (end > start && std::isspace(static_cast<unsigned char>(s[end - 1]))) end--;
+    return s.substr(start, end - start);
+}
+
+static std::string strip_quotes_copy(const std::string &s)
+{
+    if (s.size() >= 2)
+    {
+        char first = s.front();
+        char last = s.back();
+        if ((first == '"' && last == '"') || (first == '\'' && last == '\''))
+            return s.substr(1, s.size() - 2);
+    }
+    return s;
+}
+
+static std::string resolve_export_output_path(const std::string &input)
+{
+    using namespace std::filesystem;
+    std::string raw = strip_quotes_copy(trim_copy(input));
+    if (raw.empty()) return raw;
+
+    std::error_code ec;
+    path p(raw);
+    bool existsPath = exists(p, ec);
+    bool isDirExisting = existsPath && is_directory(p, ec);
+
+    // 判断是否应作为目录处理：
+    // 1) 已存在且是目录
+    // 2) 不存在但原始字符串以路径分隔符结尾
+    // 3) 不存在且最后一段没有扩展名（倾向作为目录）
+    auto ends_with_sep = [&raw]() {
+#ifdef _WIN32
+        if (raw.empty()) return false;
+        char c = raw.back();
+        return c == '/' || c == '\\';
+#else
+        return !raw.empty() && raw.back() == '/';
+#endif
+    }();
+
+    bool treatAsDir = isDirExisting;
+    if (!existsPath)
+    {
+        if (ends_with_sep)
+        {
+            treatAsDir = true;
+        }
+        else
+        {
+            path filename = p.filename();
+            // 没有扩展名则偏向目录
+            if (filename.has_extension() == false)
+            {
+                treatAsDir = true;
+            }
+        }
+    }
+
+    if (treatAsDir)
+    {
+        // 目录：生成默认文件名 dump_YYYYmmdd_HHMMSS.sql
+        std::time_t t = std::time(nullptr);
+        std::tm tmv{};
+#ifdef _WIN32
+        localtime_s(&tmv, &t);
+#else
+        localtime_r(&t, &tmv);
+#endif
+        char buf[32];
+        std::snprintf(buf, sizeof(buf), "dump_%04d%02d%02d_%02d%02d%02d.sql",
+            tmv.tm_year + 1900, tmv.tm_mon + 1, tmv.tm_mday, tmv.tm_hour, tmv.tm_min, tmv.tm_sec);
+        // 确保目录存在
+        create_directories(p, ec);
+        path full = p / buf;
+        return absolute(full, ec).string();
+    }
+
+    // 若父目录不存在则尝试创建
+    path parent = p.parent_path();
+    if (!parent.empty() && !exists(parent, ec))
+    {
+        create_directories(parent, ec);
+        // 即便创建失败也继续尝试导出，后续写文件会报错
+    }
+
+    return absolute(p, ec).string();
 }
 
 int main(int argc, char **argv)
@@ -368,10 +465,43 @@ int main(int argc, char **argv)
             }
             
             minidb::SQLDumper dumper(catalog.get(), se.get());
-            if (dumper.DumpToFile(filename, minidb::DumpOption::StructureAndData)) {
-                std::cout << "Database exported to: " << filename << std::endl;
+            std::string out = resolve_export_output_path(filename);
+            if (out.empty()) {
+                std::cerr << "Error: Invalid output path." << std::endl;
+                continue;
+            }
+            if (dumper.DumpToFile(out, minidb::DumpOption::StructureAndData)) {
+                std::cout << "Database exported to: " << out << std::endl;
             } else {
-                std::cerr << "Error: Failed to export database to " << filename << std::endl;
+                std::cerr << "Error: Failed to export database to " << out << std::endl;
+            }
+            continue;
+        }
+
+        if (line.substr(0, 8) == ".export ")
+        {
+            if (!doExec) {
+                std::cerr << "Error: Export requires execution mode. Use --exec flag." << std::endl;
+                continue;
+            }
+            if (!authService->isLoggedIn()) { std::cout << "[权限拒绝] 请先登录" << std::endl; continue; }
+            std::string pathArg = line.substr(8);
+            pathArg = trim_copy(pathArg);
+            if (pathArg.empty()) {
+                std::cerr << "Error: Please specify output path (directory or file) for export." << std::endl;
+                continue;
+            }
+
+            minidb::SQLDumper dumper(catalog.get(), se.get());
+            std::string out = resolve_export_output_path(pathArg);
+            if (out.empty()) {
+                std::cerr << "Error: Invalid output path." << std::endl;
+                continue;
+            }
+            if (dumper.DumpToFile(out, minidb::DumpOption::StructureAndData)) {
+                std::cout << "Database exported to: " << out << std::endl;
+            } else {
+                std::cerr << "Error: Failed to export database to " << out << std::endl;
             }
             continue;
         }
