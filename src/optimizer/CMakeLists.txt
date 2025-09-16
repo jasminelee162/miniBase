@@ -2,6 +2,8 @@
 add_library(optimizer_lib STATIC
     index_optimizer.cpp
     index_optimizer.h
+    plan_optimizer.cpp
+    plan_optimizer.h
 )
 
 target_include_directories(optimizer_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

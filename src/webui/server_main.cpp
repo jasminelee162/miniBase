@@ -9,6 +9,7 @@
 #include "../frontend/translator/json_to_plan.h"
 #include "../engine/executor/executor.h"
 #include "httplib.h"
+#include "../optimizer/plan_optimizer.h"
 #include "../tools/sql_dump/sql_dumper.h"
 #include "../tools/sql_import/sql_importer.h"
 #include <memory>
@@ -204,6 +205,7 @@ int main() {
             // 3) AST→JSON→Plan
             auto j = ASTJson::toJson(stmt.get());
             auto plan = JsonToPlan::translate(j);
+            plan = minidb::OptimizePlan(std::move(plan));
             // 4) 执行
             // 附加权限检查器，确保 WebUI 与 CLI 一致的表级可见性/权限控制
             PermissionChecker checker(&auth);

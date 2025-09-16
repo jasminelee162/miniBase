@@ -13,6 +13,7 @@
 #include <iostream>
 #include <sstream>
 #include "cli_helpers.h"
+#include "../optimizer/plan_optimizer.h"
 
 namespace minidb {
 namespace cli {
@@ -58,6 +59,7 @@ bool execute_sql_pipeline(
         }
 
         auto plan = JsonToPlan::translate(j);
+        plan = minidb::OptimizePlan(std::move(plan));
         auto results = executor->execute(plan.get());
         log_info("execution finished successfully");
         // 打印结果表格（仅针对 SELECT/SHOW 等返回行的命令）
