@@ -16,23 +16,25 @@ namespace minidb
 {
 
     // 元数据信息结构体
-    struct MetaInfo {
-        uint64_t magic;           // 魔数标识
-        uint32_t version;         // 版本号
-        uint32_t page_size;       // 页大小
-        page_id_t next_page_id;   // 下一个可分配页号
-        page_id_t catalog_root;   // 目录页根页号
-        
-        MetaInfo() : magic(0), version(0), page_size(0), 
-                    next_page_id(INVALID_PAGE_ID), catalog_root(INVALID_PAGE_ID) {}
+    struct MetaInfo
+    {
+        uint64_t magic;         // 魔数标识
+        uint32_t version;       // 版本号
+        uint32_t page_size;     // 页大小
+        page_id_t next_page_id; // 下一个可分配页号
+        page_id_t catalog_root; // 目录页根页号
+
+        MetaInfo() : magic(0), version(0), page_size(0),
+                     next_page_id(INVALID_PAGE_ID), catalog_root(INVALID_PAGE_ID) {}
     };
 
     // 目录数据结构体（用于序列化到目录页）
-    struct CatalogData {
-        std::vector<char> data;   // 序列化的目录数据
-        
+    struct CatalogData
+    {
+        std::vector<char> data; // 序列化的目录数据
+
         CatalogData() = default;
-        CatalogData(const std::vector<char>& d) : data(d) {}
+        CatalogData(const std::vector<char> &d) : data(d) {}
     };
 
     class StorageEngine
@@ -75,40 +77,40 @@ namespace minidb
 
         // 页链接操作（这是Storage的核心职责）
         bool LinkPages(page_id_t from_page_id, page_id_t to_page_id);
-        
+
         // ===== 便利性接口（为其他模块提供便利） =====
         // 页遍历工具
-        std::vector<Page*> GetPageChain(page_id_t first_page_id);
+        std::vector<Page *> GetPageChain(page_id_t first_page_id);
         // 预取页链（将链上一批页加载到缓冲池，不返回指针）
         void PrefetchPageChain(page_id_t first_page_id, size_t max_pages = 8);
-        
+
         // 页内数据操作工具（使用page_utils.h中的函数）
-        bool AppendRecordToPage(Page* page, const void* record_data, uint16_t record_size);
-        std::vector<std::pair<const void*, uint16_t>> GetPageRecords(Page* page);
-        
+        bool AppendRecordToPage(Page *page, const void *record_data, uint16_t record_size);
+        std::vector<std::pair<const void *, uint16_t>> GetPageRecords(Page *page);
+
         // 页初始化工具
-        void InitializeDataPage(Page* page);
+        void InitializeDataPage(Page *page);
         // 便捷：创建/获取数据页
-        Page* CreateDataPage(page_id_t* page_id);
-        Page* GetDataPage(page_id_t page_id);
+        Page *CreateDataPage(page_id_t *page_id);
+        Page *GetDataPage(page_id_t page_id);
 
         // 索引页便捷接口
-        void InitializeIndexPage(Page* page);
-        Page* CreateIndexPage(page_id_t* page_id);
-        Page* GetIndexPage(page_id_t page_id);
+        void InitializeIndexPage(Page *page);
+        Page *CreateIndexPage(page_id_t *page_id);
+        Page *GetIndexPage(page_id_t page_id);
 
         // ===== 元数据管理接口 =====
         // 元数据页操作
-        Page* GetMetaPage();
+        Page *GetMetaPage();
         bool InitializeMetaPage();
         MetaInfo GetMetaInfo() const;
-        bool UpdateMetaInfo(const MetaInfo& meta_info);
-        
+        bool UpdateMetaInfo(const MetaInfo &meta_info);
+
         // 目录页操作
-        Page* GetCatalogPage();
-        Page* CreateCatalogPage();
-        bool UpdateCatalogData(const CatalogData& catalog_data);
-        
+        Page *GetCatalogPage();
+        Page *CreateCatalogPage();
+        bool UpdateCatalogData(const CatalogData &catalog_data);
+
         // 元数据字段访问
         page_id_t GetCatalogRoot() const;
         bool SetCatalogRoot(page_id_t catalog_root);
@@ -116,7 +118,7 @@ namespace minidb
         bool SetNextPageId(page_id_t next_page_id);
 
         // 索引根页号持久化代理
-        page_id_t GetIndexRoot() const { return disk_manager_ ? const_cast<DiskManager*>(disk_manager_.get())->GetIndexRoot() : INVALID_PAGE_ID; }
+        page_id_t GetIndexRoot() const { return disk_manager_ ? const_cast<DiskManager *>(disk_manager_.get())->GetIndexRoot() : INVALID_PAGE_ID; }
         bool SetIndexRoot(page_id_t index_root) { return disk_manager_ ? disk_manager_->SetIndexRoot(index_root) : false; }
 
     private:

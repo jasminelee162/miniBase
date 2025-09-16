@@ -1,6 +1,6 @@
-#include "../../src/catalog/catalog.h"
 #include "../../src/engine/executor/executor.h"
 #include "../../src/engine/operators/plan_node.h"
+#include "../../src/catalog/catalog.h"
 #include <iostream>
 #include <memory>
 #ifdef _WIN32
@@ -23,13 +23,12 @@ int main()
 #ifdef _WIN32
     SetConsoleOutputCP(CP_UTF8);
 #endif
-
+    auth_service_->login("admin", "admin"); // 假设 admin 是 DBA
     auto engine = std::make_shared<minidb::StorageEngine>("school.db", 10);
     minidb::Executor exec(engine);
     auto catalog = std::make_shared<minidb::Catalog>(engine.get());
     exec.SetCatalog(catalog);
 
-    std::cout << "???????????????";
     /* 1. 建表 */
     {
         PlanNode ct;
@@ -62,28 +61,7 @@ int main()
         printResult(exec.execute(&show));
     }
 
-    /* 3. CREATE PROCEDURE test_proc */
-    {
-        PlanNode proc;
-        proc.type = PlanType::CreateProcedure;
-        proc.proc_name = "test_proc";
-        proc.proc_params = {"teacher_name"};
-        proc.proc_body = "INSERT INTO teachers (teacher_id, full_name, subject, experience) VALUES (1, ?, 'Math', 5);";
-        std::cout << "\n== CREATE PROCEDURE test_proc ==\n";
-        exec.execute(&proc);
-    }
-
-    /* 4. CALL PROCEDURE test_proc */
-    {
-        PlanNode call;
-        call.type = PlanType::CallProcedure;
-        call.proc_name = "test_proc";
-        call.proc_args = {"John Smith"};
-        std::cout << "\n== CALL PROCEDURE test_proc ==\n";
-        exec.execute(&call);
-    }
-
-    /* 6. DROP TABLE students */
+    /* 3. DROP TABLE students */
     {
         PlanNode drop;
         drop.type = PlanType::Drop;
@@ -92,7 +70,7 @@ int main()
         exec.execute(&drop);
     }
 
-    /* 7. SHOW TABLES (删除后) */
+    /* 4. SHOW TABLES (删除后) */
     {
         PlanNode show;
         show.type = PlanType::ShowTables;
