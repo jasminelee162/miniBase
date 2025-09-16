@@ -369,23 +369,23 @@ namespace minidb
         switch (node->type)
         {
 
-    case PlanType::CreateTable:
+        case PlanType::CreateTable:
+        {
+            Role user_role = auth_service_->getCurrentUserRole();
+            if (user_role == Role::ANALYST)
             {
-                Role user_role = auth_service_->getCurrentUserRole();
-                if (user_role == Role::ANALYST)
-                {
-                    throw std::runtime_error("Permission denied: ANALYST cannot create tables");
-                }
-                logger.log("CREATE TABLE " + node->table_name);
-                std::cout << "[Executor] 创建表: " << node->table_name << std::endl;
-
-                if (catalog_ && auth_service_) // ✅ 确保有 auth_service_
-                {
-                    std::string owner = auth_service_->getCurrentUser(); // ✅ 从 AuthService 拿当前用户
-                    catalog_->CreateTable(node->table_name, node->table_columns, owner);
-                }
-                return {};
+                throw std::runtime_error("Permission denied: ANALYST cannot create tables");
             }
+            logger.log("CREATE TABLE " + node->table_name);
+            std::cout << "[Executor] 创建表: " << node->table_name << std::endl;
+
+            if (catalog_ && auth_service_) // ✅ 确保有 auth_service_
+            {
+                std::string owner = auth_service_->getCurrentUser(); // ✅ 从 AuthService 拿当前用户
+                catalog_->CreateTable(node->table_name, node->table_columns, owner);
+            }
+            return {};
+        }
         case PlanType::Insert:
         {
             if (!permissionChecker_->checkTablePermission(node->table_name, Permission::INSERT))
@@ -1444,25 +1444,29 @@ namespace minidb
     // 否则回退到页链全表扫描（原实现）
     std::vector<Row> Executor::SeqScanAll(const std::string &table_name)
     {
+        std::cout << "[Executor] ==> 进入 SeqScanAll，表名: " << table_name << std::endl;
         std::vector<Row> all_rows;
         if (!storage_engine_ || !catalog_)
+        {
+            std::cout << "[Executor] 存储引擎或 Catalog 未初始化，返回空结果。" << std::endl;
             return all_rows;
+        }
 
         const auto &schema = catalog_->GetTable(table_name);
 
         // ------------------------
         // 1) 优化器尝试选择最佳索引
         // ------------------------
+        std::cout << "[Executor] 阶段1: 尝试调用优化器选择最佳索引..." << std::endl;
         BPlusTree *best_index = nullptr;
         if (optimizer_)
         {
-            // 使用优化器选择代价最优的索引（范围为整表遍历）
             best_index = optimizer_->ChooseBestIndex(table_name, INT32_MIN, INT32_MAX);
         }
 
         if (best_index)
         {
-            // 使用优化器选择的 B+ 树做全表扫描
+            std::cout << "[Executor] 优化器返回了可用索引，使用 B+ 树进行全表扫描。" << std::endl;
             auto rids = best_index->Range(INT32_MIN, INT32_MAX);
             all_rows.reserve(rids.size());
 
@@ -1473,12 +1477,14 @@ namespace minidb
                     all_rows.push_back(std::move(maybe_row.value()));
             }
 
+            std::cout << "[Executor] 使用索引完成扫描，返回 " << all_rows.size() << " 行。" << std::endl;
             return all_rows; // 成功用索引完成扫描
         }
 
         // ------------------------
-        // 2) 原有逻辑：尝试第一个单列 B+ 树索引做叶链扫描
+        // 2) 尝试第一个单列 B+ 树索引做叶链扫描
         // ------------------------
+        std::cout << "[Executor] 阶段2: 没有优化器索引，尝试第一个单列 B+ 树索引..." << std::endl;
         std::vector<IndexSchema> idxs = catalog_->GetTableIndexes(table_name);
         IndexSchema usable_idx;
         bool found_idx = false;
@@ -1494,6 +1500,7 @@ namespace minidb
 
         if (found_idx && usable_idx.root_page_id != INVALID_PAGE_ID)
         {
+            std::cout << "[Executor] 找到一个单列 B+ 树索引，尝试扫描..." << std::endl;
             BPlusTree bpt(storage_engine_.get());
             bpt.SetRoot(usable_idx.root_page_id);
 
@@ -1507,12 +1514,14 @@ namespace minidb
                     all_rows.push_back(std::move(maybe_row.value()));
             }
 
+            std::cout << "[Executor] 使用单列索引完成扫描，返回 " << all_rows.size() << " 行。" << std::endl;
             return all_rows;
         }
 
         // ------------------------
         // 3) 原有页链扫描回退
         // ------------------------
+        std::cout << "[Executor] 阶段3: 没有索引可用，回退到页链扫描..." << std::endl;
         page_id_t first_page_id = schema.first_page_id;
         auto pages = storage_engine_->GetPageChain(first_page_id);
 
@@ -1523,6 +1532,7 @@ namespace minidb
             storage_engine_->PutPage(p->GetPageId(), false);
         }
 
+        std::cout << "[Executor] 页链扫描完成，返回 " << all_rows.size() << " 行。" << std::endl;
         return all_rows;
     }
 
