@@ -244,9 +244,12 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
         node->type = PlanType::CreateIndex;
 
         // 索引名
-        if (!j.contains("name"))
-            throw std::runtime_error("CreateIndex plan must have name");
-        node->index_name = j["name"].get<std::string>();
+        if (j.contains("name"))
+            node->index_name = j["name"].get<std::string>();
+        else if (j.contains("index_name"))
+            node->index_name = j["index_name"].get<std::string>();
+        else
+            throw std::runtime_error("CreateIndex plan must have name or index_name");
 
         // 表名
         if (!j.contains("table_name"))
@@ -259,7 +262,7 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
         node->index_cols = j["columns"].get<std::vector<std::string>>();
 
         // 索引类型（可选，默认 BPLUS）
-        node->index_type = j.value("index_type", "BPLUS");
+        node->index_type = j.value("index_type", std::string("BPLUS"));
 
         node->children.clear(); // 不需要子节点
     }

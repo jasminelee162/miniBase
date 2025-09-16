@@ -273,6 +273,18 @@ json ASTJson::toJson(const Statement* stmt)
         j["proc_body"] = createProc->getBody();
         return j;
     }
+    // CREATE INDEX
+    if (auto cidx = dynamic_cast<const CreateIndexStatement*>(stmt)) {
+        json j;
+        j["type"] = "CreateIndex";
+        // 与 translator 兼容：输出 name 字段，同时可读性保持 index_name
+        j["name"] = cidx->getIndexName();
+        j["index_name"] = cidx->getIndexName();
+        j["table_name"] = cidx->getTableName();
+        j["columns"] = cidx->getColumns();
+        j["index_type"] = cidx->getIndexType();
+        return j;
+    }
     throw std::runtime_error(SqlErrors::UNSUPPORTED_STMT_JSON);
 }
 

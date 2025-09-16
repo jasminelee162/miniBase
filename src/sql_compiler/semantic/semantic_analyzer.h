@@ -96,6 +96,7 @@ public:
     void visit(DropStatement &stmt) override;
     void visit(CallProcedureStatement &stmt) override;
     void visit(CreateProcedureStatement &stmt) override;
+    void visit(CreateIndexStatement &stmt) override;
 
 private:
     minidb::Catalog *catalog_;

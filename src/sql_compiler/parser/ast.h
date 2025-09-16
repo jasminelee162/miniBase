@@ -391,6 +391,28 @@ public:
 
     void accept(ASTVisitor& visitor) override;
 };
+
+// CREATE INDEX 语句
+class CreateIndexStatement : public Statement {
+private:
+    std::string indexName;
+    std::string tableName;
+    std::vector<std::string> columns;
+    std::string indexType; // 如 BPLUS
+public:
+    CreateIndexStatement(const std::string& name,
+                         const std::string& table,
+                         std::vector<std::string> cols,
+                         const std::string& type)
+        : indexName(name), tableName(table), columns(std::move(cols)), indexType(type) {}
+
+    const std::string& getIndexName() const { return indexName; }
+    const std::string& getTableName() const { return tableName; }
+    const std::vector<std::string>& getColumns() const { return columns; }
+    const std::string& getIndexType() const { return indexType; }
+
+    void accept(ASTVisitor& visitor) override;
+};
 // AST访问者接口
 class ASTVisitor {
 public:
@@ -409,6 +431,7 @@ public:
     virtual void visit(DropStatement& stmt) = 0;
     virtual void visit(CallProcedureStatement& stmt) = 0;
     virtual void visit(CreateProcedureStatement& stmt) = 0;
+    virtual void visit(CreateIndexStatement& stmt) = 0;
 };
 
 #endif // MINIBASE_AST_H

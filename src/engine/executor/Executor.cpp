@@ -458,9 +458,9 @@ namespace minidb
                     columns_to_use.push_back(c.name);
             }
 
-            // 为每条插入记录保存它实际写入的 page id（对应 node->values 顺序）
-            std::vector<page_id_t> inserted_pids;
-            inserted_pids.reserve(node->values.size());
+            // 为每条插入记录保存它实际写入的 RID（包含 page_id 与 slot）
+            std::vector<RID> inserted_rids;
+            inserted_rids.reserve(node->values.size());
 
             for (size_t row_idx = 0; row_idx < node->values.size(); ++row_idx)
             {
@@ -546,7 +546,8 @@ namespace minidb
                 std::vector<char> buf;
                 row.Serialize(buf, schema); // 必须实现：按 schema 将 row 转为 bytes（连续记录），返回 buf.size()
 
-                // 尝试追加到当前页
+                // 尝试追加到当前页，记录追加前的 slot 数以确定新记录的 slot
+                uint16_t old_slot_count = cur_page->GetSlotCount();
                 bool appended = storage_engine_->AppendRecordToPage(cur_page, buf.data(), static_cast<uint16_t>(buf.size()));
                 if (!appended)
                 {
@@ -565,6 +566,7 @@ namespace minidb
                     cur_page = new_page;
 
                     // 再次尝试追加（若仍失败说明记录超大）
+                    old_slot_count = new_page->GetSlotCount();
                     appended = storage_engine_->AppendRecordToPage(cur_page, buf.data(), static_cast<uint16_t>(buf.size()));
                     if (!appended)
                     {
@@ -575,8 +577,8 @@ namespace minidb
                     }
                 }
 
-                // 记录该行写入的 page id（slot 暂定 0）
-                inserted_pids.push_back(cur_page->GetPageId());
+                // 记录该行写入的 RID（slot = 追加前的 slot 数）
+                inserted_rids.push_back(RID{cur_page->GetPageId(), old_slot_count});
 
                 // 将当前页 unpin（不要标脏这里——AppendRecordToPage 可能已设置脏）
                 storage_engine_->PutPage(cur_page->GetPageId(), true);
@@ -589,7 +591,7 @@ namespace minidb
             // 推荐提供 Catalog::UpdateTableFirstPageId() 或 SaveToStorage 会序列化当前内存结构
             catalog_->SaveToStorage(); // 写回页0的Catalog元数据（含首页信息）
 
-            // ========== 更新索引（逐条对应 inserted_pids） ==========
+            // ========== 更新索引（逐条对应 inserted_rids） ==========
             std::vector<IndexSchema> indexes = catalog_->GetTableIndexes(node->table_name);
             for (auto &index : indexes)
             {
@@ -620,15 +622,14 @@ namespace minidb
                     bpt.SetRoot(index.root_page_id);
                 }
 
-                // 用每条插入记录对应的 page id 构造 RID，插入索引
-                for (size_t i = 0; i < inserted_pids.size() && i < node->values.size(); ++i)
+                // 用每条插入记录对应的 RID 插入索引
+                for (size_t i = 0; i < inserted_rids.size() && i < node->values.size(); ++i)
                 {
                     const std::string &key_str = node->values[i][col_idx];
                     try
                     {
                         int32_t key = std::stoi(key_str);
-                        RID rid{inserted_pids[i], 0}; // slot=0 暂定
-                        bpt.Insert(key, rid);
+                        bpt.Insert(key, inserted_rids[i]);
                     }
                     catch (const std::exception &)
                     {
@@ -645,7 +646,7 @@ namespace minidb
             catalog_->SaveToStorage();
 
             // 设置操作摘要
-            SetOperationSummary(std::string("[Insert] 插入 ") + std::to_string(inserted_pids.size()) + " 行");
+            SetOperationSummary(std::string("[Insert] 插入 ") + std::to_string(inserted_rids.size()) + " 行");
             return {};
         }
         // SeqScan（修复）

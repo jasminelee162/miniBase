@@ -405,6 +405,20 @@ void SemanticAnalyzer::visit(DropStatement& stmt) {
     logger.log(std::string("[Semantic] Drop table checks passed for: ") + stmt.getTableName());
 }
 
+void SemanticAnalyzer::visit(CreateIndexStatement &stmt)
+{
+    Logger logger("logs/semantic.log");
+    logger.log(std::string("[Semantic] CreateIndex on table: ") + stmt.getTableName());
+    // 基础检查：表存在
+    checkTableExists(stmt.getTableName());
+    // 列存在
+    for (const auto &col : stmt.getColumns())
+    {
+        checkColumnExists(stmt.getTableName(), col);
+    }
+    logger.log("[Semantic] CreateIndex checks passed.");
+}
+
 void SemanticAnalyzer::visit(CallProcedureStatement &stmt)
 {
     Logger logger("logs/semantic.log");

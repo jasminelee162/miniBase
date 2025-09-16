@@ -59,4 +59,8 @@ void CreateProcedureStatement::accept(ASTVisitor &visitor)
 {
     visitor.visit(*this);
 }
+void CreateIndexStatement::accept(ASTVisitor &visitor)
+{
+    visitor.visit(*this);
+}
  
