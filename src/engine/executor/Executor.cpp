@@ -369,23 +369,23 @@ namespace minidb
         switch (node->type)
         {
 
-        case PlanType::CreateTable:
-        {
-            if (!permissionChecker_->checkTablePermission(node->table_name, Permission::CREATE_TABLE))
+    case PlanType::CreateTable:
             {
-                throw std::runtime_error("Permission denied: create table " + node->table_name);
-            }
-            logger.log("CREATE TABLE " + node->table_name);
-            std::cout << "[Executor] 创建表: " << node->table_name << std::endl;
+                Role user_role = auth_service_->getCurrentUserRole();
+                if (user_role == Role::ANALYST)
+                {
+                    throw std::runtime_error("Permission denied: ANALYST cannot create tables");
+                }
+                logger.log("CREATE TABLE " + node->table_name);
+                std::cout << "[Executor] 创建表: " << node->table_name << std::endl;
 
-            if (catalog_ && auth_service_) // ✅ 确保有 auth_service_
-            {
-                std::string owner = auth_service_->getCurrentUser(); // ✅ 从 AuthService 拿当前用户
-                catalog_->CreateTable(node->table_name, node->table_columns, owner);
+                if (catalog_ && auth_service_) // ✅ 确保有 auth_service_
+                {
+                    std::string owner = auth_service_->getCurrentUser(); // ✅ 从 AuthService 拿当前用户
+                    catalog_->CreateTable(node->table_name, node->table_columns, owner);
+                }
+                return {};
             }
-            return {};
-        }
-
         case PlanType::Insert:
         {
             if (!permissionChecker_->checkTablePermission(node->table_name, Permission::INSERT))
