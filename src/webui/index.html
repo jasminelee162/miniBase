@@ -9,7 +9,10 @@
       *, *::before, *::after { box-sizing: border-box; }
       body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin:0; background:var(--bg); color:#e6edf3; }
       .wrap { max-width: 1400px; margin: 0 auto; padding: 20px; }
-      .grid { display:grid; grid-template-columns: 320px 1fr 380px; gap:16px; align-items:start; justify-items: stretch; }
+      .grid { display:grid; grid-template-columns: minmax(320px, 1fr) 1fr minmax(380px, 1fr); grid-template-rows: 1fr 1fr; gap:16px; align-items:stretch; justify-items: stretch; }
+      .stretch { align-self: stretch; height: 100%; }
+      /* 右侧列：三等分垂直布局，使 Logs/Metrics/Admin 上下紧凑且高度相近 */
+      #rightCol { display:grid; grid-template-rows: 1fr 1fr 1fr; gap:12px; }
       h2 { margin: 8px 0 16px; font-weight:600; }
       .card { background:var(--panel); border:1px solid #1e2a44; border-radius:10px; padding:16px; width:100%; box-shadow: 0 3px 18px rgba(0,0,0,.25); }
       /* Login card narrower and centered */
@@ -43,17 +46,20 @@
   </head>
   <body>
     <div class="wrap">
-    <h2>MiniDB Web UI</h2>
+    <h2>MiniDB Web</h2>
     <div id="grid" class="grid" style="grid-template-columns: 1fr;">
 
-    <!-- 左侧：AI 接口 -->
-    <div id="aiPanel" class="card" style="display:none;">
+    <!-- 左侧：合并 AI + Metrics 为单卡 -->
+    <div id="leftPanel" class="card stretch" style="display:none; grid-column: 1; grid-row: 1 / span 2;">
       <div class="section-title">AI Assistant</div>
       <textarea id="aiPrompt" class="fixed" placeholder="Ask MiniDB AI..."></textarea>
       <div class="row" style="margin-top:8px;">
         <button onclick="callAI()">Send</button>
       </div>
       <div id="aiReply" class="fixed tall" style="margin-top:8px;"></div>
+
+      <div class="section-title" style="margin-top:16px;">Metrics</div>
+      <div id="metricsBody" class="muted"></div>
     </div>
 
     <!-- 登录页 -->
@@ -68,7 +74,7 @@
     </div>
 
     <!-- 应用页（登录后显示） -->
-    <div id="appView" class="card" style="display:none;">
+    <div id="appView" class="card stretch" style="display:none; grid-column: 2; grid-row: 1 / span 2;">
       <div class="row">
         <div><strong>Current:</strong> <span id="currUser"></span> <span id="currRole" class="muted" style="margin-left:6px;"></span></div>
         <div class="muted">Press Ctrl+Enter to execute</div>
@@ -84,47 +90,47 @@
       </div>
       <div id="result" class="fixed tall" style="margin-top:8px;"></div>
 
-      <!-- 仅 DBA 可见：创建用户 -->
-      <div id="createUserPanel" class="card" style="display:none; margin-top:16px;">
-        <div class="section-title">Create User (DBA only)</div>
-        <div class="row">
-          <input id="nu" placeholder="new username" />
-          <input id="np" placeholder="new password" type="password" />
-          <select id="nr">
-            <option>DBA</option>
-            <option>DEVELOPER</option>
-            <option selected>ANALYST</option>
-          </select>
-          <button onclick="createUser()">Create</button>
-          <span id="createMsg" class="status"></span>
-        </div>
-        <div class="section-title">Users</div>
-        <div class="row" style="margin-bottom:8px;">
-          <button onclick="refreshUsers()">Refresh</button>
-          <input id="delUser" placeholder="username to delete" />
-          <button onclick="deleteUser()">Delete</button>
-          <span id="userMsg" class="status"></span>
-        </div>
-        <div id="userList" class="muted"></div>
-        <div class="section-title">Dump / Import</div>
-        <div class="row">
-          <input id="dumpFile" placeholder="dump filename (e.g. dump.sql)" />
-          <button onclick="dumpDB()">Dump</button>
-          <input id="importFile" placeholder="import filename (e.g. dump.sql)" />
-          <button onclick="importDB()">Import</button>
-          <span id="dumpMsg" class="status"></span>
-        </div>
-      </div>
+      
     </div>
 
-    <!-- 右侧：日志查看 -->
-    <div id="logsPanel" class="card" style="display:none;">
+    <!-- 右侧：Logs（第1行）、Admin（第2行） -->
+    <div id="logsPanel" class="card stretch" style="display:none; grid-column: 3; grid-row: 1;">
       <div class="section-title">Logs</div>
       <div class="row">
         <select id="logSelect"></select>
         <button onclick="loadLogs()">Open</button>
       </div>
       <pre id="logContent" class="fixed tall" style="white-space:pre-wrap; background:#0f1726; padding:10px;"></pre>
+    </div>
+    <div id="adminPanel" class="card stretch" style="display:none; grid-column: 3; grid-row: 2;">
+      <div class="section-title">Create User (DBA only)</div>
+      <div class="row">
+        <input id="nu" placeholder="new username" />
+        <input id="np" placeholder="new password" type="password" />
+        <select id="nr">
+          <option>DBA</option>
+          <option>DEVELOPER</option>
+          <option selected>ANALYST</option>
+        </select>
+        <button onclick="createUser()">Create</button>
+        <span id="createMsg" class="status"></span>
+      </div>
+      <div class="section-title">Users</div>
+      <div class="row" style="margin-bottom:8px;">
+        <button onclick="refreshUsers()">Refresh</button>
+        <input id="delUser" placeholder="username to delete" />
+        <button onclick="deleteUser()">Delete</button>
+        <span id="userMsg" class="status"></span>
+      </div>
+      <div id="userList" class="muted"></div>
+      <div class="section-title">Dump / Import</div>
+      <div class="row">
+        <input id="dumpFile" placeholder="dump filename (e.g. dump.sql)" />
+        <button onclick="dumpDB()">Dump</button>
+        <input id="importFile" placeholder="import filename (e.g. dump.sql)" />
+        <button onclick="importDB()">Import</button>
+        <span id="dumpMsg" class="status"></span>
+      </div>
     </div>
 
     </div>
@@ -136,24 +142,26 @@
         const grid = document.getElementById('grid');
         const loginView = document.getElementById('loginView');
         const appView = document.getElementById('appView');
-        const createPanel = document.getElementById('createUserPanel');
-        const aiPanel = document.getElementById('aiPanel');
+        const adminPanel = document.getElementById('adminPanel');
+        const leftPanel = document.getElementById('leftPanel');
         const logsPanel = document.getElementById('logsPanel');
+        const metricsPanel = null;
         if (session.ok) {
-          grid.style.gridTemplateColumns = '320px 1fr 380px';
+          grid.style.gridTemplateColumns = 'minmax(320px, 1fr) 1fr minmax(380px, 1fr)';
           loginView.style.display = 'none';
           appView.style.display = '';
-          aiPanel.style.display = '';
+          leftPanel.style.display = '';
           logsPanel.style.display = '';
           document.getElementById('currUser').textContent = session.user;
           document.getElementById('currRole').textContent = `(${session.role})`;
-          createPanel.style.display = (session.role === 'DBA') ? '' : 'none';
+          adminPanel.style.display = (session.role === 'DBA') ? '' : 'none';
         } else {
           grid.style.gridTemplateColumns = '1fr';
           loginView.style.display = '';
           appView.style.display = 'none';
-          aiPanel.style.display = 'none';
+          leftPanel.style.display = 'none';
           logsPanel.style.display = 'none';
+          adminPanel.style.display = 'none';
         }
       }
 
@@ -194,7 +202,7 @@
         btn.disabled = true; msg.textContent = 'Running...'; div.textContent = '';
         const t0 = performance.now();
         try {
-          const r = await fetch('/sql/execute', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({sql})});
+        const r = await fetch('/sql/execute', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({sql})});
           const text = await r.text();
           let j = {};
           try { j = text ? JSON.parse(text) : {}; } catch { j = { error: 'Invalid JSON response' }; }
@@ -244,8 +252,8 @@
           if (cols.length === 0 && rows.length === 0) { div.textContent = div.textContent || '(0 rows)'; return; }
           let html = '<table><thead><tr>' + cols.map(c=>`<th>${escapeHtml(c)}</th>`).join('') + '</tr></thead><tbody>';
           for (const row of rows) html += '<tr>' + row.map(v=>`<td>${escapeHtml(v)}</td>`).join('') + '</tr>';
-          html += '</tbody></table>';
-          div.innerHTML = html;
+        html += '</tbody></table>';
+        div.innerHTML = html;
         } catch (e) {
           msg.textContent = 'Network error';
           div.textContent = String(e);
@@ -341,6 +349,25 @@
         } catch(e){ pre.textContent = String(e); }
       }
 
+      async function refreshMetrics(){
+        try {
+          const r = await fetch('/metrics');
+          const j = await r.json();
+          const el = document.getElementById('metricsBody');
+          el.innerHTML = `
+            <div>Hit Rate: ${((j.hit_rate||0)*100).toFixed(1)}%</div>
+            <div>Pool Size: ${j.pool_size||0}</div>
+            <div>Replacements: ${j.replacements||0}</div>
+            <div>Writebacks: ${j.writebacks||0}</div>
+            <div>IO Queue Depth: ${j.io_queue_depth||0}</div>
+            <div>Avg Read Latency: ${(j.io_avg_read_ms||0).toFixed(3)} ms</div>
+            <div>Avg Write Latency: ${(j.io_avg_write_ms||0).toFixed(3)} ms</div>
+            <div>Read Ops: ${j.io_read_ops||0}</div>
+            <div>Write Ops: ${j.io_write_ops||0}</div>
+          `;
+        } catch {}
+      }
+
       // 初次渲染（可选：尝试获取当前会话）
       (async function init(){
         try {
@@ -350,6 +377,7 @@
         } catch {}
         render();
         populateLogs();
+        setInterval(refreshMetrics, 1000);
       })();
 
       // 快捷键：Ctrl/Cmd+Enter 执行
@@ -362,6 +390,6 @@
     </script>
     </div>
   </body>
-</html>
+  </html>
 
 

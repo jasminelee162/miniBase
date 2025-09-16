@@ -11,6 +11,10 @@
 #include <vector>
 #include <queue>
 #include <cstdint>
+#include <deque>
+#include <condition_variable>
+#include <thread>
+#include "storage/page/wal_manager.h"
 
 namespace minidb
 {
@@ -55,6 +59,7 @@ namespace minidb
         // 系统管理
         void FlushAllPages();
         void Shutdown();
+        void AttachWAL(WalManager* wal) { wal_ = wal; }
 
         // Meta superblock persistence (page 0)
         bool PersistMeta();
@@ -72,8 +77,40 @@ namespace minidb
         // 容量信息
         size_t GetMaxPageCount() const { return max_pages_; }
         double GetUsage() const { return GetMaxPageCount() == 0 ? 0.0 : static_cast<double>(next_page_id_.load()) / static_cast<double>(GetMaxPageCount()); }
+        size_t GetQueueDepth() const {
+            std::lock_guard<std::mutex> lk(queue_mutex_);
+            return io_queue_.size();
+        }
+
+        // 基本延时与吞吐指标
+        double GetAvgReadLatencyMs() const {
+            size_t ops = read_ops_.load();
+            if (ops == 0) return 0.0;
+            return static_cast<double>(total_read_ns_.load()) / 1e6 / static_cast<double>(ops);
+        }
+        double GetAvgWriteLatencyMs() const {
+            size_t ops = write_ops_.load();
+            if (ops == 0) return 0.0;
+            return static_cast<double>(total_write_ns_.load()) / 1e6 / static_cast<double>(ops);
+        }
+        size_t GetReadOps() const { return read_ops_.load(); }
+        size_t GetWriteOps() const { return write_ops_.load(); }
 
     private:
+        enum class IOType { Read, Write };
+        struct IORequest {
+            IOType type;
+            page_id_t page_id;
+            char* read_buf;             // for Read
+            const char* write_buf;      // for Write
+            std::promise<Status> prom;
+        };
+
+        void StartWorkers(size_t n = 1);
+        void StopWorkers();
+        std::future<Status> Enqueue(IOType type, page_id_t page_id, char* rbuf, const char* wbuf);
+        void WorkerLoop();
+
         bool ReadMeta(MetaPageData &out);
         bool WriteMeta(const MetaPageData &m);
         bool InitNewMeta();
@@ -96,11 +133,28 @@ namespace minidb
         // 统计信息
         std::atomic<size_t> num_reads_{0};
         std::atomic<size_t> num_writes_{0};
+        std::atomic<uint64_t> total_read_ns_{0};
+        std::atomic<uint64_t> total_write_ns_{0};
+        std::atomic<size_t> read_ops_{0};
+        std::atomic<size_t> write_ops_{0};
 
         // 并发控制
         mutable std::mutex file_mutex_;
         std::atomic<bool> is_shutdown_{false};
         size_t max_pages_{DEFAULT_MAX_PAGES};
+
+        // IO queue & workers
+        mutable std::mutex queue_mutex_;
+        std::condition_variable queue_cv_;
+        std::deque<IORequest> io_queue_;
+        std::vector<std::thread> workers_;
+        std::atomic<bool> stop_workers_{false};
+
+        // batching knobs
+        size_t batch_max_{64};
+
+        // WAL
+        WalManager* wal_{nullptr};
     };
 
 }

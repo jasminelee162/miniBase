@@ -1,4 +1,8 @@
 # 简单的测试配置，不使用GoogleTest
+# 统一可执行文件输出目录，便于 CTest 定位（多配置生成器下设置 Debug 路径）
+if (MSVC)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/tests/Debug)
+endif()
 # 每个测试可执行文件只能包含一个 main，因此拆分为独立目标
 
 # 1) storage_test
@@ -583,6 +587,148 @@ target_link_libraries(test_users_table_visibility
 add_test(NAME test_users_table_visibility COMMAND test_users_table_visibility)
 set_tests_properties(test_users_table_visibility PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 30) test_runtime_config_and_metrics（配置中心与指标基础测试）
+add_executable(test_runtime_config_and_metrics
+    unit/test_runtime_config_and_metrics.cpp
+    simple_test_framework.cpp
+)
+
+target_link_libraries(test_runtime_config_and_metrics
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+
+add_test(NAME test_runtime_config_and_metrics COMMAND test_runtime_config_and_metrics)
+set_tests_properties(test_runtime_config_and_metrics PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# 统一：将所有测试目标加入一个聚合构建目标，便于一次性构建
+set(ALL_TEST_TARGETS
+    storage_test
+    e2e_flow
+    storage_size_test
+    page_linking_test
+    compiler_errors_test
+    bplus_tree_test
+    test_storage_enhancements
+    test_bplus_tree_enhancements
+    page_types_api_test
+    bplus_tree_split_stress_test
+    storage_end_to_end_demo
+    cli_test
+    executor_test
+    test_permissions_updated
+    test_auth_storage_integration
+    test_auth_bin_structure
+    test_user_persistence_debug
+    test_user_workflow
+    test_simple
+    test_debug
+    test_cli
+    test_auth_interfaces
+    test_auth_security
+    auth_test
+    auth_storage_test
+    test_users_table_visibility
+    test_runtime_config_and_metrics
+    test_page_type_validation
+    test_meta_non_overwrite
+    test_constraint_validation
+    test_concurrency_correctness
+    bench_storage_rw
+)
+
+add_custom_target(tests_all DEPENDS ${ALL_TEST_TARGETS})
+
+# 多配置下显式设置输出目录，避免 CTest 找不到二进制
+foreach(tgt ${ALL_TEST_TARGETS})
+    if (TARGET ${tgt})
+        set_target_properties(${tgt} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests/Debug
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/tests/Debug
+        )
+    endif()
+endforeach()
+
+# 如果存在 RUN_TESTS 目标，让其依赖于 tests_all，确保先构建再运行
+if (TARGET RUN_TESTS)
+    add_dependencies(RUN_TESTS tests_all)
+endif()
+
+# 31) test_page_type_validation（页类型校验）
+add_executable(test_page_type_validation
+    unit/test_page_type_validation.cpp
+    simple_test_framework.cpp
+)
+target_link_libraries(test_page_type_validation
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+add_test(NAME test_page_type_validation COMMAND test_page_type_validation)
+set_tests_properties(test_page_type_validation PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+# 32) test_meta_non_overwrite（Meta 不覆盖校验）
+add_executable(test_meta_non_overwrite
+    unit/test_meta_non_overwrite.cpp
+    simple_test_framework.cpp
+)
+target_link_libraries(test_meta_non_overwrite
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+add_test(NAME test_meta_non_overwrite COMMAND test_meta_non_overwrite)
+set_tests_properties(test_meta_non_overwrite PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+# 33) test_constraint_validation（约束校验）
+add_executable(test_constraint_validation
+    unit/test_constraint_validation.cpp
+    simple_test_framework.cpp
+)
+target_link_libraries(test_constraint_validation
+    executor_lib
+    translator_lib
+    parser
+    lexer
+    semantic
+    storage_lib
+    catalog_lib
+    auth_lib
+    util_lib
+    Threads::Threads
+)
+add_test(NAME test_constraint_validation COMMAND test_constraint_validation)
+set_tests_properties(test_constraint_validation PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+# 34) test_concurrency_correctness（并发正确性）
+add_executable(test_concurrency_correctness
+    unit/test_concurrency_correctness.cpp
+    simple_test_framework.cpp
+)
+target_link_libraries(test_concurrency_correctness
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+add_test(NAME test_concurrency_correctness COMMAND test_concurrency_correctness)
+set_tests_properties(test_concurrency_correctness PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+# 35) bench_storage_rw（简单顺序/并发写压测）
+add_executable(bench_storage_rw
+    unit/bench_storage_rw.cpp
+)
+target_link_libraries(bench_storage_rw
+    storage_lib
+    util_lib
+    Threads::Threads
+)
+set_target_properties(bench_storage_rw PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests/Debug
 )
 
 # 如需为 CLI/Executor 建独立目标，请在它们模块就绪后启用：

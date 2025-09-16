@@ -5,6 +5,7 @@
 #include <future>
 #include <algorithm>
 #include <iostream>
+#include <chrono>
 #include "storage/page/page_header.h"
 #include "util/config.h"
 
@@ -60,11 +61,15 @@ static Logger g_storage_logger("storage.log");
         max_pages_ = std::max(max_pages_, static_cast<size_t>(next_page_id_.load() + 100));
         
         std::cout << "[DiskManager::DiskManager] Initialized next_page_id_=" << next_page_id_.load() << " (this=" << this << ")" << std::endl;
+        // 根据配置启动N个I/O工作线程，并设置批量大小
+        StartWorkers(GetRuntimeConfig().io_worker_threads);
+        batch_max_ = GetRuntimeConfig().io_batch_max;
     }
 
     DiskManager::~DiskManager()
     {
         Shutdown();
+        StopWorkers();
     }
     // 读，如果超出文件末尾，就返回“全 0”缓冲（对新页或空洞很友好)
     Status DiskManager::ReadPage(page_id_t page_id, char *page_data)
@@ -117,6 +122,10 @@ static Logger g_storage_logger("storage.log");
         {
             return Status::IO_ERROR;
         }
+        // WAL: 先写日志，再写数据
+        if (wal_ != nullptr) {
+            wal_->Append(page_id, page_data);
+        }
         size_t offset = GetFileOffset(page_id);
         file_stream_.seekp(static_cast<std::streamoff>(offset), std::ios::beg);
         file_stream_.write(page_data, PAGE_SIZE);
@@ -143,14 +152,82 @@ static Logger g_storage_logger("storage.log");
 
     std::future<Status> DiskManager::ReadPageAsync(page_id_t page_id, char *page_data)
     {
-        return std::async(std::launch::async, [this, page_id, page_data]()
-                          { return ReadPage(page_id, page_data); });
+        return Enqueue(IOType::Read, page_id, page_data, nullptr);
     }
 
     std::future<Status> DiskManager::WritePageAsync(page_id_t page_id, const char *page_data)
     {
-        return std::async(std::launch::async, [this, page_id, page_data]()
-                          { return WritePage(page_id, page_data); });
+        return Enqueue(IOType::Write, page_id, nullptr, page_data);
+    }
+
+    void DiskManager::StartWorkers(size_t n)
+    {
+        stop_workers_.store(false);
+        for (size_t i = 0; i < n; ++i) {
+            workers_.emplace_back(&DiskManager::WorkerLoop, this);
+        }
+    }
+
+    void DiskManager::StopWorkers()
+    {
+        stop_workers_.store(true);
+        queue_cv_.notify_all();
+        for (auto &t : workers_) {
+            if (t.joinable()) t.join();
+        }
+        workers_.clear();
+    }
+
+    std::future<Status> DiskManager::Enqueue(IOType type, page_id_t page_id, char* rbuf, const char* wbuf)
+    {
+        IORequest req{type, page_id, rbuf, wbuf, std::promise<Status>()};
+        std::future<Status> fut = req.prom.get_future();
+        {
+            std::lock_guard<std::mutex> lock(queue_mutex_);
+            io_queue_.emplace_back(std::move(req));
+        }
+        queue_cv_.notify_one();
+        return fut;
+    }
+
+    void DiskManager::WorkerLoop()
+    {
+        while (!stop_workers_.load()) {
+            std::deque<IORequest> batch;
+            {
+                std::unique_lock<std::mutex> lk(queue_mutex_);
+                queue_cv_.wait(lk, [&]{ return stop_workers_.load() || !io_queue_.empty(); });
+                if (stop_workers_.load()) break;
+                // 批量弹出，最多 batch_max_
+                size_t take = std::min(batch_max_, io_queue_.size());
+                for (size_t i = 0; i < take; ++i) {
+                    batch.emplace_back(std::move(io_queue_.front()));
+                    io_queue_.pop_front();
+                }
+            }
+            // 简单排序：Write 按 page_id 升序，Read 保持相对次序
+            std::stable_sort(batch.begin(), batch.end(), [](const IORequest& a, const IORequest& b){
+                if (a.type != b.type) return a.type == IOType::Write; // 写优先分组
+                if (a.type == IOType::Write) return a.page_id < b.page_id; // 写按页顺序
+                return false;
+            });
+            // 逐个执行（可进一步合并相邻页写入）
+            for (auto &req : batch) {
+                Status s = Status::IO_ERROR;
+                auto t0 = std::chrono::high_resolution_clock::now();
+                if (req.type == IOType::Read) {
+                    s = ReadPage(req.page_id, req.read_buf);
+                    read_ops_.fetch_add(1);
+                } else {
+                    s = WritePage(req.page_id, req.write_buf);
+                    write_ops_.fetch_add(1);
+                }
+                auto t1 = std::chrono::high_resolution_clock::now();
+                uint64_t ns = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count());
+                if (req.type == IOType::Read) total_read_ns_.fetch_add(ns); else total_write_ns_.fetch_add(ns);
+                req.prom.set_value(s);
+            }
+        }
     }
     // 返回新页号（优先复用空闲队列里的)
     page_id_t DiskManager::AllocatePage()
@@ -229,6 +306,18 @@ static Logger g_storage_logger("storage.log");
         if (out.magic != META_MAGIC) return false;
         if (out.version != META_VERSION) return false;
         if (out.page_size != PAGE_SIZE) return false;
+        // checksum validate (stored at reserved[8..11])
+        uint32_t stored_crc = 0;
+        std::memcpy(&stored_crc, out.reserved + 8, sizeof(uint32_t));
+        // compute crc over fields except reserved area (simple xor-based checksum)
+        uint32_t crc = 0;
+        auto mix = [&](const uint8_t* p, size_t n){ for (size_t i=0;i<n;++i) crc = (crc * 16777619u) ^ p[i]; };
+        mix(reinterpret_cast<const uint8_t*>(&out.magic), sizeof(out.magic));
+        mix(reinterpret_cast<const uint8_t*>(&out.version), sizeof(out.version));
+        mix(reinterpret_cast<const uint8_t*>(&out.page_size), sizeof(out.page_size));
+        mix(reinterpret_cast<const uint8_t*>(&out.next_page_id), sizeof(out.next_page_id));
+        mix(reinterpret_cast<const uint8_t*>(&out.catalog_root), sizeof(out.catalog_root));
+        if (stored_crc != 0 && stored_crc != crc) return false;
         return true;
     }
 
@@ -244,8 +333,23 @@ static Logger g_storage_logger("storage.log");
         hdr->next_page_id = INVALID_PAGE_ID;
         hdr->page_type = static_cast<uint32_t>(PageType::METADATA_PAGE);
         hdr->reserved = 0;
-        // Copy meta payload after header
-        std::memcpy(buf.data() + PAGE_HEADER_SIZE, &m, sizeof(MetaPageData));
+        // Copy meta payload after header, with epoch++ and checksum
+        MetaPageData temp = m;
+        // epoch stored at reserved[0..7]
+        uint64_t epoch = 0;
+        std::memcpy(&epoch, temp.reserved + 0, sizeof(uint64_t));
+        epoch++;
+        std::memcpy(temp.reserved + 0, &epoch, sizeof(uint64_t));
+        // checksum at reserved[8..11]
+        uint32_t crc = 0;
+        auto mix = [&](const uint8_t* p, size_t n){ for (size_t i=0;i<n;++i) crc = (crc * 16777619u) ^ p[i]; };
+        mix(reinterpret_cast<const uint8_t*>(&temp.magic), sizeof(temp.magic));
+        mix(reinterpret_cast<const uint8_t*>(&temp.version), sizeof(temp.version));
+        mix(reinterpret_cast<const uint8_t*>(&temp.page_size), sizeof(temp.page_size));
+        mix(reinterpret_cast<const uint8_t*>(&temp.next_page_id), sizeof(temp.next_page_id));
+        mix(reinterpret_cast<const uint8_t*>(&temp.catalog_root), sizeof(temp.catalog_root));
+        std::memcpy(temp.reserved + 8, &crc, sizeof(uint32_t));
+        std::memcpy(buf.data() + PAGE_HEADER_SIZE, &temp, sizeof(MetaPageData));
         file_stream_.seekp(0, std::ios::beg);
         file_stream_.write(buf.data(), PAGE_SIZE);
         file_stream_.flush();

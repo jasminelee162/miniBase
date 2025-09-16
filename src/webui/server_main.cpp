@@ -250,6 +250,24 @@ int main() {
         catch (...) { res.status = 500; res.body = "flush error"; }
     });
 
+    // 指标：缓存命中率、池大小、替换次数、写回次数、I/O 队列深度、读写平均延时、读写操作数
+    svr.Get("/metrics", [&se](const minihttplib::Request&, minihttplib::Response& res){
+        json out;
+        try {
+            out["hit_rate"] = se->GetCacheHitRate();
+            out["pool_size"] = se->GetBufferPoolSize();
+            out["replacements"] = se->GetNumReplacements();
+            out["writebacks"] = se->GetNumWritebacks();
+            out["io_queue_depth"] = se->GetIOQueueDepth();
+            out["io_avg_read_ms"] = se->GetIOAvgReadMs();
+            out["io_avg_write_ms"] = se->GetIOAvgWriteMs();
+            out["io_read_ops"] = se->GetIOReadOps();
+            out["io_write_ops"] = se->GetIOWriteOps();
+            res.headers["Content-Type"] = "application/json";
+            res.body = out.dump();
+        } catch (...) { res.status = 500; res.body = "{}"; }
+    });
+
     // 静态首页（在多种可能路径中查找）
     svr.Get("/", [](const minihttplib::Request&, minihttplib::Response& res){
         auto read_file = [](const std::string& path, std::string& out) -> bool {
