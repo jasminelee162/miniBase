@@ -23,7 +23,7 @@ namespace minidb
     std::string SQLDumper::DumpToString(DumpOption option)
     {
         std::ostringstream oss;
-        auto tables = catalog_->GetAllTables(); // 你需要在 Catalog 补充这个方法
+        auto tables = catalog_->GetAllTables(); // 你需要在 Catalog 补充这个方法（已经补充）
 
         for (const auto &table_name : tables)
         {

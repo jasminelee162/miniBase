@@ -10,7 +10,7 @@ add_library(semantic
 target_link_libraries(semantic
     parser
     lexer
-    catalog
+    catalog_lib
 )
 
 # Link util for Logger

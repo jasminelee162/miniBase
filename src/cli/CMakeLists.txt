@@ -9,7 +9,8 @@ target_link_libraries(minidb_cli
     translator_lib
     executor_lib
     storage_lib
-    catalog
+    catalog_lib
     util_lib
     planner
+    tools_lib
 )

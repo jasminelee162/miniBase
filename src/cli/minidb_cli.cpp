@@ -15,6 +15,10 @@
 #include <vector>
 #include <cctype>
 #include "../util/sql_input_utils.h"
+#include "../tools/sql_dump/sql_dumper.h"
+#include "../tools/sql_import/sql_importer.h"
+#include "../auth/permission_checker.h"
+#include "../auth/auth_service.h"
 #ifdef _WIN32
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -29,6 +33,8 @@ static void print_help()
               << "Commands:\n"
               << "  .help           Show this help\n"
               << "  .exit           Quit\n"
+              << "  .dump <file>    Export database to SQL file\n"
+              << "  .import <file>  Import SQL file to database\n"
               << "Enter SQL terminated by ';' to run.\n";
 }
 
@@ -92,12 +98,16 @@ int main(int argc, char **argv)
     std::shared_ptr<minidb::StorageEngine> se;
     std::shared_ptr<minidb::Catalog> catalog;
     std::unique_ptr<minidb::Executor> exec;
+    std::unique_ptr<minidb::PermissionChecker> permissionChecker;
+    std::unique_ptr<minidb::AuthService> authService;
     if (doExec)
     {
         se = std::make_shared<minidb::StorageEngine>(dbFile, 16);
         catalog = std::make_shared<minidb::Catalog>(se.get());
-        exec = std::make_unique<minidb::Executor>(se);
-        exec->SetCatalog(catalog);
+        authService = std::make_unique<minidb::AuthService>(se.get(), catalog.get());
+        permissionChecker = std::make_unique<minidb::PermissionChecker>(authService.get());
+        exec = std::make_unique<minidb::Executor>(catalog.get(), permissionChecker.get());
+        exec->SetStorageEngine(se);
     }
 
     std::cout << "MiniDB CLI ready. Type .help for help.\n";
@@ -118,6 +128,51 @@ int main(int argc, char **argv)
             print_help();
             continue;
         }
+        
+        // 处理导入导出命令
+        if (line.substr(0, 6) == ".dump ")
+        {
+            if (!doExec) {
+                std::cerr << "Error: Export requires execution mode. Use --exec flag." << std::endl;
+                continue;
+            }
+            std::string filename = line.substr(6);
+            if (filename.empty()) {
+                std::cerr << "Error: Please specify output filename for dump command." << std::endl;
+                continue;
+            }
+            
+            minidb::SQLDumper dumper(catalog.get(), se.get());
+            if (dumper.DumpToFile(filename, minidb::DumpOption::StructureAndData)) {
+                std::cout << "Database exported to: " << filename << std::endl;
+            } else {
+                std::cerr << "Error: Failed to export database to " << filename << std::endl;
+            }
+            continue;
+        }
+        
+        if (line.substr(0, 8) == ".import ")
+        {
+            if (!doExec) {
+                std::cerr << "Error: Import requires execution mode. Use --exec flag." << std::endl;
+                continue;
+            }
+            std::string filename = line.substr(8);
+            if (filename.empty()) {
+                std::cerr << "Error: Please specify input filename for import command." << std::endl;
+                continue;
+            }
+            
+            minidb::SQLImporter importer(exec.get(), catalog.get());
+            if (importer.ImportSQLFile(filename)) {
+                std::cout << "Database imported from: " << filename << std::endl;
+            } else {
+                std::cerr << "Error: Failed to import database from " << filename << std::endl;
+            }
+            continue;
+        }
+        
+        
         if (line.empty())
             continue;
 

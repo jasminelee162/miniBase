@@ -7,15 +7,15 @@
 # target_include_directories(catalog INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 # 添加Catalog库（实现文件在 catalog.cpp ）
-add_library(catalog STATIC
+add_library(catalog_lib STATIC
 	catalog.cpp
 	catalog.h
 )
 
 # 设置包含目录并对外可见
-target_include_directories(catalog PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(catalog_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # 导出符号（Windows 下可选）
 if(MSVC)
-	target_compile_definitions(catalog PRIVATE "CATALOG_EXPORTS")
+	target_compile_definitions(catalog_lib PRIVATE "CATALOG_EXPORTS")
 endif()

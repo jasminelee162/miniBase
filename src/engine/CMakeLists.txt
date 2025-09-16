@@ -10,4 +10,5 @@ target_link_libraries(executor_lib PUBLIC
     storage_lib
     util_lib
     auth_lib
+    optimizer_lib
 )
