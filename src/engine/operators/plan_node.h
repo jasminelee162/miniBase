@@ -27,7 +27,8 @@ enum class PlanType
     ShowTables,
     Drop,
     CreateProcedure, // 新增：定义存储过程
-    CallProcedure    // 新增：调用存储过程
+    CallProcedure,
+    CreateIndex // ✅ 新增：创建索引
 };
 
 struct AggregateExpr

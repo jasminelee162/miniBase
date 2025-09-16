@@ -195,12 +195,12 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
 
         if (j.contains("params") && j["params"].is_array())
         {
-            for (auto &param : j["params"]) 
+            for (auto &param : j["params"])
                 node->proc_params.push_back(param.get<std::string>());
         }
         else if (j.contains("proc_params") && j["proc_params"].is_array())
         {
-            for (auto &param : j["proc_params"]) 
+            for (auto &param : j["proc_params"])
                 node->proc_params.push_back(param.get<std::string>());
         }
 
@@ -227,14 +227,40 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
 
         if (j.contains("args") && j["args"].is_array())
         {
-            for (auto &arg : j["args"]) node->proc_args.push_back(arg.get<std::string>());
+            for (auto &arg : j["args"])
+                node->proc_args.push_back(arg.get<std::string>());
         }
         else if (j.contains("proc_args") && j["proc_args"].is_array())
         {
-            for (auto &arg : j["proc_args"]) node->proc_args.push_back(arg.get<std::string>());
+            for (auto &arg : j["proc_args"])
+                node->proc_args.push_back(arg.get<std::string>());
         }
 
         node->children.clear(); // 调用过程不需要子节点
+    }
+    else if (type == "CreateIndex")
+    {
+        node->type = PlanType::CreateIndex;
+
+        // 索引名
+        if (!j.contains("name"))
+            throw std::runtime_error("CreateIndex plan must have name");
+        node->index_name = j["name"].get<std::string>();
+
+        // 表名
+        if (!j.contains("table_name"))
+            throw std::runtime_error("CreateIndex plan must have table_name");
+        node->table_name = j["table_name"].get<std::string>();
+
+        // 索引列
+        if (!j.contains("columns"))
+            throw std::runtime_error("CreateIndex plan must have columns");
+        node->index_cols = j["columns"].get<std::vector<std::string>>();
+
+        // 索引类型（可选，默认 BPLUS）
+        node->index_type = j.value("index_type", "BPLUS");
+
+        node->children.clear(); // 不需要子节点
     }
 
     else
@@ -261,10 +287,14 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
                 col.name = c.at("name").get<std::string>();
                 col.type = c.at("type").get<std::string>();
                 col.length = c.at("length").get<int>();
-                if (c.contains("is_primary_key")) col.is_primary_key = c.at("is_primary_key").get<bool>();
-                if (c.contains("is_unique")) col.is_unique = c.at("is_unique").get<bool>();
-                if (c.contains("not_null")) col.not_null = c.at("not_null").get<bool>();
-                if (c.contains("default_value")) col.default_value = c.at("default_value").get<std::string>();
+                if (c.contains("is_primary_key"))
+                    col.is_primary_key = c.at("is_primary_key").get<bool>();
+                if (c.contains("is_unique"))
+                    col.is_unique = c.at("is_unique").get<bool>();
+                if (c.contains("not_null"))
+                    col.not_null = c.at("not_null").get<bool>();
+                if (c.contains("default_value"))
+                    col.default_value = c.at("default_value").get<std::string>();
                 node->table_columns.push_back(col);
             }
         }

@@ -24,7 +24,7 @@ class AIHelper:
                         "role": "system",
                         "content": (
                             "你是一个 SQL 助手，把用户的自然语言需求转成标准 SQL 语句。"
-                            "只输出 SQL，不要解释，注意使用英文命名"
+                            "只输出 SQL，不要解释，SQL语句都使用英文，若用户发送其他对话则用中文回答。"
                         ),
                     },
                     {"role": "user", "content": user_input},

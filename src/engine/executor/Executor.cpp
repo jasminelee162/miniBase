@@ -452,7 +452,8 @@ namespace minidb
             if (columns_to_use.empty())
             {
                 columns_to_use.reserve(schema.columns.size());
-                for (const auto &c : schema.columns) columns_to_use.push_back(c.name);
+                for (const auto &c : schema.columns)
+                    columns_to_use.push_back(c.name);
             }
 
             // 为每条插入记录保存它实际写入的 page id（对应 node->values 顺序）
@@ -518,7 +519,8 @@ namespace minidb
                 }
 
                 // 3) 主键/唯一性检查（简化：全表扫描）
-                auto require_unique = [&](const std::string &col_name) {
+                auto require_unique = [&](const std::string &col_name)
+                {
                     std::vector<Row> all = SeqScanAll(node->table_name);
                     std::string new_val = row.getValue(col_name);
                     for (const auto &r : all)
@@ -647,9 +649,11 @@ namespace minidb
             std::cout << "[Executor] 顺序扫描表: " << node->table_name << std::endl;
 
             // 权限校验：DBA 总是允许；否则按表权限检查
-            if (auth_service_ && auth_service_->isDBA()) {
+            if (auth_service_ && auth_service_->isDBA())
+            {
                 // allow
-            } else if (permissionChecker_ && !permissionChecker_->checkTablePermission(node->table_name, Permission::SELECT))
+            }
+            else if (permissionChecker_ && !permissionChecker_->checkTablePermission(node->table_name, Permission::SELECT))
             {
                 std::cerr << "[SeqScan] Permission denied on table: " << node->table_name << std::endl;
                 throw std::runtime_error(std::string("Permission denied: ") + node->table_name);
@@ -1298,8 +1302,10 @@ namespace minidb
                 // 可见性规则：
                 // - __users__：仅 DBA 可见（通过表权限校验实现）
                 // - 其他表：对所有角色可见（即使没有操作权限）
-                if (name == "__users__") {
-                    if (permissionChecker_ && !permissionChecker_->checkTablePermission(name, Permission::SELECT)) {
+                if (name == "__users__")
+                {
+                    if (permissionChecker_ && !permissionChecker_->checkTablePermission(name, Permission::SELECT))
+                    {
                         continue; // 非DBA隐藏
                     }
                 }
@@ -1471,6 +1477,57 @@ namespace minidb
                 std::cerr << "[Executor] 执行存储过程失败: " << e.what() << std::endl;
                 return {};
             }
+        }
+
+        case PlanType::CreateIndex:
+        {
+            Role user_role = auth_service_->getCurrentUserRole();
+            if (user_role == Role::ANALYST)
+            {
+                throw std::runtime_error("Permission denied: ANALYST cannot create indexes");
+            }
+
+            logger.log("CREATE INDEX " + node->index_name + " ON " + node->table_name);
+            std::cout << "[Executor] 创建索引: " << node->index_name
+                      << " ON " << node->table_name << std::endl;
+
+            if (!catalog_)
+            {
+                std::cerr << "[Executor] Catalog 未初始化" << std::endl;
+                return {};
+            }
+
+            // 检查表是否存在
+            if (!catalog_->HasTable(node->table_name))
+            {
+                std::cerr << "[Executor] 表 " << node->table_name << " 不存在，无法创建索引" << std::endl;
+                return {};
+            }
+
+            // 检查索引是否已存在
+            if (catalog_->HasIndex(node->index_name))
+            {
+                std::cerr << "[Executor] 索引 " << node->index_name << " 已存在" << std::endl;
+                return {};
+            }
+
+            // 调用 Catalog 的 CreateIndex
+            try
+            {
+                catalog_->CreateIndex(
+                    node->index_name,
+                    node->table_name,
+                    node->index_cols,
+                    node->index_type);
+            }
+            catch (const std::exception &ex)
+            {
+                std::cerr << "[Executor] 创建索引失败: " << ex.what() << std::endl;
+                return {};
+            }
+
+            std::cout << "[Executor] 索引 " << node->index_name << " 创建成功" << std::endl;
+            return {};
         }
 
         default:
