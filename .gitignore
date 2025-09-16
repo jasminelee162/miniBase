@@ -83,12 +83,13 @@ out/
 logs/
 
 # Local/test databases and artifacts (keep curated data/)
+!data/**
 /test_*.db
 /test*.db
 /test*.dat
 /*.dat
 *.db
-!data/**
+
 
 # Misc caches/temp
 *.tmp
