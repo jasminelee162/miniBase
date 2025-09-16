@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <cstring>
+#include "../../catalog/catalog.h"
 
 struct ColumnValue
 {

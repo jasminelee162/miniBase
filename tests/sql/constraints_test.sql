@@ -17,10 +17,12 @@ SELECT * FROM users; --结果age默认是18
 
 -- 2) PRIMARY KEY violation (duplicate id)
 -- expect error
+-- [ERROR] Unique constraint violation on column 'id'
 INSERT INTO users VALUES(1,'Bob',20);
 
 -- 3) NOT NULL violation (name cannot be NULL)
 -- expect error
+-- [ERROR] NOT NULL violation on column 'name'
 INSERT INTO users VALUES(2,NULL,20);
 
 -- 4) Valid insert
@@ -30,6 +32,7 @@ SELECT * FROM users; --结果新增一条数据
 
 -- 5) UNIQUE violation on name
 -- expect error
+-- [ERROR] Unique constraint violation on column 'name'
 INSERT INTO users VALUES(3,'Bob',25);
 
 -- 6) DEFAULT fills when age omitted (column list)
@@ -49,8 +52,11 @@ CREATE TABLE prod(
 -- 8) DEFAULT for price
 INSERT INTO prod VALUES(10,'P1',NULL);
 
+ select * from prod; --结果price默认是100
+
 -- 9) UNIQUE violation on code
 -- expect error
+-- [ERROR] Unique constraint violation on column 'code'
 INSERT INTO prod VALUES(10,'P2',200);
 
 -- 10) DEFAULT when omitting price
