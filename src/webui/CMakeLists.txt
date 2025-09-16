@@ -22,6 +22,11 @@ target_link_libraries(minidb_webui
 
 target_include_directories(minidb_webui PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
+# Link tools (sql dumper/importer)
+target_sources(minidb_webui PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/tools/sql_dump/sql_dumper.cpp
+    ${CMAKE_SOURCE_DIR}/src/tools/sql_import/sql_importer.cpp
+)
 
 # Copy static assets next to the binary so runtime can find them
 add_custom_command(TARGET minidb_webui POST_BUILD

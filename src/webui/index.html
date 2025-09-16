@@ -2,23 +2,34 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>MiniDB Web UI</title>
+    <title>MiniDB Web</title>
     <style>
       :root { --bg:#0b1220; --panel:#121a2b; --muted:#89a; --accent:#4ea1ff; --ok:#1fbf75; --err:#ff5c5c; }
       html,body { height:100%; }
+      *, *::before, *::after { box-sizing: border-box; }
       body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin:0; background:var(--bg); color:#e6edf3; }
-      .wrap { max-width: 980px; margin: 0 auto; padding: 20px; }
+      .wrap { max-width: 1400px; margin: 0 auto; padding: 20px; }
+      .grid { display:grid; grid-template-columns: 320px 1fr 380px; gap:16px; align-items:start; justify-items: stretch; }
       h2 { margin: 8px 0 16px; font-weight:600; }
-      .card { background:var(--panel); border:1px solid #1e2a44; border-radius:10px; padding:16px; box-shadow: 0 0 0 1px rgba(0,0,0,.05) inset; }
+      .card { background:var(--panel); border:1px solid #1e2a44; border-radius:10px; padding:16px; width:100%; box-shadow: 0 3px 18px rgba(0,0,0,.25); }
+      /* Login card narrower and centered */
+      #loginView { max-width: 460px; margin: 48px auto; text-align:center; }
+      #loginView .row { flex-direction: column; align-items: stretch; }
+      #loginView input { width: 100%; }
+      #loginView button { width: 100%; }
+      #loginView .status { display:block; margin-top:6px; }
       .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
       input, select, button, textarea { color:#e6edf3; background:#0f1726; border:1px solid #26334f; border-radius:8px; }
-      input, select { padding:8px 10px; }
+      input[type="text"], input[type="password"], input:not([type]) { padding:8px 10px; min-width:180px; }
+      select { padding:8px 10px; }
       input::placeholder { color:#556; }
       button { padding:8px 12px; cursor:pointer; border-color:#2b3a5d; background:linear-gradient(180deg,#1a2742,#0f1726); }
       button:hover { border-color:#3a4f7c; }
       button.primary { background: linear-gradient(180deg, #2a69ff, #1e4dcc); border-color:#2050d0; }
       button.primary:hover { filter: brightness(1.05); }
       textarea { width: 100%; height: 160px; font-family: Consolas, monospace; padding:10px; }
+      .fixed { height: 200px; overflow:auto; }
+      .fixed.tall { height: 300px; }
       table { border-collapse: collapse; margin-top: 10px; width:100%; }
       th, td { border: 1px solid #1e2a44; padding: 8px 10px; }
       th { background:#0f1a31; text-align:left; }
@@ -33,13 +44,24 @@
   <body>
     <div class="wrap">
     <h2>MiniDB Web UI</h2>
+    <div id="grid" class="grid" style="grid-template-columns: 1fr;">
+
+    <!-- 左侧：AI 接口 -->
+    <div id="aiPanel" class="card" style="display:none;">
+      <div class="section-title">AI Assistant</div>
+      <textarea id="aiPrompt" class="fixed" placeholder="Ask MiniDB AI..."></textarea>
+      <div class="row" style="margin-top:8px;">
+        <button onclick="callAI()">Send</button>
+      </div>
+      <div id="aiReply" class="fixed tall" style="margin-top:8px;"></div>
+    </div>
 
     <!-- 登录页 -->
     <div id="loginView" class="card">
       <div class="section-title">Login</div>
       <div class="row">
-        <input id="u" placeholder="username" value="root" />
-        <input id="p" placeholder="password" value="root" type="password" />
+        <input id="u" placeholder="username" value="root" style="flex:1; min-width: 0;" />
+        <input id="p" placeholder="password" value="root" type="password" style="flex:1; min-width: 0;" />
         <button class="primary" onclick="login()">Login</button>
         <span id="log" class="status"></span>
       </div>
@@ -55,12 +77,12 @@
       </div>
 
       <div class="section-title">SQL</div>
-      <textarea id="sql">SELECT username, role, created_at, last_login FROM __users__;</textarea>
+      <textarea id="sql" class="fixed">SELECT username, role, created_at, last_login FROM __users__;</textarea>
       <div class="row" style="margin-top:8px;">
         <button id="execBtn" class="primary" onclick="execSQL()">Execute</button>
         <span id="execMsg" class="status muted"></span>
       </div>
-      <div id="result" style="margin-top:8px;"></div>
+      <div id="result" class="fixed tall" style="margin-top:8px;"></div>
 
       <!-- 仅 DBA 可见：创建用户 -->
       <div id="createUserPanel" class="card" style="display:none; margin-top:16px;">
@@ -76,25 +98,62 @@
           <button onclick="createUser()">Create</button>
           <span id="createMsg" class="status"></span>
         </div>
+        <div class="section-title">Users</div>
+        <div class="row" style="margin-bottom:8px;">
+          <button onclick="refreshUsers()">Refresh</button>
+          <input id="delUser" placeholder="username to delete" />
+          <button onclick="deleteUser()">Delete</button>
+          <span id="userMsg" class="status"></span>
+        </div>
+        <div id="userList" class="muted"></div>
+        <div class="section-title">Dump / Import</div>
+        <div class="row">
+          <input id="dumpFile" placeholder="dump filename (e.g. dump.sql)" />
+          <button onclick="dumpDB()">Dump</button>
+          <input id="importFile" placeholder="import filename (e.g. dump.sql)" />
+          <button onclick="importDB()">Import</button>
+          <span id="dumpMsg" class="status"></span>
+        </div>
       </div>
+    </div>
+
+    <!-- 右侧：日志查看 -->
+    <div id="logsPanel" class="card" style="display:none;">
+      <div class="section-title">Logs</div>
+      <div class="row">
+        <select id="logSelect"></select>
+        <button onclick="loadLogs()">Open</button>
+      </div>
+      <pre id="logContent" class="fixed tall" style="white-space:pre-wrap; background:#0f1726; padding:10px;"></pre>
+    </div>
+
     </div>
 
     <script>
       let session = { ok:false, user:'', role:'' };
 
       function render() {
+        const grid = document.getElementById('grid');
         const loginView = document.getElementById('loginView');
         const appView = document.getElementById('appView');
         const createPanel = document.getElementById('createUserPanel');
+        const aiPanel = document.getElementById('aiPanel');
+        const logsPanel = document.getElementById('logsPanel');
         if (session.ok) {
+          grid.style.gridTemplateColumns = '320px 1fr 380px';
           loginView.style.display = 'none';
           appView.style.display = '';
+          aiPanel.style.display = '';
+          logsPanel.style.display = '';
           document.getElementById('currUser').textContent = session.user;
           document.getElementById('currRole').textContent = `(${session.role})`;
           createPanel.style.display = (session.role === 'DBA') ? '' : 'none';
         } else {
+          grid.style.gridTemplateColumns = '1fr';
           loginView.style.display = '';
           appView.style.display = 'none';
+          aiPanel.style.display = 'none';
+          logsPanel.style.display = 'none';
         }
       }
 
@@ -171,8 +230,18 @@
             rows = mapped;
           }
 
+          if (j.message) {
+            const info = document.createElement('div');
+            info.className = 'muted';
+            info.textContent = j.message;
+            div.innerHTML = '';
+            div.appendChild(info);
+          } else {
+            div.innerHTML = '';
+          }
+
           msg.textContent = `${rows.length} row(s) in ${dt} ms`;
-          if (cols.length === 0 && rows.length === 0) { div.textContent = '(0 rows)'; return; }
+          if (cols.length === 0 && rows.length === 0) { div.textContent = div.textContent || '(0 rows)'; return; }
           let html = '<table><thead><tr>' + cols.map(c=>`<th>${escapeHtml(c)}</th>`).join('') + '</tr></thead><tbody>';
           for (const row of rows) html += '<tr>' + row.map(v=>`<td>${escapeHtml(v)}</td>`).join('') + '</tr>';
           html += '</tbody></table>';
@@ -194,6 +263,82 @@
         const resp = await fetch('/auth/createUser', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:u, password:p, role:r})});
         const j = await resp.json().catch(()=>({ok:false}));
         msg.textContent = j.ok ? 'Created' : 'Failed';
+        if (j.ok) refreshUsers();
+      }
+
+      async function refreshUsers(){
+        const list = document.getElementById('userList');
+        list.textContent = 'Loading...';
+        try {
+          const r = await fetch('/auth/listUsers');
+          const j = await r.json();
+          if (!j.ok) { list.textContent = 'Forbidden'; return; }
+          if (!Array.isArray(j.users) || j.users.length===0) { list.textContent = '(no users)'; return; }
+          list.innerHTML = j.users.map(u=>`<div>${escapeHtml(u)}</div>`).join('');
+        } catch(e){ list.textContent = String(e); }
+      }
+
+      async function deleteUser(){
+        const u = document.getElementById('delUser').value.trim();
+        const msg = document.getElementById('userMsg');
+        msg.textContent = '';
+        if (!u) { msg.textContent = 'username required'; return; }
+        if (u === 'root') { msg.textContent = 'cannot delete root'; return; }
+        const resp = await fetch('/auth/deleteUser', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:u})});
+        const j = await resp.json().catch(()=>({ok:false}));
+        msg.textContent = j.ok ? 'Deleted' : 'Failed';
+        if (j.ok) refreshUsers();
+      }
+
+      async function dumpDB(){
+        const f = document.getElementById('dumpFile').value.trim() || 'dump.sql';
+        const msg = document.getElementById('dumpMsg');
+        msg.textContent = 'Dumping...';
+        const r = await fetch('/db/dump', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({filename:f})});
+        const j = await r.json().catch(()=>({ok:false}));
+        msg.textContent = j.ok ? `Dumped to ${j.file||f}` : 'Dump failed';
+      }
+
+      async function importDB(){
+        const f = document.getElementById('importFile').value.trim();
+        const msg = document.getElementById('dumpMsg');
+        if (!f) { msg.textContent = 'import filename required'; return; }
+        msg.textContent = 'Importing...';
+        const r = await fetch('/db/import', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({filename:f})});
+        const j = await r.json().catch(()=>({ok:false}));
+        msg.textContent = j.ok ? 'Import OK' : 'Import failed';
+      }
+
+      async function callAI(){
+        const prompt = document.getElementById('aiPrompt').value;
+        const out = document.getElementById('aiReply'); out.textContent = '...';
+        try {
+          const r = await fetch('/ai/complete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({prompt})});
+          const j = await r.json();
+          out.textContent = j.reply || JSON.stringify(j);
+        } catch(e){ out.textContent = String(e); }
+      }
+
+      async function populateLogs(){
+        const sel = document.getElementById('logSelect');
+        sel.innerHTML = '';
+        try {
+          const r = await fetch('/logs/list'); const j = await r.json();
+          if (!j.ok || !Array.isArray(j.files)) return;
+          for (const f of j.files){ const o=document.createElement('option'); o.value=f; o.textContent=f; sel.appendChild(o);} 
+          if (j.files.length>0) loadLogs();
+        } catch {}
+      }
+      async function loadLogs(){
+        const sel = document.getElementById('logSelect');
+        const name = sel.value; const pre = document.getElementById('logContent'); pre.textContent = 'Loading...';
+        try {
+          const r = await fetch('/logs/read', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({file:name})});
+          const j = await r.json();
+          pre.textContent = (j.ok && j.content) ? j.content : 'Failed to read log';
+          // 滚动到底部，显示最新日志
+          pre.scrollTop = pre.scrollHeight;
+        } catch(e){ pre.textContent = String(e); }
       }
 
       // 初次渲染（可选：尝试获取当前会话）
@@ -204,6 +349,7 @@
           session = { ok: !!j.ok, user: j.user || '', role: j.role || '' };
         } catch {}
         render();
+        populateLogs();
       })();
 
       // 快捷键：Ctrl/Cmd+Enter 执行

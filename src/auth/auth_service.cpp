@@ -208,7 +208,7 @@ namespace minidb
         std::string current_user = getCurrentUser();
         Role user_role = getCurrentUserRole();
 
-        // 系统表保护：__users__ 仅 DBA 可见/可操作
+        // 系统用户表：仅 DBA 可见和可操作
         if (table_name == "__users__")
         {
             return user_role == Role::DBA && hasPermission(permission);

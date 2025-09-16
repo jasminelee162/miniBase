@@ -13,7 +13,7 @@ namespace minidb
     {
         role_permissions_[Role::DBA] = {
             Permission::CREATE_TABLE, Permission::DROP_TABLE, Permission::ALTER_TABLE,
-            Permission::CREATE_INDEX, Permission::DROP_INDEX,
+            Permission::CREATE_INDEX, Permission::DROP_INDEX, Permission::SHOW_TABLES,
             Permission::SELECT, Permission::INSERT, Permission::UPDATE, Permission::DELETE,
             Permission::CREATE_USER, Permission::DROP_USER, Permission::GRANT, Permission::REVOKE,
             Permission::SHOW_PROCESSES, Permission::KILL_PROCESS,
@@ -22,7 +22,7 @@ namespace minidb
 
         role_permissions_[Role::DEVELOPER] = {
             Permission::CREATE_TABLE, Permission::DROP_TABLE, Permission::ALTER_TABLE,
-            Permission::CREATE_INDEX, Permission::DROP_INDEX,
+            Permission::CREATE_INDEX, Permission::DROP_INDEX, Permission::SHOW_TABLES,
             Permission::SELECT, Permission::INSERT, Permission::UPDATE, Permission::DELETE,
             Permission::CREATE_PROCEDURE, Permission::CALL_PROCEDURE};
 
@@ -91,6 +91,12 @@ namespace minidb
             return "SHOW_VARIABLES";
         case Permission::SET_VARIABLES:
             return "SET_VARIABLES";
+        case Permission::SHOW_TABLES:
+            return "SHOW_TABLES";
+        case Permission::CREATE_PROCEDURE:
+            return "CREATE_PROCEDURE";
+        case Permission::CALL_PROCEDURE:
+            return "CALL_PROCEDURE";
         default:
             return "UNKNOWN";
         }
