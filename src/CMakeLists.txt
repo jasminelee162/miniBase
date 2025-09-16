@@ -18,6 +18,9 @@ add_subdirectory(sql_compiler/planner)
 add_subdirectory(engine)
 add_subdirectory(frontend/translator)
 
+# Web UI
+add_subdirectory(webui)
+
 # CLI
 add_subdirectory(cli)
 
