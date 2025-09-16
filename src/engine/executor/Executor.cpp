@@ -1247,9 +1247,10 @@ namespace minidb
 
         case PlanType::CreateProcedure:
         {
-            if (!permissionChecker_->checkTablePermission(node->table_name, Permission::CREATE_PROCEDURE))
+            Role user_role = auth_service_->getCurrentUserRole();
+            if (user_role == Role::ANALYST)
             {
-                throw std::runtime_error("Permission denied: CREATEPROCEDURE " + node->table_name);
+                throw std::runtime_error("Permission denied: ANALYST cannot create procedures");
             }
             logger.log("CREATE PROCEDURE " + node->proc_name);
             std::cout << "[Executor] 创建存储过程: " << node->proc_name << std::endl;
@@ -1309,10 +1310,10 @@ namespace minidb
 
         case PlanType::CallProcedure:
         {
-            if (!permissionChecker_->checkTablePermission(node->table_name, Permission::CALL_PROCEDURE))
-            {
-                throw std::runtime_error("Permission denied: callprocedure " + node->table_name);
-            }
+            // if (!permissionChecker_->checkTablePermission(node->table_name, Permission::CALL_PROCEDURE))
+            // {
+            //     throw std::runtime_error("Permission denied: callprocedure " + node->table_name);
+            // }
             logger.log("CALL PROCEDURE " + node->proc_name);
             std::cout << "[Executor] 调用存储过程: " << node->proc_name << std::endl;
 
