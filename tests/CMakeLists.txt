@@ -557,85 +557,6 @@ add_executable(test_role_manager_simple
     unit/test_role_manager_simple.cpp
 )
 
-add_executable(test_user_login_debug
-    unit/test_user_login_debug.cpp
-)
-target_link_libraries(test_user_login_debug
-    auth_lib
-    storage_lib
-    catalog
-    util_lib
-)
-
-add_executable(test_user_role_debug
-    unit/test_user_role_debug.cpp
-)
-target_link_libraries(test_user_role_debug
-    auth_lib
-    storage_lib
-    catalog
-    util_lib
-)
-
-add_executable(test_table_visibility
-    unit/test_table_visibility.cpp
-)
-target_link_libraries(test_table_visibility
-    auth_lib
-    storage_lib
-    catalog
-    util_lib
-)
-
-add_executable(test_table_visibility_debug
-    unit/test_table_visibility_debug.cpp
-)
-target_link_libraries(test_table_visibility_debug
-    auth_lib
-    storage_lib
-    catalog
-    util_lib
-)
-
-add_executable(test_user_role_after_table_creation
-    unit/test_user_role_after_table_creation.cpp
-)
-target_link_libraries(test_user_role_after_table_creation
-    auth_lib
-    storage_lib
-    catalog
-    util_lib
-)
-
-add_executable(test_page_allocation_debug
-    unit/test_page_allocation_debug.cpp
-)
-target_link_libraries(test_page_allocation_debug
-    auth_lib
-    storage_lib
-    catalog
-    util_lib
-)
-
-add_executable(test_root_role_debug
-    unit/test_root_role_debug.cpp
-)
-target_link_libraries(test_root_role_debug
-    auth_lib
-    storage_lib
-    catalog
-    util_lib
-)
-
-add_executable(test_root_role_detailed_debug
-    unit/test_root_role_detailed_debug.cpp
-)
-target_link_libraries(test_root_role_detailed_debug
-    auth_lib
-    storage_lib
-    catalog
-    util_lib
-)
 target_link_libraries(test_role_manager_simple
     auth_lib
     storage_lib
@@ -644,6 +565,24 @@ target_link_libraries(test_role_manager_simple
 )
 set_target_properties(test_role_manager_simple PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests/Debug
+)
+
+# 29) test_users_table_visibility（__users__ 可见性测试）
+add_executable(test_users_table_visibility
+    unit/test_users_table_visibility.cpp
+    simple_test_framework.cpp
+)
+
+target_link_libraries(test_users_table_visibility
+    auth_lib
+    storage_lib
+    catalog_lib
+    util_lib
+)
+
+add_test(NAME test_users_table_visibility COMMAND test_users_table_visibility)
+set_tests_properties(test_users_table_visibility PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
 # 如需为 CLI/Executor 建独立目标，请在它们模块就绪后启用：

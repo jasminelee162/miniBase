@@ -646,6 +646,15 @@ namespace minidb
             logger.log("SEQSCAN " + node->table_name);
             std::cout << "[Executor] 顺序扫描表: " << node->table_name << std::endl;
 
+            // 权限校验：DBA 总是允许；否则按表权限检查
+            if (auth_service_ && auth_service_->isDBA()) {
+                // allow
+            } else if (permissionChecker_ && !permissionChecker_->checkTablePermission(node->table_name, Permission::SELECT))
+            {
+                std::cerr << "[SeqScan] Permission denied on table: " << node->table_name << std::endl;
+                throw std::runtime_error(std::string("Permission denied: ") + node->table_name);
+            }
+
             auto rows = SeqScanAll(node->table_name);
             std::cout << "[SeqScan] 扫描到 " << rows.size() << " 行:" << std::endl;
 
@@ -1286,6 +1295,14 @@ namespace minidb
             std::vector<Row> result;
             for (const auto &name : tables)
             {
+                // 可见性规则：
+                // - __users__：仅 DBA 可见（通过表权限校验实现）
+                // - 其他表：对所有角色可见（即使没有操作权限）
+                if (name == "__users__") {
+                    if (permissionChecker_ && !permissionChecker_->checkTablePermission(name, Permission::SELECT)) {
+                        continue; // 非DBA隐藏
+                    }
+                }
                 Row row;
                 ColumnValue col;
                 col.col_name = "Tables";
