@@ -66,4 +66,9 @@ struct PlanNode
     std::vector<std::string> proc_params; // 参数列表
     std::vector<std::string> proc_args;   // 调用时的实参列表 ✅ 新增
     std::string proc_body;                // 过程体（SQL语句块）
+
+    // === 索引相关 ===
+    std::string index_name;              // 索引名字
+    std::vector<std::string> index_cols; // 建立索引的列
+    std::string index_type;              // 索引类型 (比如 "BPLUS")
 };

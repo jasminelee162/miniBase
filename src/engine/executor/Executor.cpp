@@ -1304,7 +1304,7 @@ namespace minidb
                 // - 其他表：对所有角色可见（即使没有操作权限）
                 if (name == "__users__")
                 {
-                    if (permissionChecker_ && !permissionChecker_->checkTablePermission(name, Permission::SELECT))
+                    if (permissionChecker_ && !permissionChecker_->checkTablePermission(name, Permission::SHOW_TABLES))
                     {
                         continue; // 非DBA隐藏
                     }
@@ -1481,6 +1481,10 @@ namespace minidb
 
         case PlanType::CreateIndex:
         {
+            if (!permissionChecker_->checkTablePermission(node->table_name, Permission::CREATE_INDEX))
+            {
+                throw std::runtime_error("Permission denied: CreateIndex " + node->table_name);
+            }
             Role user_role = auth_service_->getCurrentUserRole();
             if (user_role == Role::ANALYST)
             {

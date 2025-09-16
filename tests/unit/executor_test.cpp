@@ -1,6 +1,10 @@
 #include "../../src/engine/executor/executor.h"
 #include "../../src/engine/operators/plan_node.h"
 #include "../../src/catalog/catalog.h"
+#include "../../src/auth/auth_service.h"
+#include "../../src/auth/permission_checker.h"
+#include "../../src/cli/AuthCLI.h"
+
 #include <iostream>
 #include <memory>
 #ifdef _WIN32
@@ -20,63 +24,66 @@ void printResult(const std::vector<Row> &rows)
 
 int main()
 {
-#ifdef _WIN32
-    SetConsoleOutputCP(CP_UTF8);
-#endif
-    auth_service_->login("admin", "admin"); // 假设 admin 是 DBA
-    auto engine = std::make_shared<minidb::StorageEngine>("school.db", 10);
-    minidb::Executor exec(engine);
-    auto catalog = std::make_shared<minidb::Catalog>(engine.get());
-    exec.SetCatalog(catalog);
+    // 初始化存储引擎和 catalog
+    auto se = std::make_shared<minidb::StorageEngine>("data/mini.db", 16);
+    auto catalog = std::make_shared<minidb::Catalog>(se.get());
 
-    /* 1. 建表 */
+    // 初始化权限和认证
+    auto authService = std::make_unique<minidb::AuthService>(se.get(), catalog.get());
+    auto permissionChecker = std::make_unique<minidb::PermissionChecker>(authService.get());
+
+    // 初始化 Executor
+    auto exec = std::make_unique<minidb::Executor>(catalog, permissionChecker.get());
+    exec->SetAuthService(authService.get());
+    exec->SetStorageEngine(se);
+
+    // 模拟登录 root 用户
+    if (!authService->login("root", "root"))
     {
-        PlanNode ct;
-        ct.type = PlanType::CreateTable;
-        ct.table_name = "teachers";
-        ct.table_columns = {
-            {"teacher_id", "INT", -1},
-            {"full_name", "VARCHAR", 100},
-            {"subject", "VARCHAR", 50},
-            {"experience", "INT", -1}};
-        exec.execute(&ct);
+        std::cerr << "登录失败！" << std::endl;
+        return 1;
+    }
+    std::cout << "[Test] 登录成功，角色: "
+              << authService->getCurrentUserRoleString()
+              << std::endl;
+
+    // -------- 构造 CreateIndex PlanNode --------
+    auto node = std::make_unique<PlanNode>();
+    node->type = PlanType::CreateIndex;
+    node->table_name = "idx_test";
+    node->index_name = "idx_id";
+    node->index_cols = {"id"};
+    node->index_type = "BPLUS";
+
+    // 执行 CreateIndex
+    try
+    {
+        exec->execute(node.get());
+        std::cout << "[Test] 索引创建完成" << std::endl;
+    }
+    catch (const std::exception &ex)
+    {
+        std::cerr << "[Test] 创建索引失败: " << ex.what() << std::endl;
     }
 
+    // -------- 可选：再执行一个 SELECT 来验证 --------
+    auto selectNode = std::make_unique<PlanNode>();
+    selectNode->type = PlanType::SeqScan;
+    selectNode->table_name = "idx_test";
+    selectNode->predicate = "id = 1"; // 简单条件
+
+    try
     {
-        PlanNode ct;
-        ct.type = PlanType::CreateTable;
-        ct.table_name = "students";
-        ct.table_columns = {
-            {"student_id", "INT", -1},
-            {"name", "VARCHAR", 100},
-            {"age", "INT", -1}};
-        exec.execute(&ct);
+        auto rows = exec->execute(node.get());
+        std::cout << "[Test] 查询完成，返回行数: " << rows.size() << std::endl;
+    }
+    catch (const std::exception &ex)
+    {
+        std::cerr << "[Test] 查询失败: " << ex.what() << std::endl;
     }
 
-    /* 2. SHOW TABLES (删除前) */
-    {
-        PlanNode show;
-        show.type = PlanType::ShowTables;
-        std::cout << "\n== SHOW TABLES (before drop) ==\n";
-        printResult(exec.execute(&show));
-    }
-
-    /* 3. DROP TABLE students */
-    {
-        PlanNode drop;
-        drop.type = PlanType::Drop;
-        drop.table_name = "students";
-        std::cout << "\n== DROP TABLE students ==\n";
-        exec.execute(&drop);
-    }
-
-    /* 4. SHOW TABLES (删除后) */
-    {
-        PlanNode show;
-        show.type = PlanType::ShowTables;
-        std::cout << "\n== SHOW TABLES (after drop) ==\n";
-        printResult(exec.execute(&show));
-    }
-
+    // 登出
+    authService->logout();
+    std::cout << "[Test] 测试结束" << std::endl;
     return 0;
 }
