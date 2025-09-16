@@ -40,6 +40,13 @@ Lexer::Lexer(const std::string& source)
     keywords["DELETE"] = TokenType::KEYWORD_DELETE;
     keywords["INT"] = TokenType::KEYWORD_INT;
     keywords["VARCHAR"] = TokenType::KEYWORD_VARCHAR;
+    // 约束关键字
+    keywords["PRIMARY"] = TokenType::KEYWORD_PRIMARY;
+    keywords["KEY"] = TokenType::KEYWORD_KEY;
+    keywords["UNIQUE"] = TokenType::KEYWORD_UNIQUE;
+    keywords["NOT"] = TokenType::KEYWORD_NOT;
+    keywords["NULL"] = TokenType::KEYWORD_NULL;
+    keywords["DEFAULT"] = TokenType::KEYWORD_DEFAULT;
 
     keywords["UPDATE"] = TokenType::KEYWORD_UPDATE;
     keywords["SET"] = TokenType::KEYWORD_SET;

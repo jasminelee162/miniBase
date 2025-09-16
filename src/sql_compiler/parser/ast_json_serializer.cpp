@@ -18,14 +18,19 @@ json ASTJson::toJson(const Statement* stmt)
         json j;
         j["type"] = "CreateTable";
         j["table_name"] = ct->getTableName();
-        // columns: array of objects {name,type,length}
+        // columns: array of objects {name,type,length,is_primary_key,is_unique,not_null,default_value}
         json cols = json::array();
         for (auto &c : ct->getColumns()) {
             json cobj;
             cobj["name"] = c.getName();
             cobj["type"] = (c.getType() == ColumnDefinition::DataType::INT) ? "INT" : "VARCHAR";
-            // 当前 AST 未保存长度信息，这里默认 0（VARCHAR(n) 可在后续扩展写入）
-            cobj["length"] = 0;
+            // 当前 AST 未保存长度信息，这里默认 -1（VARCHAR(n) 可在后续扩展写入）
+            cobj["length"] = -1;
+            // 约束字段
+            cobj["is_primary_key"] = c.isPrimaryKey();
+            cobj["is_unique"] = c.isUnique();
+            cobj["not_null"] = c.isNotNull();
+            cobj["default_value"] = c.getDefaultValue();
             cols.push_back(cobj);
         }
         j["columns"] = cols;

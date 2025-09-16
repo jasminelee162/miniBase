@@ -113,6 +113,11 @@ void Planner::visit(CreateTableStatement& stmt) {
             catalogCol.type = "VARCHAR";
         }
         catalogCol.length = -1; // 默认长度
+        // 约束映射
+        if (col.isPrimaryKey()) { catalogCol.is_primary_key = true; catalogCol.not_null = true; }
+        if (col.isUnique()) { catalogCol.is_unique = true; }
+        if (col.isNotNull()) { catalogCol.not_null = true; }
+        if (!col.getDefaultValue().empty()) { catalogCol.default_value = col.getDefaultValue(); }
         currentPlan->table_columns.push_back(catalogCol);
     }
 }

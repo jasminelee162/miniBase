@@ -53,6 +53,11 @@ namespace minidb
             {
                 oss << "(" << col.length << ")";
             }
+            // 导出列级约束
+            if (col.is_primary_key) oss << " PRIMARY KEY";
+            if (col.is_unique) oss << " UNIQUE";
+            if (col.not_null) oss << " NOT NULL";
+            if (!col.default_value.empty()) oss << " DEFAULT '" << col.default_value << "'";
             if (i + 1 < schema.columns.size())
                 oss << ", ";
         }

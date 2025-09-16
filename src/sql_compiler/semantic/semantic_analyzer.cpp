@@ -15,6 +15,8 @@ std::string SemanticAnalyzer::getExpressionType(Expression *expr)
         }
         else if (literal->getType() == LiteralExpression::LiteralType::STRING)
         {
+            // 空字符串代表解析阶段的 NULL
+            if (literal->getValue().empty()) return "NULL";
             return "VARCHAR";
         }
     }
@@ -136,6 +138,7 @@ void SemanticAnalyzer::checkColumnExists(const std::string &tableName, const std
 void SemanticAnalyzer::checkTypeCompatibility(const std::string &expected, const std::string &actual,
                                               const std::string &context)
 {
+    if (actual == "NULL") return; // 允许 NULL 与任意类型兼容（后续由执行阶段处理 DEFAULT/NOT NULL）
     if (expected != actual)
     {
         throw SemanticError(SemanticError::ErrorType::TYPE_MISMATCH,
@@ -197,6 +200,11 @@ void SemanticAnalyzer::visit(CreateTableStatement &stmt)
             catalogCol.type = "VARCHAR";
         }
         catalogCol.length = -1; // 默认长度
+        // 约束映射
+        if (col.isPrimaryKey()) { catalogCol.is_primary_key = true; catalogCol.not_null = true; }
+        if (col.isUnique()) { catalogCol.is_unique = true; }
+        if (col.isNotNull()) { catalogCol.not_null = true; }
+        if (!col.getDefaultValue().empty()) { catalogCol.default_value = col.getDefaultValue(); }
         columns.push_back(catalogCol);
     }
 

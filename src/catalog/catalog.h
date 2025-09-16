@@ -18,6 +18,11 @@ namespace minidb
         std::string name;
         std::string type; // INT, VARCHAR, ...
         int length;       // VARCHAR/CHAR 用，其他类型可 -1
+        // 约束
+        bool is_primary_key{false};
+        bool is_unique{false};
+        bool not_null{false};
+        std::string default_value; // 为空表示无默认值
     };
 
     // 索引定义
@@ -67,6 +72,10 @@ namespace minidb
         j.at("name").get_to(c.name);
         j.at("type").get_to(c.type);
         j.at("length").get_to(c.length);
+        if (j.contains("is_primary_key")) j.at("is_primary_key").get_to(c.is_primary_key);
+        if (j.contains("is_unique")) j.at("is_unique").get_to(c.is_unique);
+        if (j.contains("not_null")) j.at("not_null").get_to(c.not_null);
+        if (j.contains("default_value")) j.at("default_value").get_to(c.default_value);
     }
 
     class Catalog

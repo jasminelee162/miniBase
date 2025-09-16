@@ -131,10 +131,24 @@ public:
 
     const std::string& getName() const { return name; }
     DataType getType() const { return type; }
+    // 约束
+    bool isPrimaryKey() const { return primaryKey; }
+    bool isUnique() const { return unique; }
+    bool isNotNull() const { return notNull; }
+    const std::string& getDefaultValue() const { return defaultValue; }
+
+    void setPrimaryKey(bool v) { primaryKey = v; }
+    void setUnique(bool v) { unique = v; }
+    void setNotNull(bool v) { notNull = v; }
+    void setDefaultValue(const std::string& v) { defaultValue = v; }
 
 private:
     std::string name;
     DataType type;
+    bool primaryKey{false};
+    bool unique{false};
+    bool notNull{false};
+    std::string defaultValue;
 };
 
 // CREATE TABLE语句

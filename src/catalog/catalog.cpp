@@ -137,7 +137,18 @@ namespace minidb
                 << schema.created_at;
             for (const auto &col : schema.columns)
             {
+                // 序列化新增约束字段，使用逗号附加键值对，保持向后兼容
+                // 格式: name:type:length[,PK=1][,UNIQ=1][,NN=1][,DEF=...]
                 oss << "|" << col.name << ":" << col.type << ":" << col.length;
+                if (col.is_primary_key) oss << ",PK=1";
+                if (col.is_unique) oss << ",UNIQ=1";
+                if (col.not_null) oss << ",NN=1";
+                if (!col.default_value.empty()) {
+                    // 将换行和分隔符做简单转义（用 \t 替代竖线不允许，此处只替换换行）
+                    std::string def = col.default_value;
+                    for (auto &ch : def) { if (ch == '\n' || ch == '\r') ch = ' '; }
+                    oss << ",DEF=" << def;
+                }
             }
             oss << "\n";
         }
@@ -243,14 +254,31 @@ namespace minidb
                 Column col;
                 col.name = token.substr(0, p1);
                 col.type = token.substr(p1 + 1, p2 - p1 - 1);
-                try
-                {
-                    col.length = std::stoi(token.substr(p2 + 1));
+                // 解析 length 和后续的可选约束串
+                std::string len_and_flags = token.substr(p2 + 1);
+                // 先取到第一个逗号前作为长度
+                size_t comma = len_and_flags.find(',');
+                std::string len_str = comma == std::string::npos ? len_and_flags : len_and_flags.substr(0, comma);
+                try {
+                    col.length = std::stoi(len_str);
+                } catch (const std::exception &e) {
+                    std::cerr << "[Catalog::LoadFromStorage] Invalid column length '" << len_str << "' for column: " << col.name << std::endl;
+                    col.length = -1;
                 }
-                catch (const std::exception &e)
-                {
-                    std::cerr << "[Catalog::LoadFromStorage] Invalid column length '" << token.substr(p2 + 1) << "' for column: " << col.name << std::endl;
-                    col.length = -1; // 默认值
+                // 解析后续 flags
+                if (comma != std::string::npos) {
+                    std::string flags = len_and_flags.substr(comma + 1);
+                    std::istringstream fs(flags);
+                    std::string kv;
+                    while (std::getline(fs, kv, ',')) {
+                        size_t eq = kv.find('=');
+                        std::string key = (eq == std::string::npos) ? kv : kv.substr(0, eq);
+                        std::string val = (eq == std::string::npos) ? "" : kv.substr(eq + 1);
+                        if (key == "PK") col.is_primary_key = (val == "1");
+                        else if (key == "UNIQ") col.is_unique = (val == "1");
+                        else if (key == "NN") col.not_null = (val == "1");
+                        else if (key == "DEF") col.default_value = val;
+                    }
                 }
                 schema.columns.push_back(col);
             }

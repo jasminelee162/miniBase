@@ -69,6 +69,15 @@ BEGIN
 END;
 
 CALL test_proc('John Smith'); 
+
+-- 约束
+CREATE TABLE users(id INT PRIMARY KEY, name VARCHAR(50) NOT NULL UNIQUE, age INT DEFAULT 18);
+INSERT INTO users (id, name, age) VALUES(1,'Alice',NULL);
+
+-- 失败情况
+INSERT INTO users VALUES(1,'Bob',20); -- 主键冲突
+INSERT INTO users VALUES(2,'Bob',20); -- 唯一性冲突
+INSERT INTO users VALUES(3,'Bob',NULL); -- 非空冲突
 --------------------------------
 
 DROP TABLE IF EXISTS employees_914;

@@ -48,12 +48,23 @@ void PlanPrinter::printCreateTable(const PlanNode* node) {
     result << "Columns: [";
     for (size_t i = 0; i < node->table_columns.size(); ++i) {  // ✅ 使用 table_columns.size()
         if (i > 0) result << ", ";
-        result << node->table_columns[i].name 
-               << "(" << node->table_columns[i].type;
-        if (node->table_columns[i].length > 0) {
-            result << "(" << node->table_columns[i].length << ")";  // ✅ 长度大于 0 才显示
+        const auto &c = node->table_columns[i];
+        result << c.name << "(" << c.type;
+        if (c.length > 0) {
+            result << "(" << c.length << ")";  // ✅ 长度大于 0 才显示
         }
         result << ")";
+        // 打印约束标记
+        bool any = c.is_primary_key || c.is_unique || c.not_null || !c.default_value.empty();
+        if (any) {
+            result << " {";
+            bool first = true;
+            if (c.is_primary_key) { result << (first?"":"; ") << "PK"; first = false; }
+            if (c.is_unique) { result << (first?"":"; ") << "UNIQUE"; first = false; }
+            if (c.not_null) { result << (first?"":"; ") << "NOT NULL"; first = false; }
+            if (!c.default_value.empty()) { result << (first?"":"; ") << "DEFAULT='" << c.default_value << "'"; }
+            result << "}";
+        }
     }
     result << "]" << std::endl;
     dedent();

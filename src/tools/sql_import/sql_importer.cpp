@@ -159,6 +159,7 @@ namespace minidb
             const auto& colDef = colDefs[i];
             std::cout << "[SQLImporter] 列定义 " << i << ": " << colDef << std::endl;
             
+            // 基础解析：列名 + 类型(+长度)
             std::istringstream cd(colDef);
             std::string cname, ctype;
             cd >> cname >> ctype;
@@ -171,8 +172,38 @@ namespace minidb
                     ctype = "VARCHAR";
                 }
             }
-            std::cout << "[SQLImporter] 解析列: " << cname << " " << ctype << "(" << len << ")" << std::endl;
-            ct.table_columns.push_back({cname, ctype, len});
+
+            minidb::Column col{cname, ctype, len};
+            // 解析余下部分中的约束标记（朴素解析）
+            std::string rest;
+            std::getline(cd, rest);
+            // 统一大写便于匹配
+            std::string up = rest;
+            std::transform(up.begin(), up.end(), up.begin(), ::toupper);
+            if (up.find("PRIMARY KEY") != std::string::npos) { col.is_primary_key = true; col.not_null = true; }
+            if (up.find("UNIQUE") != std::string::npos) { col.is_unique = true; }
+            if (up.find("NOT NULL") != std::string::npos) { col.not_null = true; }
+            size_t dpos = up.find("DEFAULT");
+            if (dpos != std::string::npos) {
+                std::string after = rest.substr(dpos + 7);
+                // 去掉首尾空白
+                auto trim = [](std::string &s){ s.erase(0, s.find_first_not_of(" \t\r\n")); s.erase(s.find_last_not_of(" \t\r\n") + 1); };
+                trim(after);
+                // 去掉引号
+                if (!after.empty() && (after.front()=='\'' || after.front()=='"')) {
+                    char q = after.front();
+                    if (after.back()==q && after.size()>=2) after = after.substr(1, after.size()-2);
+                }
+                col.default_value = after;
+            }
+
+            std::cout << "[SQLImporter] 解析列: " << col.name << " " << col.type << "(" << col.length << ")"
+                      << (col.is_primary_key?" PK":"")
+                      << (col.is_unique?" UNIQUE":"")
+                      << (col.not_null?" NOT NULL":"")
+                      << (!col.default_value.empty()?" DEFAULT":"")
+                      << std::endl;
+            ct.table_columns.push_back(col);
         }
 
         // 执行创建

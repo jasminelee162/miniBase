@@ -64,6 +64,13 @@ enum class TokenType {
     //数据类型
     KEYWORD_INT,
     KEYWORD_VARCHAR,
+    // 约束
+    KEYWORD_PRIMARY,
+    KEYWORD_KEY,
+    KEYWORD_UNIQUE,
+    KEYWORD_NOT,
+    KEYWORD_NULL,
+    KEYWORD_DEFAULT,
     
     // 标识符
     IDENTIFIER,

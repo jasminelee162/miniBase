@@ -261,6 +261,10 @@ std::unique_ptr<PlanNode> JsonToPlan::translate(const json &j)
                 col.name = c.at("name").get<std::string>();
                 col.type = c.at("type").get<std::string>();
                 col.length = c.at("length").get<int>();
+                if (c.contains("is_primary_key")) col.is_primary_key = c.at("is_primary_key").get<bool>();
+                if (c.contains("is_unique")) col.is_unique = c.at("is_unique").get<bool>();
+                if (c.contains("not_null")) col.not_null = c.at("not_null").get<bool>();
+                if (c.contains("default_value")) col.default_value = c.at("default_value").get<std::string>();
                 node->table_columns.push_back(col);
             }
         }

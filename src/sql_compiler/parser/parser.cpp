@@ -231,8 +231,36 @@ std::vector<ColumnDefinition> Parser::columnDefinitions() {
             Token t = peek();
             throw ParseError(SqlErrors::withHint(SqlErrors::EXPECT_DATA_TYPE, "目前支持 INT 或 VARCHAR[(长度)]"), t.line, t.column);
         }
-        
-        columns.emplace_back(columnName, dataType);
+        ColumnDefinition coldef(columnName, dataType);
+
+        // 解析可选列级约束：PRIMARY KEY | UNIQUE | NOT NULL | DEFAULT <lit>
+        bool parsingConstraints = true;
+        while (parsingConstraints) {
+            if (match(TokenType::KEYWORD_PRIMARY)) {
+                consume(TokenType::KEYWORD_KEY, "期望 KEY");
+                coldef.setPrimaryKey(true);
+            } else if (match(TokenType::KEYWORD_UNIQUE)) {
+                coldef.setUnique(true);
+            } else if (match(TokenType::KEYWORD_NOT)) {
+                consume(TokenType::KEYWORD_NULL, "期望 NULL");
+                coldef.setNotNull(true);
+            } else if (match(TokenType::KEYWORD_DEFAULT)) {
+                if (check(TokenType::CONST_INT)) {
+                    Token t = advance();
+                    coldef.setDefaultValue(t.lexeme);
+                } else if (check(TokenType::CONST_STRING)) {
+                    Token t = advance();
+                    coldef.setDefaultValue(t.lexeme);
+                } else {
+                    Token t = peek();
+                    throw ParseError("DEFAULT 需要常量", t.line, t.column);
+                }
+            } else {
+                parsingConstraints = false;
+            }
+        }
+
+        columns.push_back(coldef);
         
     } while (match(TokenType::DELIMITER_COMMA));
     
@@ -755,6 +783,11 @@ std::unique_ptr<Expression> Parser::primary() {
     if (match(TokenType::CONST_STRING)) {
         Token token = tokens[current - 1];
         return std::make_unique<LiteralExpression>(LiteralExpression::LiteralType::STRING, token.lexeme);
+    }
+    
+    // 支持 NULL 作为字面量（用空字符串表示，插入阶段按 DEFAULT/NOT NULL 处理）
+    if (match(TokenType::KEYWORD_NULL)) {
+        return std::make_unique<LiteralExpression>(LiteralExpression::LiteralType::STRING, "");
     }
     
     if (match(TokenType::IDENTIFIER)) {

@@ -447,20 +447,95 @@ namespace minidb
                 }
             }
 
+            // 计算本次插入使用的列顺序：未显式给出列名时，使用表的完整列顺序
+            std::vector<std::string> columns_to_use = node->columns;
+            if (columns_to_use.empty())
+            {
+                columns_to_use.reserve(schema.columns.size());
+                for (const auto &c : schema.columns) columns_to_use.push_back(c.name);
+            }
+
             // 为每条插入记录保存它实际写入的 page id（对应 node->values 顺序）
             std::vector<page_id_t> inserted_pids;
             inserted_pids.reserve(node->values.size());
 
             for (size_t row_idx = 0; row_idx < node->values.size(); ++row_idx)
             {
-                // build Row from PlanNode row values
+                // build Row from PlanNode row values（按 columns_to_use 对应 values）
                 Row row;
-                for (size_t i = 0; i < node->columns.size(); ++i)
+                if (row_idx >= node->values.size())
+                {
+                    throw std::runtime_error("INSERT values index out of range");
+                }
+                const auto &vals = node->values[row_idx];
+                if (vals.size() != columns_to_use.size())
+                {
+                    throw std::runtime_error("INSERT column count mismatch: expected " + std::to_string(columns_to_use.size()) + ", got " + std::to_string(vals.size()));
+                }
+                for (size_t i = 0; i < columns_to_use.size(); ++i)
                 {
                     ColumnValue cv;
-                    cv.col_name = node->columns[i];
-                    cv.value = node->values[row_idx][i];
+                    cv.col_name = columns_to_use[i];
+                    cv.value = vals[i];
                     row.columns.push_back(cv);
+                }
+
+                // ===== 约束填充与校验 =====
+                // 1) 补充 DEFAULT（仅对未提供或空值的列生效）
+                for (const auto &col_schema : schema.columns)
+                {
+                    bool provided = false;
+                    for (auto &cv : row.columns)
+                    {
+                        if (cv.col_name == col_schema.name)
+                        {
+                            provided = true;
+                            if (cv.value.empty() && !col_schema.default_value.empty())
+                                cv.value = col_schema.default_value;
+                            break;
+                        }
+                    }
+                    if (!provided)
+                    {
+                        ColumnValue cv;
+                        cv.col_name = col_schema.name;
+                        cv.value = col_schema.default_value; // 可能为空
+                        row.columns.push_back(cv);
+                    }
+                }
+
+                // 2) NOT NULL 检查（含主键隐含非空）
+                for (const auto &col_schema : schema.columns)
+                {
+                    if (col_schema.not_null || col_schema.is_primary_key)
+                    {
+                        std::string v = row.getValue(col_schema.name);
+                        if (v.empty())
+                        {
+                            throw std::runtime_error(std::string("NOT NULL violation on column '") + col_schema.name + "'");
+                        }
+                    }
+                }
+
+                // 3) 主键/唯一性检查（简化：全表扫描）
+                auto require_unique = [&](const std::string &col_name) {
+                    std::vector<Row> all = SeqScanAll(node->table_name);
+                    std::string new_val = row.getValue(col_name);
+                    for (const auto &r : all)
+                    {
+                        if (r.getValue(col_name) == new_val)
+                        {
+                            throw std::runtime_error(std::string("Unique constraint violation on column '") + col_name + "'");
+                        }
+                    }
+                };
+
+                for (const auto &col_schema : schema.columns)
+                {
+                    if (col_schema.is_primary_key || col_schema.is_unique)
+                    {
+                        require_unique(col_schema.name);
+                    }
                 }
 
                 // 将 Row 序列化为字节（你需要实现 Row::Serialize 或等价函数）
