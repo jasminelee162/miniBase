@@ -377,11 +377,23 @@ namespace minidb
         catalog_page->InitializePage(PageType::CATALOG_PAGE);
         std::cout << "[StorageEngine::CreateCatalogPage] Initialized page as CATALOG_PAGE" << std::endl;
         
-        // 更新元数据中的catalog_root
+        // 更新元数据中的catalog_root（在元数据缺失时做健壮初始化）
         MetaInfo meta_info = GetMetaInfo();
+        if (meta_info.page_size == 0) {
+            // 说明此前还没有有效的 meta，被视为首次初始化
+            meta_info.magic = META_MAGIC;
+            meta_info.version = META_VERSION;
+            meta_info.page_size = PAGE_SIZE;
+            // next_page_id 按磁盘管理器当前统计来设置
+            meta_info.next_page_id = static_cast<page_id_t>(disk_manager_->GetNumPages());
+        } else {
+            // 确保 next_page_id 不回退
+            page_id_t dm_next = static_cast<page_id_t>(disk_manager_->GetNumPages());
+            if (dm_next > meta_info.next_page_id) {
+                meta_info.next_page_id = dm_next;
+            }
+        }
         meta_info.catalog_root = catalog_page_id;
-        // 确保使用最新的next_page_id
-        meta_info.next_page_id = disk_manager_->GetNumPages();
         UpdateMetaInfo(meta_info);
         std::cout << "[StorageEngine::CreateCatalogPage] Updated meta_info.catalog_root=" << catalog_page_id << std::endl;
         

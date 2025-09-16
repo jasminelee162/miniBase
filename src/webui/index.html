@@ -1,0 +1,221 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>MiniDB Web UI</title>
+    <style>
+      :root { --bg:#0b1220; --panel:#121a2b; --muted:#89a; --accent:#4ea1ff; --ok:#1fbf75; --err:#ff5c5c; }
+      html,body { height:100%; }
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin:0; background:var(--bg); color:#e6edf3; }
+      .wrap { max-width: 980px; margin: 0 auto; padding: 20px; }
+      h2 { margin: 8px 0 16px; font-weight:600; }
+      .card { background:var(--panel); border:1px solid #1e2a44; border-radius:10px; padding:16px; box-shadow: 0 0 0 1px rgba(0,0,0,.05) inset; }
+      .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+      input, select, button, textarea { color:#e6edf3; background:#0f1726; border:1px solid #26334f; border-radius:8px; }
+      input, select { padding:8px 10px; }
+      input::placeholder { color:#556; }
+      button { padding:8px 12px; cursor:pointer; border-color:#2b3a5d; background:linear-gradient(180deg,#1a2742,#0f1726); }
+      button:hover { border-color:#3a4f7c; }
+      button.primary { background: linear-gradient(180deg, #2a69ff, #1e4dcc); border-color:#2050d0; }
+      button.primary:hover { filter: brightness(1.05); }
+      textarea { width: 100%; height: 160px; font-family: Consolas, monospace; padding:10px; }
+      table { border-collapse: collapse; margin-top: 10px; width:100%; }
+      th, td { border: 1px solid #1e2a44; padding: 8px 10px; }
+      th { background:#0f1a31; text-align:left; }
+      #log { color: var(--muted); }
+      .muted { color: var(--muted); }
+      .status { margin-left:8px; }
+      .status.ok { color: var(--ok); }
+      .status.err { color: var(--err); }
+      .section-title { margin: 12px 0 6px; font-size:14px; letter-spacing:.3px; color:#cfd7e1; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+    <h2>MiniDB Web UI</h2>
+
+    <!-- 登录页 -->
+    <div id="loginView" class="card">
+      <div class="section-title">Login</div>
+      <div class="row">
+        <input id="u" placeholder="username" value="root" />
+        <input id="p" placeholder="password" value="root" type="password" />
+        <button class="primary" onclick="login()">Login</button>
+        <span id="log" class="status"></span>
+      </div>
+    </div>
+
+    <!-- 应用页（登录后显示） -->
+    <div id="appView" class="card" style="display:none;">
+      <div class="row">
+        <div><strong>Current:</strong> <span id="currUser"></span> <span id="currRole" class="muted" style="margin-left:6px;"></span></div>
+        <div class="muted">Press Ctrl+Enter to execute</div>
+        <div style="flex:1"></div>
+        <button onclick="logout()">Logout</button>
+      </div>
+
+      <div class="section-title">SQL</div>
+      <textarea id="sql">SELECT username, role, created_at, last_login FROM __users__;</textarea>
+      <div class="row" style="margin-top:8px;">
+        <button id="execBtn" class="primary" onclick="execSQL()">Execute</button>
+        <span id="execMsg" class="status muted"></span>
+      </div>
+      <div id="result" style="margin-top:8px;"></div>
+
+      <!-- 仅 DBA 可见：创建用户 -->
+      <div id="createUserPanel" class="card" style="display:none; margin-top:16px;">
+        <div class="section-title">Create User (DBA only)</div>
+        <div class="row">
+          <input id="nu" placeholder="new username" />
+          <input id="np" placeholder="new password" type="password" />
+          <select id="nr">
+            <option>DBA</option>
+            <option>DEVELOPER</option>
+            <option selected>ANALYST</option>
+          </select>
+          <button onclick="createUser()">Create</button>
+          <span id="createMsg" class="status"></span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let session = { ok:false, user:'', role:'' };
+
+      function render() {
+        const loginView = document.getElementById('loginView');
+        const appView = document.getElementById('appView');
+        const createPanel = document.getElementById('createUserPanel');
+        if (session.ok) {
+          loginView.style.display = 'none';
+          appView.style.display = '';
+          document.getElementById('currUser').textContent = session.user;
+          document.getElementById('currRole').textContent = `(${session.role})`;
+          createPanel.style.display = (session.role === 'DBA') ? '' : 'none';
+        } else {
+          loginView.style.display = '';
+          appView.style.display = 'none';
+        }
+      }
+
+      async function login() {
+        const u = document.getElementById('u').value;
+        const p = document.getElementById('p').value;
+        const r = await fetch('/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:u, password:p})});
+        const j = await r.json();
+        session = { ok: !!j.ok, user: j.user || '', role: j.role || '' };
+        document.getElementById('log').textContent = j.ok ? '' : 'Login failed';
+        render();
+      }
+
+      async function logout() {
+        await fetch('/auth/logout', { method:'POST' });
+        session = { ok:false, user:'', role:'' };
+        render();
+      }
+
+      function formatRole(v){
+        const m = { '0':'DBA', '1':'DEVELOPER', '2':'ANALYST', DBA:'DBA', DEVELOPER:'DEVELOPER', ANALYST:'ANALYST' };
+        return m[String(v)] ?? String(v);
+      }
+      function formatTime(v){
+        const n = Number(v);
+        if (!Number.isFinite(n) || n <= 0) return '';
+        const d = new Date(n*1000);
+        const pad = x=>String(x).padStart(2,'0');
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      }
+      function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+
+      async function execSQL() {
+        const btn = document.getElementById('execBtn');
+        const msg = document.getElementById('execMsg');
+        const div = document.getElementById('result');
+        const sql = document.getElementById('sql').value;
+        btn.disabled = true; msg.textContent = 'Running...'; div.textContent = '';
+        const t0 = performance.now();
+        try {
+          const r = await fetch('/sql/execute', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({sql})});
+          const text = await r.text();
+          let j = {};
+          try { j = text ? JSON.parse(text) : {}; } catch { j = { error: 'Invalid JSON response' }; }
+          const dt = (performance.now() - t0).toFixed(1);
+          if (!r.ok) {
+            msg.textContent = `HTTP ${r.status} in ${dt} ms`;
+            div.textContent = j.error || text || 'Request failed';
+            return;
+          }
+          if (j.error) {
+            msg.textContent = `Error in ${dt} ms`;
+            div.textContent = j.error;
+            return;
+          }
+          let rows = Array.isArray(j.rows) ? j.rows : [];
+          let cols = Array.isArray(j.columns) ? j.columns : [];
+
+          // 针对 __users__ 结果做显示友好化：隐藏 password_hash，角色转文本，时间格式化
+          const isUsersQuery = cols.includes('username') && (cols.includes('role') || cols.includes('password_hash'));
+          if (isUsersQuery) {
+            const keepCols = cols.filter(c => c !== 'password_hash');
+            const colIndex = Object.fromEntries(keepCols.map((c,i)=>[c,i]));
+            const origIndex = Object.fromEntries(cols.map((c,i)=>[c,i]));
+            const mapped = rows.map(row => {
+              const out = new Array(keepCols.length).fill('');
+              for (const c of keepCols) {
+                const v = row[origIndex[c]];
+                out[colIndex[c]] = (c === 'role') ? formatRole(v) : (c === 'created_at' || c === 'last_login') ? formatTime(v) : v;
+              }
+              return out;
+            });
+            cols = keepCols;
+            rows = mapped;
+          }
+
+          msg.textContent = `${rows.length} row(s) in ${dt} ms`;
+          if (cols.length === 0 && rows.length === 0) { div.textContent = '(0 rows)'; return; }
+          let html = '<table><thead><tr>' + cols.map(c=>`<th>${escapeHtml(c)}</th>`).join('') + '</tr></thead><tbody>';
+          for (const row of rows) html += '<tr>' + row.map(v=>`<td>${escapeHtml(v)}</td>`).join('') + '</tr>';
+          html += '</tbody></table>';
+          div.innerHTML = html;
+        } catch (e) {
+          msg.textContent = 'Network error';
+          div.textContent = String(e);
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      async function createUser() {
+        const u = document.getElementById('nu').value.trim();
+        const p = document.getElementById('np').value;
+        const r = document.getElementById('nr').value;
+        const msg = document.getElementById('createMsg');
+        msg.textContent = '';
+        const resp = await fetch('/auth/createUser', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:u, password:p, role:r})});
+        const j = await resp.json().catch(()=>({ok:false}));
+        msg.textContent = j.ok ? 'Created' : 'Failed';
+      }
+
+      // 初次渲染（可选：尝试获取当前会话）
+      (async function init(){
+        try {
+          const r = await fetch('/auth/me');
+          const j = await r.json();
+          session = { ok: !!j.ok, user: j.user || '', role: j.role || '' };
+        } catch {}
+        render();
+      })();
+
+      // 快捷键：Ctrl/Cmd+Enter 执行
+      document.addEventListener('keydown', (e)=>{
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          const appView = document.getElementById('appView');
+          if (appView.style.display !== 'none') execSQL();
+        }
+      });
+    </script>
+    </div>
+  </body>
+</html>
+
+

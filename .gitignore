@@ -1,11 +1,17 @@
-# OS / editor
+#################################
+# OS / Editor
+#################################
 .DS_Store
 Thumbs.db
+
+# VSCode
 .vscode/
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
 !.vscode/tasks.json
+
+# JetBrains / CLion
 .idea/
 *.code-workspace
 
@@ -22,7 +28,9 @@ Thumbs.db
 *.ipch
 ipch/
 
+#################################
 # Build directories
+#################################
 build/
 **/CMakeFiles/
 **/CMakeScratch/
@@ -41,14 +49,13 @@ Testing/
 *.sln
 *.vcxproj
 *.vcxproj.filters
-ZERO_CHECK.vcxproj
-ZERO_CHECK.vcxproj.filters
-ALL_BUILD.vcxproj
-ALL_BUILD.vcxproj.filters
-RUN_TESTS.vcxproj
-RUN_TESTS.vcxproj.filters
+ZERO_CHECK.vcxproj*
+ALL_BUILD.vcxproj*
+RUN_TESTS.vcxproj*
 
-# MSBuild/CL intermediates
+#################################
+# Compiler intermediates
+#################################
 **/Debug/
 **/Release/
 **/RelWithDebInfo/
@@ -63,7 +70,9 @@ RUN_TESTS.vcxproj.filters
 **/*.pdb
 **/*.idb
 
+#################################
 # Binaries and libraries
+#################################
 **/*.exe
 **/*.dll
 **/*.lib
@@ -72,32 +81,44 @@ RUN_TESTS.vcxproj.filters
 **/*.so
 **/*.dylib
 
-# Architecture-specific output
+# Arch-specific
 **/x64/
 
+#################################
 # Project outputs
+#################################
 out/
 
-# Logs and temporary outputs
+#################################
+# Logs and temp
+#################################
 *.log
 logs/
-
-# Local/test databases and artifacts (keep curated data/)
-!data/**
-/test_*.db
-/test*.db
-/test*.dat
-/*.dat
-*.db
-
-
-# Misc caches/temp
 *.tmp
 *.cache
 
-# # Keep sources, tests, docs, and config tracked
-# !src/**
-# !tests/**
-# !docs/**
-# !README.md
-# !CMakeLists.txt
+#################################
+# Local/test databases and artifacts
+#################################
+data/*
+
+# Keep the folder itself
+!data/.gitkeep
+
+# Optional: keep specific curated files
+# !data/schema.sql
+
+test_*.db
+test*.db
+test*.dat
+*.db
+*.dat
+
+#################################
+# Keep core project sources/docs
+#################################
+!src/**
+!tests/**
+!docs/**
+!README.md
+!CMakeLists.txt
