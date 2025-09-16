@@ -219,9 +219,13 @@ namespace minidb
 
         // 提取VALUES部分
         std::string values = sql.substr(p2 + 6);
-        if (values.front() == '(')
+        // 去掉前导空白
+        while (!values.empty() && std::isspace(static_cast<unsigned char>(values.front()))) values.erase(values.begin());
+        // 去掉起始括号
+        if (!values.empty() && values.front() == '(')
             values.erase(values.begin());
-        if (values.back() == ')')
+        // 连续去掉末尾的 ")" 和 ";"（例如 ") ;" 或 ");"）
+        while (!values.empty() && (values.back() == ')' || values.back() == ';' || std::isspace(static_cast<unsigned char>(values.back()))))
             values.pop_back();
 
         // 解析值
@@ -235,6 +239,9 @@ namespace minidb
             val.erase(std::remove(val.begin(), val.end(), '\''), val.end());
             // 去掉首尾空格
             val.erase(0, val.find_first_not_of(" \t"));
+            // 去掉尾部可能残留的 ")" 和 ";"
+            while (!val.empty() && (val.back() == ')' || val.back() == ';' || std::isspace(static_cast<unsigned char>(val.back()))))
+                val.pop_back();
             val.erase(val.find_last_not_of(" \t") + 1);
             row.push_back(val);
         }

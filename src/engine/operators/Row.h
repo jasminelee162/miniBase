@@ -89,7 +89,19 @@ struct Row
             {
                 int32_t num = 0;
                 if (!val.empty())
-                    num = std::stoi(val);
+                {
+                    // 安全解析整数，去掉首尾空白，避免异常中断
+                    size_t start = val.find_first_not_of(" \t\r\n");
+                    size_t end = val.find_last_not_of(" \t\r\n");
+                    std::string trimmed = (start == std::string::npos) ? std::string() : val.substr(start, end - start + 1);
+                    try {
+                        if (!trimmed.empty())
+                            num = std::stoi(trimmed);
+                    } catch (const std::exception &) {
+                        // 非法数字，置 0 并继续序列化
+                        num = 0;
+                    }
+                }
                 size_t old_size = out_buf.size();
                 out_buf.resize(old_size + sizeof(int32_t));
                 std::memcpy(out_buf.data() + old_size, &num, sizeof(int32_t));

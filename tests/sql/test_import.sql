@@ -1,11 +1,11 @@
-CREATE TABLE teachers_916 (
+CREATE TABLE import_test (
     teacher_id INT,
-    full_name VARCHAR(100),
+    full_name VARCHAR(100)
     -- subject VARCHAR(50),
     -- experience INT
 );
 
-INSERT INTO teachers_916 (teacher_id, full_name) VALUES (201, 'Alice Smith');
+INSERT INTO import_test (teacher_id, full_name) VALUES (201, 'Alice Smith');
 -- INSERT INTO teachers_916 (teacher_id, full_name, subject, experience) VALUES (201, 'Alice Smith', 'Math', 5);
 -- INSERT INTO teachers_916 (teacher_id, full_name, subject, experience) VALUES (202, 'Bob Johnson', 'English', 8);
 -- INSERT INTO teachers_916 (teacher_id, full_name, subject, experience) VALUES (203, 'Carol Lee', 'Physics', 3);

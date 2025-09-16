@@ -519,6 +519,16 @@ namespace minidb
                 if (col_idx < 0)
                     continue;
 
+                // 仅对 INT 列更新整型 B+ 树索引；非整型先跳过以避免 stoi 异常
+                const std::string &col_type = schema.columns[col_idx].type;
+                if (col_type != "INT")
+                {
+                    std::cout << "[Executor] 跳过非整型列的B+树索引更新: "
+                              << index.index_name << " on column " << index.cols[0]
+                              << " (type=" << col_type << ")" << std::endl;
+                    continue;
+                }
+
                 BPlusTree bpt(storage_engine_.get());
                 if (index.root_page_id == INVALID_PAGE_ID)
                 {
@@ -533,9 +543,17 @@ namespace minidb
                 for (size_t i = 0; i < inserted_pids.size() && i < node->values.size(); ++i)
                 {
                     const std::string &key_str = node->values[i][col_idx];
-                    int32_t key = std::stoi(key_str);
-                    RID rid{inserted_pids[i], 0}; // slot=0 暂定
-                    bpt.Insert(key, rid);
+                    try
+                    {
+                        int32_t key = std::stoi(key_str);
+                        RID rid{inserted_pids[i], 0}; // slot=0 暂定
+                        bpt.Insert(key, rid);
+                    }
+                    catch (const std::exception &)
+                    {
+                        std::cerr << "[Executor] 索引键转换为整数失败，跳过该条索引更新: index="
+                                  << index.index_name << ", value='" << key_str << "'" << std::endl;
+                    }
                 }
 
                 // 可能根页发生变化（分裂），需要更新 index.root_page_id
