@@ -101,3 +101,4 @@ SELECT emp_name, age FROM employees_914;
 SELECT department, SUM(age) AS total_age FROM employees_914 GROUP BY department;
 
 SELECT department, SUM(age) AS total_age FROM employees_914 GROUP BY department HAVING total_age > 60;
+

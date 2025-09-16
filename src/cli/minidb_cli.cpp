@@ -274,9 +274,41 @@ int main(int argc, char **argv)
         }
         std::string line;
         if (!std::getline(std::cin, line))
+        {
+            // 清理资源后安全退出
+            if (exec)
+                exec.reset();
+            if (permissionChecker)
+                permissionChecker.reset();
+            if (authService)
+            {
+                if (authService->isLoggedIn()) authService->logout();
+                authService.reset();
+            }
+            if (catalog)
+                catalog.reset();
+            if (se)
+                se.reset();
             break;
+        }
         if (line == ".exit")
+        {
+            // 清理资源后安全退出
+            if (exec)
+                exec.reset();
+            if (permissionChecker)
+                permissionChecker.reset();
+            if (authService)
+            {
+                if (authService->isLoggedIn()) authService->logout();
+                authService.reset();
+            }
+            if (catalog)
+                catalog.reset();
+            if (se)
+                se.reset();
             break;
+        }
         if (line == ".help")
         {
             print_help();
