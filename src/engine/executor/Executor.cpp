@@ -368,6 +368,10 @@ namespace minidb
 
         case PlanType::CreateTable:
         {
+            if (!permissionChecker_->checkTablePermission(node->table_name, Permission::CREATE_TABLE))
+            {
+                throw std::runtime_error("Permission denied: create table " + node->table_name);
+            }
             logger.log("CREATE TABLE " + node->table_name);
             std::cout << "[Executor] 创建表: " << node->table_name << std::endl;
 
@@ -568,7 +572,7 @@ namespace minidb
         {
             if (!permissionChecker_->checkTablePermission(node->table_name, Permission::DELETE))
             {
-                throw std::runtime_error("Permission denied: INSERT on " + node->table_name);
+                throw std::runtime_error("Permission denied: DELETE " + node->table_name);
             }
             logger.log("DELETE FROM " + node->table_name + " WHERE " + node->predicate);
             std::cout << "[Executor] 删除表: " << node->table_name
@@ -821,7 +825,7 @@ namespace minidb
         case PlanType::Update:
             if (!permissionChecker_->checkTablePermission(node->table_name, Permission::UPDATE))
             {
-                throw std::runtime_error("Permission denied: INSERT on " + node->table_name);
+                throw std::runtime_error("Permission denied: UPDATE " + node->table_name);
             }
             Update(*node);
             return {};
@@ -1203,7 +1207,7 @@ namespace minidb
         {
             if (!permissionChecker_->checkTablePermission(node->table_name, Permission::DROP_TABLE))
             {
-                throw std::runtime_error("Permission denied: INSERT on " + node->table_name);
+                throw std::runtime_error("Permission denied: DROP " + node->table_name);
             }
             logger.log("DROP TABLE " + node->table_name);
             std::cout << "[Executor] 删除整张表: " << node->table_name << std::endl;
@@ -1237,11 +1241,12 @@ namespace minidb
             std::cout << "[Drop] 表 " << node->table_name << " 已被删除 (仅删除元数据)" << std::endl;
             return {};
         }
+
         case PlanType::CreateProcedure:
         {
             if (!permissionChecker_->checkTablePermission(node->table_name, Permission::CREATE_PROCEDURE))
             {
-                throw std::runtime_error("Permission denied: INSERT on " + node->table_name);
+                throw std::runtime_error("Permission denied: CREATEPROCEDURE " + node->table_name);
             }
             logger.log("CREATE PROCEDURE " + node->proc_name);
             std::cout << "[Executor] 创建存储过程: " << node->proc_name << std::endl;
@@ -1263,27 +1268,32 @@ namespace minidb
             ProcedureDef proc;
             proc.name = node->proc_name;
             proc.params = node->proc_params;
-            
+
             // 处理过程体：将参数名替换为 ? 占位符
             std::string processedBody = node->proc_body;
-            for (const auto& param : node->proc_params) {
+            for (const auto &param : node->proc_params)
+            {
                 // 简单的字符串替换，将参数名替换为 ?
                 size_t pos = 0;
-                while ((pos = processedBody.find(param, pos)) != std::string::npos) {
+                while ((pos = processedBody.find(param, pos)) != std::string::npos)
+                {
                     // 确保是完整的单词匹配
-                    bool isWordStart = (pos == 0 || !std::isalnum(processedBody[pos-1]) && processedBody[pos-1] != '_');
-                    bool isWordEnd = (pos + param.length() >= processedBody.length() || 
-                                    !std::isalnum(processedBody[pos + param.length()]) && processedBody[pos + param.length()] != '_');
-                    
-                    if (isWordStart && isWordEnd) {
+                    bool isWordStart = (pos == 0 || !std::isalnum(processedBody[pos - 1]) && processedBody[pos - 1] != '_');
+                    bool isWordEnd = (pos + param.length() >= processedBody.length() ||
+                                      !std::isalnum(processedBody[pos + param.length()]) && processedBody[pos + param.length()] != '_');
+
+                    if (isWordStart && isWordEnd)
+                    {
                         processedBody.replace(pos, param.length(), "?");
                         pos += 1; // 跳过替换的 ?
-                    } else {
+                    }
+                    else
+                    {
                         pos += param.length();
                     }
                 }
             }
-            
+
             proc.body = processedBody;
 
             // 注册到 Catalog
@@ -1298,7 +1308,7 @@ namespace minidb
         {
             if (!permissionChecker_->checkTablePermission(node->table_name, Permission::CALL_PROCEDURE))
             {
-                throw std::runtime_error("Permission denied: INSERT on " + node->table_name);
+                throw std::runtime_error("Permission denied: callprocedure " + node->table_name);
             }
             logger.log("CALL PROCEDURE " + node->proc_name);
             std::cout << "[Executor] 调用存储过程: " << node->proc_name << std::endl;
