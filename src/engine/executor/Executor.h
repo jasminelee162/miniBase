@@ -45,6 +45,15 @@ namespace minidb
         void SetCatalog(std::shared_ptr<minidb::Catalog> catalog)
         {
             catalog_ = catalog;
+            if (catalog_)
+            {
+                optimizer_ = std::make_unique<IndexOptimizer>(catalog_.get());
+            }
+        }
+
+        void SetAuthService(AuthService *auth)
+        {
+            auth_service_ = auth;
         }
 
         // ✅ 新增 Getter
@@ -53,17 +62,28 @@ namespace minidb
             return storage_engine_;
         }
 
+        Executor(std::shared_ptr<Catalog> catalog, PermissionChecker *checker)
+            : catalog_(std::move(catalog)), permissionChecker_(checker)
+        {
+            if (catalog_)
+            {
+                optimizer_ = std::make_unique<IndexOptimizer>(catalog_.get());
+            }
+        }
+
+        // 兼容重载：不接管 Catalog 生命周期（避免重复释放）
         Executor(Catalog *catalog, PermissionChecker *checker)
-            : catalog_(catalog), permissionChecker_(checker) {}
+            : catalog_(std::shared_ptr<Catalog>(catalog, [](Catalog *){})),
+              permissionChecker_(checker) {}
 
     private:
         std::shared_ptr<StorageEngine> storage_engine_;
         static Logger logger;
         std::shared_ptr<Catalog> catalog_; // 新增
 
-        PermissionChecker *permissionChecker_; // 权限检查器
+        PermissionChecker *permissionChecker_{nullptr}; // 权限检查器
         std::unique_ptr<IndexOptimizer> optimizer_;
-        AuthService *auth_service_; // ✅ 新增
+        AuthService *auth_service_{nullptr}; // ✅ 新增
     };
 
 } // namespace minidb

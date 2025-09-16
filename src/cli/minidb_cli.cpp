@@ -226,7 +226,8 @@ int main(int argc, char **argv)
         catalog = std::make_shared<minidb::Catalog>(se.get());
         authService = std::make_unique<minidb::AuthService>(se.get(), catalog.get());
         permissionChecker = std::make_unique<minidb::PermissionChecker>(authService.get());
-        exec = std::make_unique<minidb::Executor>(catalog.get(), permissionChecker.get());
+        exec = std::make_unique<minidb::Executor>(catalog, permissionChecker.get());
+        exec->SetAuthService(authService.get());
         exec->SetStorageEngine(se);
     }
 
