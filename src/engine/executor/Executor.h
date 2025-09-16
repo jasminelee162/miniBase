@@ -77,7 +77,7 @@ namespace minidb
 
         // 兼容重载：不接管 Catalog 生命周期（避免重复释放）
         Executor(Catalog *catalog, PermissionChecker *checker)
-            : catalog_(std::shared_ptr<Catalog>(catalog, [](Catalog *){})),
+            : catalog_(std::shared_ptr<Catalog>(catalog, [](Catalog *) {})),
               permissionChecker_(checker) {}
 
     private:

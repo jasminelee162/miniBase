@@ -8,19 +8,21 @@
 #include <sstream>
 #include <functional>
 
-namespace minidb {
+namespace minidb
+{
 
-// 静态常量定义
-const std::string UserStorageManager::USER_TABLE_NAME = "__users__";
-const std::string UserStorageManager::USERNAME_COL = "username";
-const std::string UserStorageManager::PASSWORD_COL = "password_hash";
-const std::string UserStorageManager::ROLE_COL = "role";
-const std::string UserStorageManager::CREATED_AT_COL = "created_at";
-const std::string UserStorageManager::LAST_LOGIN_COL = "last_login";
+    // 静态常量定义
+    const std::string UserStorageManager::USER_TABLE_NAME = "__users__";
+    const std::string UserStorageManager::USERNAME_COL = "username";
+    const std::string UserStorageManager::PASSWORD_COL = "password_hash";
+    const std::string UserStorageManager::ROLE_COL = "role";
+    const std::string UserStorageManager::CREATED_AT_COL = "created_at";
+    const std::string UserStorageManager::LAST_LOGIN_COL = "last_login";
 
-UserStorageManager::UserStorageManager(StorageEngine* storage_engine, Catalog* catalog)
-    : storage_engine_(storage_engine), catalog_(catalog), initialized_(false) {
-}
+    UserStorageManager::UserStorageManager(StorageEngine *storage_engine, Catalog *catalog)
+        : storage_engine_(storage_engine), catalog_(catalog), initialized_(false)
+    {
+    }
 
 bool UserStorageManager::initialize() {
     if (!storage_engine_ || !catalog_) {
@@ -88,130 +90,178 @@ bool UserStorageManager::createUser(const std::string& username, const std::stri
     return insertUserRecord(user);
 }
 
-bool UserStorageManager::userExists(const std::string& username) {
-    if (!initialized_) return false;
-    
-    try {
-        UserRecord user = getUserRecord(username);
-        return !user.username.empty();
-    } catch (...) {
-        return false;
-    }
-}
+    bool UserStorageManager::userExists(const std::string &username)
+    {
+        if (!initialized_)
+            return false;
 
-bool UserStorageManager::authenticate(const std::string& username, const std::string& password) {
-    if (!initialized_) return false;
-    
-    try {
-        UserRecord user = getUserRecord(username);
-        if (user.username.empty()) {
-            return false; // 用户不存在
+        try
+        {
+            UserRecord user = getUserRecord(username);
+            return !user.username.empty();
         }
-        
-        std::string hashed_password = hashPassword(password);
-        if (hashed_password == user.password_hash) {
-            // 更新最后登录时间
-            user.last_login = time(nullptr);
-            updateUserRecord(user);
-            return true;
-        }
-        
-        return false;
-    } catch (...) {
-        return false;
-    }
-}
-
-bool UserStorageManager::deleteUser(const std::string& username) {
-    if (!initialized_) return false;
-    return deleteUserRecord(username);
-}
-
-bool UserStorageManager::updateUserPassword(const std::string& username, const std::string& new_password) {
-    if (!initialized_) return false;
-    
-    try {
-        UserRecord user = getUserRecord(username);
-        if (user.username.empty()) {
+        catch (...)
+        {
             return false;
         }
-        
-        user.password_hash = hashPassword(new_password);
-        return updateUserRecord(user);
-    } catch (...) {
-        return false;
     }
-}
 
-bool UserStorageManager::updateUserRole(const std::string& username, Role new_role) {
-    if (!initialized_) return false;
-    
-    try {
-        UserRecord user = getUserRecord(username);
-        if (user.username.empty()) {
+    bool UserStorageManager::authenticate(const std::string &username, const std::string &password)
+    {
+        if (!initialized_)
+            return false;
+
+        try
+        {
+            UserRecord user = getUserRecord(username);
+            if (user.username.empty())
+            {
+                return false; // 用户不存在
+            }
+
+            std::string hashed_password = hashPassword(password);
+            if (hashed_password == user.password_hash)
+            {
+                // 更新最后登录时间
+                user.last_login = time(nullptr);
+                updateUserRecord(user);
+                return true;
+            }
+
             return false;
         }
-        
-        user.role = new_role;
-        return updateUserRecord(user);
-    } catch (...) {
-        return false;
-    }
-}
-
-std::vector<std::string> UserStorageManager::listUsers() {
-    std::vector<std::string> usernames;
-    if (!initialized_) return usernames;
-    
-    try {
-        auto users = getAllUserRecords();
-        for (const auto& user : users) {
-            usernames.push_back(user.username);
+        catch (...)
+        {
+            return false;
         }
-    } catch (...) {
-        // 忽略错误，返回空列表
     }
-    
-    return usernames;
-}
 
-std::vector<UserRecord> UserStorageManager::getAllUsers() {
-    if (!initialized_) return {};
-    
-    try {
-        return getAllUserRecords();
-    } catch (...) {
-        // 忽略错误，返回空列表
-        return {};
+    bool UserStorageManager::deleteUser(const std::string &username)
+    {
+        if (!initialized_)
+            return false;
+        return deleteUserRecord(username);
     }
-}
 
-UserRecord UserStorageManager::getUserInfo(const std::string& username) {
-    if (!initialized_) return UserRecord();
-    
-    try {
-        return getUserRecord(username);
-    } catch (...) {
-        return UserRecord();
+    bool UserStorageManager::updateUserPassword(const std::string &username, const std::string &new_password)
+    {
+        if (!initialized_)
+            return false;
+
+        try
+        {
+            UserRecord user = getUserRecord(username);
+            if (user.username.empty())
+            {
+                return false;
+            }
+
+            user.password_hash = hashPassword(new_password);
+            return updateUserRecord(user);
+        }
+        catch (...)
+        {
+            return false;
+        }
     }
-}
 
-Role UserStorageManager::getUserRole(const std::string& username) {
-    if (!initialized_) return Role::ANALYST;
-    
-    try {
-        UserRecord user = getUserRecord(username);
-        return user.role;
-    } catch (...) {
-        return Role::ANALYST;
+    bool UserStorageManager::updateUserRole(const std::string &username, Role new_role)
+    {
+        if (!initialized_)
+            return false;
+
+        try
+        {
+            UserRecord user = getUserRecord(username);
+            if (user.username.empty())
+            {
+                return false;
+            }
+
+            user.role = new_role;
+            return updateUserRecord(user);
+        }
+        catch (...)
+        {
+            return false;
+        }
     }
-}
 
-std::string UserStorageManager::hashPassword(const std::string& password) {
-    // 简单的哈希实现，实际项目中应使用更安全的哈希算法
-    std::hash<std::string> hasher;
-    return std::to_string(hasher(password));
-}
+    std::vector<std::string> UserStorageManager::listUsers()
+    {
+        std::vector<std::string> usernames;
+        if (!initialized_)
+            return usernames;
+
+        try
+        {
+            auto users = getAllUserRecords();
+            for (const auto &user : users)
+            {
+                usernames.push_back(user.username);
+            }
+        }
+        catch (...)
+        {
+            // 忽略错误，返回空列表
+        }
+
+        return usernames;
+    }
+
+    std::vector<UserRecord> UserStorageManager::getAllUsers()
+    {
+        if (!initialized_)
+            return {};
+
+        try
+        {
+            return getAllUserRecords();
+        }
+        catch (...)
+        {
+            // 忽略错误，返回空列表
+            return {};
+        }
+    }
+
+    UserRecord UserStorageManager::getUserInfo(const std::string &username)
+    {
+        if (!initialized_)
+            return UserRecord();
+
+        try
+        {
+            return getUserRecord(username);
+        }
+        catch (...)
+        {
+            return UserRecord();
+        }
+    }
+
+    Role UserStorageManager::getUserRole(const std::string &username)
+    {
+        if (!initialized_)
+            return Role::ANALYST;
+
+        try
+        {
+            UserRecord user = getUserRecord(username);
+            return user.role;
+        }
+        catch (...)
+        {
+            return Role::ANALYST;
+        }
+    }
+
+    std::string UserStorageManager::hashPassword(const std::string &password)
+    {
+        // 简单的哈希实现，实际项目中应使用更安全的哈希算法
+        std::hash<std::string> hasher;
+        return std::to_string(hasher(password));
+    }
 
 bool UserStorageManager::insertUserRecord(const UserRecord& user) {
     try {
@@ -243,14 +293,16 @@ bool UserStorageManager::insertUserRecord(const UserRecord& user) {
     }
 }
 
-bool UserStorageManager::updateUserRecord(const UserRecord& user) {
-    // 简化实现：删除旧记录，插入新记录
-    // 这样可以避免复杂的页面内更新逻辑，使用标准的数据库操作
-    if (deleteUserRecord(user.username)) {
-        return insertUserRecord(user);
+    bool UserStorageManager::updateUserRecord(const UserRecord &user)
+    {
+        // 简化实现：删除旧记录，插入新记录
+        // 这样可以避免复杂的页面内更新逻辑，使用标准的数据库操作
+        if (deleteUserRecord(user.username))
+        {
+            return insertUserRecord(user);
+        }
+        return false;
     }
-    return false;
-}
 
 bool UserStorageManager::deleteUserRecord(const std::string& username) {
     try {
@@ -308,102 +360,173 @@ bool UserStorageManager::deleteUserRecord(const std::string& username) {
     }
 }
 
-std::vector<UserRecord> UserStorageManager::getAllUserRecords() {
-    std::vector<UserRecord> users;
-    
-    try {
-        // 获取用户表的第一个数据页
-        TableSchema table_schema = catalog_->GetTable(USER_TABLE_NAME);
-        Page* page = storage_engine_->GetDataPage(table_schema.first_page_id);
-        if (!page) {
-            return users;
+    std::vector<UserRecord> UserStorageManager::getAllUserRecords()
+    {
+        std::vector<UserRecord> users;
+
+        try
+        {
+            // 获取用户表的第一个数据页
+            TableSchema table_schema = catalog_->GetTable(USER_TABLE_NAME);
+            Page *page = storage_engine_->GetDataPage(table_schema.first_page_id);
+            if (!page)
+            {
+                return users;
+            }
+
+            // 获取页面中的所有记录
+            auto records = storage_engine_->GetPageRecords(page);
+            for (const auto &record : records)
+            {
+                std::string data(static_cast<const char *>(record.first), record.second);
+                UserRecord user = deserializeUserRecord(data);
+                if (!user.username.empty())
+                {
+                    users.push_back(user);
+                }
+            }
+
+            storage_engine_->PutPage(table_schema.first_page_id, false);
         }
-        
-        // 获取页面中的所有记录
-        auto records = storage_engine_->GetPageRecords(page);
-        for (const auto& record : records) {
-            std::string data(static_cast<const char*>(record.first), record.second);
-            UserRecord user = deserializeUserRecord(data);
-            if (!user.username.empty()) {
-                users.push_back(user);
+        catch (const std::exception &e)
+        {
+            std::cerr << "[UserStorageManager] Failed to get user records: " << e.what() << std::endl;
+        }
+
+        return users;
+    }
+
+    UserRecord UserStorageManager::getUserRecord(const std::string &username)
+    {
+        auto users = getAllUserRecords();
+        for (const auto &user : users)
+        {
+            if (user.username == username)
+            {
+                return user;
             }
         }
-        
-        storage_engine_->PutPage(table_schema.first_page_id, false);
-    } catch (const std::exception& e) {
-        std::cerr << "[UserStorageManager] Failed to get user records: " << e.what() << std::endl;
+        return UserRecord(); // 返回空记录表示未找到
     }
-    
-    return users;
-}
 
-UserRecord UserStorageManager::getUserRecord(const std::string& username) {
-    auto users = getAllUserRecords();
-    for (const auto& user : users) {
-        if (user.username == username) {
+    std::string UserStorageManager::serializeUserRecord(const UserRecord &user) const
+    {
+        // 使用与执行器一致的 Row 序列化格式，确保 SeqScan 可反序列化
+        try
+        {
+            const minidb::TableSchema schema = catalog_->GetTable(USER_TABLE_NAME);
+            Row row;
+            row.columns = {
+                {USERNAME_COL, user.username},
+                {PASSWORD_COL, user.password_hash},
+                {ROLE_COL, std::to_string(static_cast<int>(user.role))},
+                {CREATED_AT_COL, std::to_string(static_cast<long long>(user.created_at))},
+                {LAST_LOGIN_COL, std::to_string(static_cast<long long>(user.last_login))}};
+            std::vector<char> buf;
+            row.Serialize(buf, schema);
+            return std::string(buf.begin(), buf.end());
+        }
+        catch (...)
+        {
+            // 兜底为老格式（不建议），避免崩溃
+            std::ostringstream oss;
+            oss << user.username << "|"
+                << user.password_hash << "|"
+                << static_cast<int>(user.role) << "|"
+                << user.created_at << "|"
+                << user.last_login;
+            return oss.str();
+        }
+    }
+
+    UserRecord UserStorageManager::deserializeUserRecord(const std::string &data) const
+    {
+        UserRecord user;
+        try
+        {
+            const minidb::TableSchema schema = catalog_->GetTable(USER_TABLE_NAME);
+            const unsigned char *ptr = reinterpret_cast<const unsigned char *>(data.data());
+            Row row = Row::Deserialize(ptr, static_cast<uint16_t>(data.size()), schema);
+            if (row.columns.empty())
+                return user;
+            auto get = [&](const std::string &col) -> std::string
+            {
+                for (const auto &c : row.columns)
+                {
+                    if (c.col_name == col)
+                        return c.value;
+                }
+                return std::string();
+            };
+            user.username = get(USERNAME_COL);
+            user.password_hash = get(PASSWORD_COL);
+            try
+            {
+                user.role = static_cast<Role>(std::stoi(get(ROLE_COL)));
+            }
+            catch (...)
+            {
+                user.role = Role::ANALYST;
+            }
+            try
+            {
+                user.created_at = static_cast<time_t>(std::stoll(get(CREATED_AT_COL)));
+            }
+            catch (...)
+            {
+                user.created_at = 0;
+            }
+            try
+            {
+                user.last_login = static_cast<time_t>(std::stoll(get(LAST_LOGIN_COL)));
+            }
+            catch (...)
+            {
+                user.last_login = 0;
+            }
+            return user;
+        }
+        catch (...)
+        {
+            // 兼容老格式
+            std::istringstream iss(data);
+            std::string token;
+            if (std::getline(iss, token, '|'))
+                user.username = token;
+            if (std::getline(iss, token, '|'))
+                user.password_hash = token;
+            if (std::getline(iss, token, '|'))
+            {
+                try
+                {
+                    user.role = static_cast<Role>(std::stoi(token));
+                }
+                catch (...)
+                {
+                }
+            }
+            if (std::getline(iss, token, '|'))
+            {
+                try
+                {
+                    user.created_at = std::stol(token);
+                }
+                catch (...)
+                {
+                }
+            }
+            if (std::getline(iss, token, '|'))
+            {
+                try
+                {
+                    user.last_login = std::stol(token);
+                }
+                catch (...)
+                {
+                }
+            }
             return user;
         }
     }
-    return UserRecord(); // 返回空记录表示未找到
-}
-
-std::string UserStorageManager::serializeUserRecord(const UserRecord& user) const {
-    // 使用与执行器一致的 Row 序列化格式，确保 SeqScan 可反序列化
-    try {
-        const minidb::TableSchema schema = catalog_->GetTable(USER_TABLE_NAME);
-        Row row;
-        row.columns = {
-            {USERNAME_COL, user.username},
-            {PASSWORD_COL, user.password_hash},
-            {ROLE_COL, std::to_string(static_cast<int>(user.role))},
-            {CREATED_AT_COL, std::to_string(static_cast<long long>(user.created_at))},
-            {LAST_LOGIN_COL, std::to_string(static_cast<long long>(user.last_login))}
-        };
-        std::vector<char> buf;
-        row.Serialize(buf, schema);
-        return std::string(buf.begin(), buf.end());
-    } catch (...) {
-        // 兜底为老格式（不建议），避免崩溃
-        std::ostringstream oss;
-        oss << user.username << "|" 
-            << user.password_hash << "|" 
-            << static_cast<int>(user.role) << "|" 
-            << user.created_at << "|" 
-            << user.last_login;
-        return oss.str();
-    }
-}
-
-UserRecord UserStorageManager::deserializeUserRecord(const std::string& data) const {
-    UserRecord user;
-    try {
-        const minidb::TableSchema schema = catalog_->GetTable(USER_TABLE_NAME);
-        const unsigned char* ptr = reinterpret_cast<const unsigned char*>(data.data());
-        Row row = Row::Deserialize(ptr, static_cast<uint16_t>(data.size()), schema);
-        if (row.columns.empty()) return user;
-        auto get = [&](const std::string& col) -> std::string {
-            for (const auto& c: row.columns) {
-                if (c.col_name == col) return c.value;
-            }
-            return std::string();
-        };
-        user.username = get(USERNAME_COL);
-        user.password_hash = get(PASSWORD_COL);
-        try { user.role = static_cast<Role>(std::stoi(get(ROLE_COL))); } catch (...) { user.role = Role::ANALYST; }
-        try { user.created_at = static_cast<time_t>(std::stoll(get(CREATED_AT_COL))); } catch (...) { user.created_at = 0; }
-        try { user.last_login = static_cast<time_t>(std::stoll(get(LAST_LOGIN_COL))); } catch (...) { user.last_login = 0; }
-        return user;
-    } catch (...) {
-        // 兼容老格式
-        std::istringstream iss(data);
-        std::string token;
-        if (std::getline(iss, token, '|')) user.username = token;
-        if (std::getline(iss, token, '|')) user.password_hash = token;
-        if (std::getline(iss, token, '|')) { try { user.role = static_cast<Role>(std::stoi(token)); } catch (...) {} }
-        if (std::getline(iss, token, '|')) { try { user.created_at = std::stol(token); } catch (...) {} }
-        if (std::getline(iss, token, '|')) { try { user.last_login = std::stol(token); } catch (...) {} }
-        return user;
-    }
-}
 
 } // namespace minidb

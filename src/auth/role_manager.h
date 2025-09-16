@@ -28,6 +28,7 @@ namespace minidb
         ALTER_TABLE,
         CREATE_INDEX,
         DROP_INDEX,
+        SHOW_TABLES,
 
         // 数据操作权限
         SELECT,
