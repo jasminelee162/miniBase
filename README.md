@@ -109,12 +109,15 @@ ctest -C Debug --output-on-failure
 - **操作系统模块**：页分配/读写、缓冲池与 LRU、命中率统计与替换/写回日志。
 - **数据库模块**：Catalog 元数据、火山模型算子、持久化与重启后可查询。
 
-## 开发计划（建议）
+## 亮点与特性：
 
-1. 完成 `sql_compiler` 最小子集（CREATE/INSERT/SELECT/DELETE）的 Lexer/Parser/Semantic/Plan，并确保测试覆盖。
-2. 实现 Catalog（建表、查表、列定义），落盘到页式存储。
-3. 实现 Engine 基础算子，串联 StorageEngine；补充 CLI REPL。
-4. 扩展：UPDATE/JOIN/ORDER BY/GROUP BY、谓词下推、更多索引与优化。
+- **完整的元数据管理**：支持 Meta Superblock 的全生命周期管理，元数据持久化增强。
+- **目录页支持**：为 Catalog 模块迁移到页式存储打好基础。
+- **B+树索引增强**：支持增删改查（CRUD）、模板化多键类型（不仅仅是 int32，还可自定义类型）、范围查询、键统计等，代码复用性强。
+- **页内数据操作便利工具**：如 AppendRecordToPage、GetPageRecords、InitializeDataPage，极大简化页操作流程，减少重复代码。
+- **向后兼容**：新功能与原有代码完全兼容，便于在实际教学/开发场景平滑升级。
+- **系统健壮性与可靠性**：详细文档和 checklist，易于集成和二次开发。
+- **WebUI/AI 接口扩展**：有 WebUI 示例和 AI 对接接口，为可视化和智能化扩展预留空间。
 
 ## 版权与许可
 
