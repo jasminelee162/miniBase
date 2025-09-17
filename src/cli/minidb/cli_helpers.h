@@ -2,6 +2,7 @@
 
 #include <string>
 #include "../auth/auth_service.h"
+#include "../util/logger.h"
 
 namespace minidb {
 namespace cli {
@@ -34,6 +35,18 @@ bool require_logged_in(minidb::AuthService *auth);
 
 // 需求：DBA 权限
 bool require_dba(minidb::AuthService *auth);
+
+// ---- CLI Logging Facade ----
+// 初始化/获取 CLI 专用日志（例如 logs/cli_debug.log）
+void init_cli_logger(const std::string &filepath);
+Logger* cli_logger();
+void set_cli_log_level(Logger::Level level);
+
+// 便捷封装
+void log_debug(const std::string &msg);
+void log_info(const std::string &msg);
+void log_warn(const std::string &msg);
+void log_error(const std::string &msg);
 
 } // namespace cli
 } // namespace minidb

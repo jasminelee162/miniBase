@@ -14,7 +14,9 @@ class TablePrinter {
 public:
     static void printResults(const std::vector<Row>& rows, const std::string& queryType = "SELECT") {
         if (rows.empty()) {
-            std::cout << "Empty result set." << std::endl;
+            if (queryType == "SELECT" || queryType == "SHOW") {
+                std::cout << "Empty result set." << std::endl;
+            }
             return;
         }
         

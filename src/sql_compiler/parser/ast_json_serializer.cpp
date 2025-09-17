@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include "../common/error_messages.h"
 #include <iostream>
+#include "../../util/logger.h"
 
 using json = nlohmann::json;
 
@@ -186,7 +187,7 @@ json ASTJson::toJson(const Statement* stmt)
             //处理列名
             auto columns = sel->getColumns();
             if (columns.size() == 1 && columns[0] == "*") {
-                std::cout << "[ASTJson] 序列化 SELECT *" << std::endl;
+                global_log_debug("[ASTJson] 序列化 SELECT *");
                 j["columns"] = json::array({"*"});
             } else {
                 j["columns"] = columns;
@@ -194,13 +195,13 @@ json ASTJson::toJson(const Statement* stmt)
 
             //处理 WHERE 子句
             if (sel->getWhereClause()) {
-                std::cout << "[ASTJson] 序列化 WHERE 子句" << std::endl;
+                global_log_debug("[ASTJson] 序列化 WHERE 子句");
                 try{
                 auto p = exprToJson(sel->getWhereClause());
                 j["predicate"] = p.is_string() ? p.get<std::string>() : p.dump();
                 }  
                 catch (const std::exception &e) {
-                    std::cerr << "[ASTJson][ERROR] 序列化 WHERE 子句失败: " << e.what() << std::endl;
+                    global_log_error(std::string("[ASTJson][ERROR] 序列化 WHERE 子句失败: ") + e.what());
                     j["predicate"] = "WHERE_CLAUSE_ERROR";
                 }
             }
@@ -270,6 +271,18 @@ json ASTJson::toJson(const Statement* stmt)
         j["proc_name"] = createProc->getProcName();
         j["proc_params"] = createProc->getParams();
         j["proc_body"] = createProc->getBody();
+        return j;
+    }
+    // CREATE INDEX
+    if (auto cidx = dynamic_cast<const CreateIndexStatement*>(stmt)) {
+        json j;
+        j["type"] = "CreateIndex";
+        // 与 translator 兼容：输出 name 字段，同时可读性保持 index_name
+        j["name"] = cidx->getIndexName();
+        j["index_name"] = cidx->getIndexName();
+        j["table_name"] = cidx->getTableName();
+        j["columns"] = cidx->getColumns();
+        j["index_type"] = cidx->getIndexType();
         return j;
     }
     throw std::runtime_error(SqlErrors::UNSUPPORTED_STMT_JSON);

@@ -27,3 +27,13 @@ private:
     static const char* levelToString(Level lvl);
     static std::string timeStamp();
 };
+
+// ---- Global logger (optional) ----
+// 初始化一个全局日志器，便于非 CLI 代码写日志而不触及终端
+void init_global_logger(const std::string &filename, Logger::Level level);
+Logger* get_global_logger();
+void global_log(Logger::Level level, const std::string &msg);
+inline void global_log_debug(const std::string &msg) { global_log(static_cast<Logger::Level>(0), msg); }
+inline void global_log_info(const std::string &msg)  { global_log(static_cast<Logger::Level>(1), msg); }
+inline void global_log_warn(const std::string &msg)  { global_log(static_cast<Logger::Level>(2), msg); }
+inline void global_log_error(const std::string &msg) { global_log(static_cast<Logger::Level>(3), msg); }

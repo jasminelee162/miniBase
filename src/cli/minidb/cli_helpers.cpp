@@ -5,6 +5,7 @@
 #include <sstream>
 #include <ctime>
 #include <cstdio>
+#include <memory>
 
 #ifdef _WIN32
 #ifndef NOMINMAX
@@ -16,8 +17,60 @@
 #include "../auth/auth_service.h"
 #include "user_management.h"
 
+#ifdef _WIN32
+#ifdef ERROR
+#undef ERROR
+#endif
+#ifdef DEBUG
+#undef DEBUG
+#endif
+#ifdef INFO
+#undef INFO
+#endif
+#ifdef WARN
+#undef WARN
+#endif
+#endif
+
 namespace minidb {
 namespace cli {
+
+static std::unique_ptr<Logger> g_cli_logger;
+
+void init_cli_logger(const std::string &filepath)
+{
+    g_cli_logger = std::make_unique<Logger>(filepath);
+}
+
+Logger* cli_logger()
+{
+    return g_cli_logger.get();
+}
+
+void set_cli_log_level(Logger::Level level)
+{
+    if (g_cli_logger) g_cli_logger->setLevel(level);
+}
+
+void log_debug(const std::string &msg)
+{
+    if (g_cli_logger) g_cli_logger->log(static_cast<Logger::Level>(0), msg);
+}
+
+void log_info(const std::string &msg)
+{
+    if (g_cli_logger) g_cli_logger->log(static_cast<Logger::Level>(1), msg);
+}
+
+void log_warn(const std::string &msg)
+{
+    if (g_cli_logger) g_cli_logger->log(static_cast<Logger::Level>(2), msg);
+}
+
+void log_error(const std::string &msg)
+{
+    if (g_cli_logger) g_cli_logger->log(static_cast<Logger::Level>(3), msg);
+}
 
 void print_help()
 {

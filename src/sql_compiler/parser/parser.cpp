@@ -148,6 +148,8 @@ std::unique_ptr<Statement> Parser::statement() {
             return createStatement();
         } else if (next.type == TokenType::KEYWORD_PROCEDURE) {
             return createProcedureStatement();
+        } else if (next.type == TokenType::KEYWORD_INDEX) {
+            return createIndexStatement();
         }
         // 兜底：仍走 createStatement() 以复用错误提示，但提示里不应强制 TABLE
         return createStatement();
@@ -558,6 +560,45 @@ std::unique_ptr<UpdateStatement> Parser::updateStatement() {
     
     return std::make_unique<UpdateStatement>(tableName, std::move(assignments), std::move(whereClause));
 
+}
+
+// 解析 CREATE INDEX idx_name ON table(col1, col2, ...) [USING BPLUS];
+std::unique_ptr<CreateIndexStatement> Parser::createIndexStatement(){
+    consume(TokenType::KEYWORD_CREATE, "期望 'CREATE'");
+    consume(TokenType::KEYWORD_INDEX, "期望 'INDEX'");
+
+    Token idxTok = consume(TokenType::IDENTIFIER, "INDEX 之后需要索引名");
+    std::string indexName = idxTok.lexeme;
+
+    consume(TokenType::KEYWORD_ON, "期望 'ON'");
+    Token tblTok = consume(TokenType::IDENTIFIER, "ON 之后需要表名");
+    std::string tableName = tblTok.lexeme;
+
+    consume(TokenType::DELIMITER_LPAREN, "期望 '(' 开始列列表");
+    auto cols = parseIndexColumnList();
+    consume(TokenType::DELIMITER_RPAREN, "列列表缺少 ')'");
+
+    std::string indexType = "BPLUS"; // 默认
+    if (match(TokenType::KEYWORD_USING)){
+        if (match(TokenType::KEYWORD_BPLUS)){
+            indexType = "BPLUS";
+        } else {
+            Token t = peek();
+            throw ParseError("USING 目前仅支持 BPLUS", t.line, t.column);
+        }
+    }
+
+    consume(TokenType::DELIMITER_SEMICOLON, "CREATE INDEX 语句末尾需要 ';'");
+    return std::make_unique<CreateIndexStatement>(indexName, tableName, std::move(cols), indexType);
+}
+
+std::vector<std::string> Parser::parseIndexColumnList(){
+    std::vector<std::string> cols;
+    do {
+        Token colTok = consume(TokenType::IDENTIFIER, "期望列名");
+        cols.push_back(colTok.lexeme);
+    } while (match(TokenType::DELIMITER_COMMA));
+    return cols;
 }
 
 //解析Show语句

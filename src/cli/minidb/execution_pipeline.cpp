@@ -11,6 +11,9 @@
 #include "../storage/storage_engine.h"
 
 #include <iostream>
+#include <sstream>
+#include "cli_helpers.h"
+#include "../optimizer/plan_optimizer.h"
 
 namespace minidb {
 namespace cli {
@@ -42,18 +45,32 @@ bool execute_sql_pipeline(
         }
 
         auto j = ASTJson::toJson(stmt.get());
-        std::cout << "astjson: " << j.dump(2) << std::endl;
+        {
+            std::ostringstream oss;
+            oss << "AST JSON:\n" << j.dump(2);
+            log_debug(oss.str());
+        }
 
         if (outputJsonOnly)
         {
-            std::cout << "只有astjson: " << j.dump(2) << std::endl;
+            // 仅当用户显式请求 --json 时，才在终端输出 JSON
+            std::cout << j.dump(2) << std::endl;
             return true;
         }
 
         auto plan = JsonToPlan::translate(j);
+        plan = minidb::OptimizePlan(std::move(plan));
         auto results = executor->execute(plan.get());
-        std::cout << "[OK] executed." << std::endl;
-        TablePrinter::printResults(results, " ");
+        log_info("execution finished successfully");
+        // 打印结果表格（仅针对 SELECT/SHOW 等返回行的命令）
+        TablePrinter::printResults(results, j.value("type", "SELECT"));
+        // 打印操作摘要（非查询类）
+        if (results.empty()) {
+            std::string summary = executor->TakeOperationSummary();
+            if (!summary.empty()) {
+                std::cout << summary << std::endl;
+            }
+        }
 
         // ✅ 持久化 catalog（原逻辑保留）
         catalog->SaveToStorage();
@@ -61,12 +78,14 @@ bool execute_sql_pipeline(
     }
     catch (const ParseError &e)
     {
+        log_error(std::string("[Parser][ERROR] ") + e.what());
         std::cerr << "[Parser][ERROR] [minidb_cli] " << e.what()
                   << " at (" << e.getLine() << "," << e.getColumn() << ")" << std::endl;
         return false;
     }
     catch (const std::exception &e)
     {
+        log_error(std::string("[ERROR] ") + e.what());
         std::cerr << "[ERROR] " << e.what() << std::endl;
         return false;
     }

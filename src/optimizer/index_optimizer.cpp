@@ -1,6 +1,7 @@
 #include "optimizer/index_optimizer.h"
 #include <cmath>
 #include <iostream>
+#include "../util/logger.h"
 
 namespace minidb
 {
@@ -34,7 +35,7 @@ namespace minidb
     {
         if (!catalog_ || !catalog_->HasTable(table_name))
         {
-            std::cerr << "[IndexOptimizer] 表不存在: " << table_name << std::endl;
+            global_log_warn(std::string("[IndexOptimizer] 表不存在: ") + table_name);
             return nullptr;
         }
 
@@ -66,12 +67,11 @@ namespace minidb
 
         if (best_index)
         {
-            std::cout << "[IndexOptimizer] 选择索引 (root_page_id="
-                      << best_index->GetRoot() << ") 代价=" << best_cost << std::endl;
+            global_log_debug(std::string("[IndexOptimizer] 选择索引 (root_page_id=") + std::to_string(best_index->GetRoot()) + ") 代价=" + std::to_string(best_cost));
         }
         else
         {
-            std::cout << "[IndexOptimizer] 未找到合适索引，走全表扫描" << std::endl;
+            global_log_info("[IndexOptimizer] 未找到合适索引，走全表扫描");
         }
 
         return best_index;
@@ -81,15 +81,14 @@ namespace minidb
     {
         if (!catalog_ || !catalog_->HasTable(table_name))
         {
-            std::cerr << "[IndexOptimizer] 表不存在: " << table_name << std::endl;
+            global_log_warn(std::string("[IndexOptimizer] 表不存在: ") + table_name);
             return;
         }
 
         auto index_defs = catalog_->GetTableIndexes(table_name);
         for (const auto &idx : index_defs)
         {
-            std::cout << "[IndexOptimizer] 正在重建索引 " << idx.index_name
-                      << " (root_page_id=" << idx.root_page_id << ") ..." << std::endl;
+            global_log_info(std::string("[IndexOptimizer] 正在重建索引 ") + idx.index_name + " (root_page_id=" + std::to_string(idx.root_page_id) + ") ...");
 
             // TODO: 遍历表数据，重新插入到一个新的 B+树里
         }

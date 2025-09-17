@@ -62,6 +62,10 @@ namespace minidb
             return storage_engine_;
         }
 
+        // 操作摘要：由具体操作设置，在执行管线读取后清空
+        void SetOperationSummary(const std::string &summary) { operation_summary_ = summary; }
+        std::string TakeOperationSummary() { std::string s = operation_summary_; operation_summary_.clear(); return s; }
+
         Executor(std::shared_ptr<Catalog> catalog, PermissionChecker *checker)
             : catalog_(std::move(catalog)), permissionChecker_(checker)
         {
@@ -73,7 +77,7 @@ namespace minidb
 
         // 兼容重载：不接管 Catalog 生命周期（避免重复释放）
         Executor(Catalog *catalog, PermissionChecker *checker)
-            : catalog_(std::shared_ptr<Catalog>(catalog, [](Catalog *){})),
+            : catalog_(std::shared_ptr<Catalog>(catalog, [](Catalog *) {})),
               permissionChecker_(checker) {}
 
     private:
@@ -84,6 +88,7 @@ namespace minidb
         PermissionChecker *permissionChecker_{nullptr}; // 权限检查器
         std::unique_ptr<IndexOptimizer> optimizer_;
         AuthService *auth_service_{nullptr}; // ✅ 新增
+        std::string operation_summary_;
     };
 
 } // namespace minidb

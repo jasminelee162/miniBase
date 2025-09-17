@@ -32,6 +32,7 @@ Lexer::Lexer(const std::string& source)
 
     keywords["CREATE"] = TokenType::KEYWORD_CREATE;
     keywords["TABLE"] = TokenType::KEYWORD_TABLE;
+    keywords["INDEX"] = TokenType::KEYWORD_INDEX;
 
     keywords["INSERT"] = TokenType::KEYWORD_INSERT;
     keywords["INTO"] = TokenType::KEYWORD_INTO;
@@ -60,6 +61,10 @@ Lexer::Lexer(const std::string& source)
     keywords["PROCEDURE"] = TokenType::KEYWORD_PROCEDURE;
     keywords["BEGIN"] = TokenType::KEYWORD_BEGIN;
     keywords["END"] = TokenType::KEYWORD_END;
+
+    // INDEX 相关
+    keywords["USING"] = TokenType::KEYWORD_USING;
+    keywords["BPLUS"] = TokenType::KEYWORD_BPLUS;
 
 
     currentChar = input.empty() ? '\0' : input[0];

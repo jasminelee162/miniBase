@@ -377,7 +377,7 @@ namespace minidb
                 throw std::runtime_error("Permission denied: ANALYST cannot create tables");
             }
             logger.log("CREATE TABLE " + node->table_name);
-            std::cout << "[Executor] 创建表: " << node->table_name << std::endl;
+            global_log_info(std::string("[Executor] 创建表: ") + node->table_name);
 
             if (catalog_ && auth_service_) // ✅ 确保有 auth_service_
             {
@@ -393,16 +393,18 @@ namespace minidb
                 throw std::runtime_error("Permission denied: INSERT on " + node->table_name);
             }
             logger.log("INSERT INTO " + node->table_name);
-            std::cout << "[Executor] 插入到表: " << node->table_name << std::endl;
+            global_log_info(std::string("[Executor] 插入到表: ") + node->table_name);
 
             if (!storage_engine_)
             {
-                std::cerr << "[Executor] StorageEngine 未初始化！" << std::endl;
+                global_log_error("[Executor] StorageEngine 未初始化！");
+                SetOperationSummary("[Insert][ERROR] StorageEngine 未初始化");
                 return {};
             }
             if (!catalog_ || !catalog_->HasTable(node->table_name))
             {
-                std::cerr << "[Executor] Table not found in catalog: " << node->table_name << std::endl;
+                global_log_error(std::string("[Executor] Table not found in catalog: ") + node->table_name);
+                SetOperationSummary(std::string("[Insert][ERROR] 表不存在: ") + node->table_name);
                 return {};
             }
 
@@ -418,15 +420,14 @@ namespace minidb
                 cur_page = storage_engine_->CreateDataPage(&new_pid);
                 if (!cur_page)
                 {
-                    std::cerr << "[Executor] 无法创建表数据页" << std::endl;
+                    global_log_error("[Executor] 无法创建表数据页");
+                    SetOperationSummary("[Insert][ERROR] 无法创建表数据页");
                     return {};
                 }
                 first_page_id = new_pid;
-                // 更新 catalog 内存，再持久化到页0（稍后统一保存）
+                // 使用专用接口更新首页
                 schema.first_page_id = first_page_id;
-                // update internal map (catalog_ holds its own copy)
-                // 如果你的 Catalog::GetTable 返回的是副本，需要一个 SetTable 或直接操作内部 map；这里假设有方法 SaveToStorage 会覆盖
-                catalog_->CreateTable(schema.table_name, schema.columns); // 如果 CreateTable 已处理重复则改成直接更新内部 map
+                catalog_->UpdateTableFirstPageId(schema.table_name, first_page_id);
             }
             else
             {
@@ -438,12 +439,13 @@ namespace minidb
                     cur_page = storage_engine_->CreateDataPage(&new_pid);
                     if (!cur_page)
                     {
-                        std::cerr << "[Executor] 无法获得或创建首页" << std::endl;
+                        global_log_error("[Executor] 无法获得或创建首页");
+                        SetOperationSummary("[Insert][ERROR] 无法获得或创建首页");
                         return {};
                     }
                     first_page_id = new_pid;
                     schema.first_page_id = first_page_id;
-                    catalog_->CreateTable(schema.table_name, schema.columns); // 同上，确保 catalog 内存更新
+                    catalog_->UpdateTableFirstPageId(schema.table_name, first_page_id);
                 }
             }
 
@@ -452,7 +454,8 @@ namespace minidb
             if (columns_to_use.empty())
             {
                 columns_to_use.reserve(schema.columns.size());
-                for (const auto &c : schema.columns) columns_to_use.push_back(c.name);
+                for (const auto &c : schema.columns)
+                    columns_to_use.push_back(c.name);
             }
 
             // 为每条插入记录保存它实际写入的 page id（对应 node->values 顺序）
@@ -518,7 +521,8 @@ namespace minidb
                 }
 
                 // 3) 主键/唯一性检查（简化：全表扫描）
-                auto require_unique = [&](const std::string &col_name) {
+                auto require_unique = [&](const std::string &col_name)
+                {
                     std::vector<Row> all = SeqScanAll(node->table_name);
                     std::string new_val = row.getValue(col_name);
                     for (const auto &r : all)
@@ -551,7 +555,8 @@ namespace minidb
                     Page *new_page = storage_engine_->CreateDataPage(&new_pid);
                     if (!new_page)
                     {
-                        std::cerr << "[Executor] 无法分配新数据页" << std::endl;
+                        global_log_error("[Executor] 无法分配新数据页");
+                        SetOperationSummary("[Insert][ERROR] 无法分配新数据页");
                         return {};
                     }
                     // 链接旧页 -> 新页
@@ -563,8 +568,9 @@ namespace minidb
                     appended = storage_engine_->AppendRecordToPage(cur_page, buf.data(), static_cast<uint16_t>(buf.size()));
                     if (!appended)
                     {
-                        std::cerr << "[Executor] 单条记录太大，无法写入空页，跳过或报错" << std::endl;
+                        global_log_error("[Executor] 单条记录太大，无法写入空页，跳过或报错");
                         // 选择：跳过这条或中止整个插入；这里中止
+                        SetOperationSummary("[Insert][ERROR] 记录过大，无法写入");
                         return {};
                     }
                 }
@@ -638,35 +644,39 @@ namespace minidb
             // 最后把 catalog（包含更新后的 index.root_page_id）写回页0
             catalog_->SaveToStorage();
 
+            // 设置操作摘要
+            SetOperationSummary(std::string("[Insert] 插入 ") + std::to_string(inserted_pids.size()) + " 行");
             return {};
         }
         // SeqScan（修复）
         case PlanType::SeqScan:
         {
             logger.log("SEQSCAN " + node->table_name);
-            std::cout << "[Executor] 顺序扫描表: " << node->table_name << std::endl;
+            global_log_debug(std::string("[Executor] 顺序扫描表: ") + node->table_name);
 
             // 权限校验：DBA 总是允许；否则按表权限检查
-            if (auth_service_ && auth_service_->isDBA()) {
+            if (auth_service_ && auth_service_->isDBA())
+            {
                 // allow
-            } else if (permissionChecker_ && !permissionChecker_->checkTablePermission(node->table_name, Permission::SELECT))
+            }
+            else if (permissionChecker_ && !permissionChecker_->checkTablePermission(node->table_name, Permission::SELECT))
             {
                 std::cerr << "[SeqScan] Permission denied on table: " << node->table_name << std::endl;
                 throw std::runtime_error(std::string("Permission denied: ") + node->table_name);
             }
 
             auto rows = SeqScanAll(node->table_name);
-            std::cout << "[SeqScan] 扫描到 " << rows.size() << " 行:" << std::endl;
+            global_log_debug(std::string("[SeqScan] 扫描到 ") + std::to_string(rows.size()) + " 行");
 
             // 只在调试时显示前几行，避免输出过多
             size_t show_count = std::min(rows.size(), size_t(5));
             for (size_t i = 0; i < show_count; ++i)
             {
-                std::cout << "[Row] " << rows[i].toString() << std::endl;
+                global_log_debug( std::string("[Row] ") + rows[i].toString());
             }
             if (rows.size() > show_count)
             {
-                std::cout << "[SeqScan] ... 还有 " << (rows.size() - show_count) << " 行" << std::endl;
+                global_log_debug( std::string("[SeqScan] ... 还有 ") + std::to_string(rows.size() - show_count) + " 行");
             }
             // ===== 添加表格输出 =====
             // TablePrinter::printResults(rows, "SELECT");
@@ -680,8 +690,7 @@ namespace minidb
                 throw std::runtime_error("Permission denied: DELETE " + node->table_name);
             }
             logger.log("DELETE FROM " + node->table_name + " WHERE " + node->predicate);
-            std::cout << "[Executor] 删除表: " << node->table_name
-                      << " WHERE " << node->predicate << std::endl;
+            global_log_info(std::string("[Executor] 删除表: ") + node->table_name + " WHERE " + node->predicate);
 
             if (!storage_engine_ || !catalog_)
                 return {};
@@ -745,7 +754,8 @@ namespace minidb
                             }
                         }
 
-                        std::cout << "[Delete] 使用索引共删除 " << deleted << " 行" << std::endl;
+                        global_log_info(std::string("[Delete] 使用索引共删除 ") + std::to_string(deleted) + " 行");
+                        SetOperationSummary(std::string("[Delete] 共删除 ") + std::to_string(deleted) + " 行");
                         return {}; // ✅ 用索引删除完直接返回
                     }
                 }
@@ -790,7 +800,9 @@ namespace minidb
                 }
             }
 
-            std::cout << "[Delete] 共删除 " << deleted << " 行" << std::endl;
+            // std::cout << "[Delete] 共删除 " << deleted << " 行" << std::endl;
+            global_log_info(std::string("[Delete] 共删除 ") + std::to_string(deleted) + " 行");
+            SetOperationSummary(std::string("[Delete] 共删除 ") + std::to_string(deleted) + " 行");
             return {};
         }
 
@@ -826,7 +838,7 @@ namespace minidb
 
             std::cout << "[Filter] 过滤后 " << filtered.size() << " 行:" << std::endl;
             for (auto &row : filtered)
-                std::cout << "[Row] " << row.toString() << std::endl;
+                /* suppress row preview in terminal */
             // ===== 添加表格输出 =====
             // TablePrinter::printResults(filtered, "SELECT");
             return filtered;
@@ -836,7 +848,7 @@ namespace minidb
         case PlanType::Project:
         {
             logger.log("PROJECT columns");
-            std::cout << "[Executor] 投影列: ";
+            global_log_debug("[Executor] 投影列: ");
 
             // 处理 SELECT * 的情况
             std::vector<std::string> projection_columns;
@@ -919,9 +931,9 @@ namespace minidb
                 projected.push_back(projected_row);
             }
 
-            std::cout << "[Project] 投影后 " << projected.size() << " 行:" << std::endl;
+            global_log_debug(std::string("[Project] 投影后 ") + std::to_string(projected.size()) + " 行");
             for (auto &row : projected)
-                std::cout << "[Row] " << row.toString() << std::endl;
+                global_log_debug(std::string("[Row] ") + row.toString());
             // ===== 添加表格输出 =====
             // TablePrinter::printResults(projected, "SELECT");
             return projected;
@@ -1092,7 +1104,7 @@ namespace minidb
 
             if (node->children.size() < 2)
             {
-                std::cerr << "[Join] 需要至少两个子节点" << std::endl;
+                global_log_error("[Join] 需要至少两个子节点");
                 return {};
             }
 
@@ -1126,7 +1138,7 @@ namespace minidb
                 auto pos_eq = join_predicate.find('=');
                 if (pos_eq == std::string::npos)
                 {
-                    std::cerr << "[Join] 仅支持 col=col 条件" << std::endl;
+                    global_log_error("[Join] 仅支持 col=col 条件");
                     return {};
                 }
 
@@ -1152,9 +1164,9 @@ namespace minidb
                 joined_rows.swap(tmp);
             }
 
-            std::cout << "[Join] 连接后 " << joined_rows.size() << " 行:" << std::endl;
+            global_log_debug(std::string("[Join] 连接后 ") + std::to_string(joined_rows.size()) + " 行:");
             for (auto &row : joined_rows)
-                std::cout << "[Row] " << row.toString() << std::endl;
+                global_log_debug(  std::string("[Row] ") + row.toString());
 
             return joined_rows;
         }
@@ -1162,15 +1174,15 @@ namespace minidb
         case PlanType::OrderBy:
         {
             logger.log("ORDER BY");
-            std::cout << "[Executor] OrderBy 执行" << std::endl;
+            global_log_info(std::string("[Executor] OrderBy 执行"));
             if (node->children.empty())
             {
-                std::cerr << "[OrderBy] 缺少子节点" << std::endl;
+                global_log_error(std::string("[OrderBy] 缺少子节点"));
                 return {};
             }
 
             std::vector<Row> rows = execute(node->children[0].get());
-            std::cout << "[OrderBy] 从子节点获得 " << rows.size() << " 行数据" << std::endl;
+            global_log_debug(std::string("[OrderBy] 从子节点获得 ") + std::to_string(rows.size()) + " 行数据");
 
             if (rows.empty() || node->order_by_cols.empty())
                 return rows;
@@ -1232,7 +1244,7 @@ namespace minidb
                     int idx = schema.getColumnIndex(col);
                     if (idx == -1)
                     {
-                        std::cerr << "[OrderBy] 列不存在: " << col << std::endl;
+                        global_log_error(std::string("[OrderBy] 列不存在: ") + col);
                         return {};
                     }
                     order_col_idxs.push_back(idx);
@@ -1276,17 +1288,17 @@ namespace minidb
                           });
             }
 
-            std::cout << "[OrderBy] 排序后 " << rows.size() << " 行" << std::endl;
+            global_log_debug(std::string("[OrderBy] 排序后 ") + std::to_string(rows.size()) + " 行");
             return rows;
         }
 
         case PlanType::ShowTables:
         {
-            std::cout << "[Executor] 执行 SHOW TABLES" << std::endl;
+            global_log_info(std::string("[Executor] 执行 SHOW TABLES"));
 
             if (!catalog_)
             {
-                std::cerr << "[ShowTables] Catalog 未初始化" << std::endl;
+                global_log_error(std::string("[ShowTables] Catalog 未初始化"));
                 return {};
             }
 
@@ -1298,8 +1310,10 @@ namespace minidb
                 // 可见性规则：
                 // - __users__：仅 DBA 可见（通过表权限校验实现）
                 // - 其他表：对所有角色可见（即使没有操作权限）
-                if (name == "__users__") {
-                    if (permissionChecker_ && !permissionChecker_->checkTablePermission(name, Permission::SELECT)) {
+                if (name == "__users__")
+                {
+                    if (permissionChecker_ && !permissionChecker_->checkTablePermission(name, Permission::SHOW_TABLES))
+                    {
                         continue; // 非DBA隐藏
                     }
                 }
@@ -1311,8 +1325,7 @@ namespace minidb
                 result.push_back(row);
             }
 
-            // 输出结果
-            //  TablePrinter::printResults(result, "SHOW TABLES");
+            // 输出结果（结果表格交给管线打印），此处仅返回数据
             return result;
         }
 
@@ -1323,11 +1336,12 @@ namespace minidb
                 throw std::runtime_error("Permission denied: DROP " + node->table_name);
             }
             logger.log("DROP TABLE " + node->table_name);
-            std::cout << "[Executor] 删除整张表: " << node->table_name << std::endl;
+            // global_log_info(std::string("[Drop] 删除整张表: ") + node->table_name);
+            global_log_info(std::string("[ Drop] 删除整张表: ") + node->table_name);
 
             if (!storage_engine_ || !catalog_)
             {
-                std::cerr << "[Drop] Catalog 或 StorageEngine 未初始化" << std::endl;
+                global_log_error(std::string("[Drop] Catalog 或 StorageEngine 未初始化"));
                 return {};
             }
 
@@ -1363,18 +1377,18 @@ namespace minidb
                 throw std::runtime_error("Permission denied: ANALYST cannot create procedures");
             }
             logger.log("CREATE PROCEDURE " + node->proc_name);
-            std::cout << "[Executor] 创建存储过程: " << node->proc_name << std::endl;
+            global_log_info(std::string("[Executor] 创建存储过程: ") + node->proc_name);
 
             if (!catalog_)
             {
-                std::cerr << "[Executor] Catalog 未初始化" << std::endl;
+                global_log_error(std::string("[Executor] Catalog 未初始化"));
                 return {};
             }
 
             // 检查存储过程是否已经存在
             if (catalog_->HasProcedure(node->proc_name))
             {
-                std::cerr << "[Executor] 存储过程 " << node->proc_name << " 已存在" << std::endl;
+                global_log_error(std::string("[Executor] 存储过程 ") + node->proc_name + " 已存在");
                 return {};
             }
 
@@ -1414,7 +1428,7 @@ namespace minidb
             catalog_->CreateProcedure(proc);
             catalog_->SaveToStorage(); // 持久化存储
 
-            std::cout << "[Executor] 存储过程 " << node->proc_name << " 定义成功" << std::endl;
+            global_log_info(std::string("[Executor] 存储过程 ") + node->proc_name + " 定义成功");
             return {};
         }
 
@@ -1425,7 +1439,7 @@ namespace minidb
             //     throw std::runtime_error("Permission denied: callprocedure " + node->table_name);
             // }
             logger.log("CALL PROCEDURE " + node->proc_name);
-            std::cout << "[Executor] 调用存储过程: " << node->proc_name << std::endl;
+            global_log_info(std::string("[Executor] 调用存储过程: ") + node->proc_name);
 
             if (!catalog_ || !catalog_->HasProcedure(node->proc_name))
             {
@@ -1451,7 +1465,7 @@ namespace minidb
                 }
             }
 
-            std::cout << "[Executor] 展开后的 SQL: " << sql << std::endl;
+            global_log_debug(std::string("[Executor] 展开后的 SQL: ") + sql);
 
             try
             {
@@ -1473,8 +1487,63 @@ namespace minidb
             }
         }
 
+        case PlanType::CreateIndex:
+        {
+            if (!permissionChecker_->checkTablePermission(node->table_name, Permission::CREATE_INDEX))
+            {
+                throw std::runtime_error("Permission denied: CreateIndex " + node->table_name);
+            }
+            Role user_role = auth_service_->getCurrentUserRole();
+            if (user_role == Role::ANALYST)
+            {
+                throw std::runtime_error("Permission denied: ANALYST cannot create indexes");
+            }
+
+            logger.log("CREATE INDEX " + node->index_name + " ON " + node->table_name);
+            std::cout << "[Executor] 创建索引: " << node->index_name
+                      << " ON " << node->table_name << std::endl;
+
+            if (!catalog_)
+            {
+                std::cerr << "[Executor] Catalog 未初始化" << std::endl;
+                return {};
+            }
+
+            // 检查表是否存在
+            if (!catalog_->HasTable(node->table_name))
+            {
+                std::cerr << "[Executor] 表 " << node->table_name << " 不存在，无法创建索引" << std::endl;
+                return {};
+            }
+
+            // 检查索引是否已存在
+            if (catalog_->HasIndex(node->index_name))
+            {
+                std::cerr << "[Executor] 索引 " << node->index_name << " 已存在" << std::endl;
+                return {};
+            }
+
+            // 调用 Catalog 的 CreateIndex
+            try
+            {
+                catalog_->CreateIndex(
+                    node->index_name,
+                    node->table_name,
+                    node->index_cols,
+                    node->index_type);
+            }
+            catch (const std::exception &ex)
+            {
+                std::cerr << "[Executor] 创建索引失败: " << ex.what() << std::endl;
+                return {};
+            }
+
+            std::cout << "[Executor] 索引 " << node->index_name << " 创建成功" << std::endl;
+            return {};
+        }
+
         default:
-            std::cerr << "[Executor] 未知 PlanNode 类型" << std::endl;
+            global_log_error(std::string("[Executor] 未知 PlanNode 类型"));
             return {};
         }
         return {};
@@ -1536,7 +1605,7 @@ namespace minidb
     // 否则回退到页链全表扫描（原实现）
     std::vector<Row> Executor::SeqScanAll(const std::string &table_name)
     {
-        std::cout << "[Executor] ==> 进入 SeqScanAll，表名: " << table_name << std::endl;
+        global_log_debug(std::string("[Executor] ==> 进入 SeqScanAll，表名: ") + table_name);
         std::vector<Row> all_rows;
         if (!storage_engine_ || !catalog_)
         {
@@ -1549,7 +1618,7 @@ namespace minidb
         // ------------------------
         // 1) 优化器尝试选择最佳索引
         // ------------------------
-        std::cout << "[Executor] 阶段1: 尝试调用优化器选择最佳索引..." << std::endl;
+        global_log_debug("[Executor] 阶段1: 尝试调用优化器选择最佳索引...");
         BPlusTree *best_index = nullptr;
         if (optimizer_)
         {
@@ -1569,14 +1638,14 @@ namespace minidb
                     all_rows.push_back(std::move(maybe_row.value()));
             }
 
-            std::cout << "[Executor] 使用索引完成扫描，返回 " << all_rows.size() << " 行。" << std::endl;
+            global_log_debug(std::string("[Executor] 使用索引完成扫描，返回 ") + std::to_string(all_rows.size()) + " 行。");
             return all_rows; // 成功用索引完成扫描
         }
 
         // ------------------------
         // 2) 尝试第一个单列 B+ 树索引做叶链扫描
         // ------------------------
-        std::cout << "[Executor] 阶段2: 没有优化器索引，尝试第一个单列 B+ 树索引..." << std::endl;
+        global_log_debug("[Executor] 阶段2: 没有优化器索引，尝试第一个单列 B+ 树索引...");
         std::vector<IndexSchema> idxs = catalog_->GetTableIndexes(table_name);
         IndexSchema usable_idx;
         bool found_idx = false;
@@ -1592,7 +1661,7 @@ namespace minidb
 
         if (found_idx && usable_idx.root_page_id != INVALID_PAGE_ID)
         {
-            std::cout << "[Executor] 找到一个单列 B+ 树索引，尝试扫描..." << std::endl;
+            global_log_debug("[Executor] 找到一个单列 B+ 树索引，尝试扫描...");
             BPlusTree bpt(storage_engine_.get());
             bpt.SetRoot(usable_idx.root_page_id);
 
@@ -1613,7 +1682,7 @@ namespace minidb
         // ------------------------
         // 3) 原有页链扫描回退
         // ------------------------
-        std::cout << "[Executor] 阶段3: 没有索引可用，回退到页链扫描..." << std::endl;
+        global_log_debug("[Executor] 阶段3: 没有索引可用，回退到页链扫描...");
         page_id_t first_page_id = schema.first_page_id;
         auto pages = storage_engine_->GetPageChain(first_page_id);
 
@@ -1624,7 +1693,7 @@ namespace minidb
             storage_engine_->PutPage(p->GetPageId(), false);
         }
 
-        std::cout << "[Executor] 页链扫描完成，返回 " << all_rows.size() << " 行。" << std::endl;
+        global_log_debug(std::string("[Executor] 页链扫描完成，返回 ") + std::to_string(all_rows.size()) + " 行。");
         return all_rows;
     }
 
@@ -1806,7 +1875,11 @@ namespace minidb
         }
 
         delete bpt_ptr; // 释放 BPlusTree
-        std::cout << "[Update] 成功更新 " << updated_count << " 行" << std::endl;
+        if (updated_count == 0) {
+            SetOperationSummary(std::string("[Update] 无匹配行，更新 0 行"));
+        } else {
+            SetOperationSummary(std::string("[Update] 成功更新 ") + std::to_string(updated_count) + " 行");
+        }
     }
 
     void Executor::executeSelect(const PlanNode &plan)
@@ -1890,7 +1963,8 @@ namespace minidb
         for (auto &row : results)
         {
             count++;
-            std::cout << "[Row] {";
+            // 行级调试信息不在终端输出
+            global_log_debug("[Row] {...}");
             for (size_t i = 0; i < plan.columns.size(); ++i)
             {
                 std::string val;
@@ -1902,14 +1976,12 @@ namespace minidb
                         break;
                     }
                 }
-                std::cout << plan.columns[i] << ": " << val;
-                if (i < plan.columns.size() - 1)
-                    std::cout << ", ";
+                // 仅记录在日志
             }
-            std::cout << "}" << std::endl;
+            // 仅记录在日志
         }
 
-        std::cout << "[Select] 返回 " << count << " 行" << std::endl;
+        global_log_info(std::string("[Select] 返回 ") + std::to_string(count) + " 行");
     }
 
 } // namespace minidb

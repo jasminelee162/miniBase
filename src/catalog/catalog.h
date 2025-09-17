@@ -35,6 +35,14 @@ namespace minidb
         page_id_t root_page_id{INVALID_PAGE_ID}; // 索引入口页（B+ 树 root）
     };
 
+    struct IndexDef
+    {
+        std::string name;                 // 索引名
+        std::string table_name;           // 索引所属表
+        std::vector<std::string> columns; // 索引列
+        std::string index_type;           // 索引类型（如 BPLUS）
+    };
+
     // 存储过程定义
     struct ProcedureDef
     {
@@ -72,10 +80,14 @@ namespace minidb
         j.at("name").get_to(c.name);
         j.at("type").get_to(c.type);
         j.at("length").get_to(c.length);
-        if (j.contains("is_primary_key")) j.at("is_primary_key").get_to(c.is_primary_key);
-        if (j.contains("is_unique")) j.at("is_unique").get_to(c.is_unique);
-        if (j.contains("not_null")) j.at("not_null").get_to(c.not_null);
-        if (j.contains("default_value")) j.at("default_value").get_to(c.default_value);
+        if (j.contains("is_primary_key"))
+            j.at("is_primary_key").get_to(c.is_primary_key);
+        if (j.contains("is_unique"))
+            j.at("is_unique").get_to(c.is_unique);
+        if (j.contains("not_null"))
+            j.at("not_null").get_to(c.not_null);
+        if (j.contains("default_value"))
+            j.at("default_value").get_to(c.default_value);
     }
 
     class Catalog
@@ -96,6 +108,8 @@ namespace minidb
         std::vector<std::string> GetTableColumns(const std::string &table_name);
         bool HasTable(const std::string &table_name) const;
         TableSchema GetTable(const std::string &table_name) const;
+        // 更新表的首页ID并持久化
+        bool UpdateTableFirstPageId(const std::string &table_name, page_id_t first_page_id);
 
         // 表所有者相关接口
         std::string GetTableOwner(const std::string &table_name) const;

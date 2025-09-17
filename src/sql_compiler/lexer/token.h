@@ -37,6 +37,7 @@ enum class TokenType {
     //CREATE
     KEYWORD_CREATE,
     KEYWORD_TABLE,
+    KEYWORD_INDEX,
     //INSERT
     KEYWORD_INSERT,
     KEYWORD_INTO,
@@ -60,6 +61,10 @@ enum class TokenType {
     KEYWORD_PROCEDURE,
     KEYWORD_BEGIN,
     KEYWORD_END,
+
+    // INDEX 相关
+    KEYWORD_USING,
+    KEYWORD_BPLUS,
 
     //数据类型
     KEYWORD_INT,
