@@ -8,6 +8,7 @@
 
 // 前向声明
 class ASTVisitor;
+class SelectStatement;
 struct JoinClause {
     std::string joinType;     // "INNER", "LEFT", "RIGHT", "FULL"
     std::string tableName;    // 要连接的表名
@@ -114,6 +115,20 @@ public:
     const std::string& getFunction() const { return function; }
     const std::string& getColumn() const { return column; }
     const std::string& getAlias() const { return alias; }
+    
+    void accept(ASTVisitor& visitor) override;
+};
+
+// 子查询表达式
+class SubqueryExpression : public Expression {
+private:
+    std::unique_ptr<SelectStatement> subquery;
+    
+public:
+    SubqueryExpression(std::unique_ptr<SelectStatement> query)
+        : subquery(std::move(query)) {}
+    
+    SelectStatement* getSubquery() const { return subquery.get(); }
     
     void accept(ASTVisitor& visitor) override;
 };
@@ -422,6 +437,7 @@ public:
     virtual void visit(IdentifierExpression& expr) = 0;
     virtual void visit(BinaryExpression& expr) = 0;
     virtual void visit(AggregateExpression& expr) = 0;
+    virtual void visit(SubqueryExpression& expr) = 0;
     virtual void visit(CreateTableStatement& stmt) = 0;
     virtual void visit(InsertStatement& stmt) = 0;
     virtual void visit(SelectStatement& stmt) = 0;

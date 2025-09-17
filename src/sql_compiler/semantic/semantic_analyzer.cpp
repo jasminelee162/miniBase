@@ -177,6 +177,12 @@ void SemanticAnalyzer::visit(AggregateExpression &expr)
     checkColumnExists(currentTable_->table_name, expr.getColumn());
 }
 
+void SemanticAnalyzer::visit(SubqueryExpression &expr)
+{
+    // 递归分析子查询
+    expr.getSubquery()->accept(*this);
+}
+
 void SemanticAnalyzer::visit(CreateTableStatement &stmt)
 {
     Logger logger("logs/semantic.log");

@@ -329,6 +329,13 @@ static json exprToJson(const Expression* e)
         }
         return j;
     }
+    
+    if( auto sq = dynamic_cast<const SubqueryExpression*>(e)) {
+        json j;
+        j["type"] = "Subquery";
+        j["subquery"] = ASTJson::toJson(sq->getSubquery());
+        return j;
+    }
 
     return json();
 }

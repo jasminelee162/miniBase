@@ -73,6 +73,24 @@ void ASTPrinter::visit(BinaryExpression& expr) {
     indentLevel -= 2;
 }
 
+void ASTPrinter::visit(AggregateExpression& expr) {
+    printIndent();
+    output << "AggregateExpression(" << expr.getFunction() << "): " 
+           << expr.getColumn();
+    if (!expr.getAlias().empty()) {
+        output << " AS " << expr.getAlias();
+    }
+    output << "\n";
+}
+
+void ASTPrinter::visit(SubqueryExpression& expr) {
+    printIndent();
+    output << "SubqueryExpression:\n";
+    indent();
+    expr.getSubquery()->accept(*this);
+    indentLevel -= 2;
+}
+
 void ASTPrinter::visit(CreateTableStatement& stmt) {
     printIndent();
     output << "CreateTableStatement:\n";
@@ -179,6 +197,111 @@ void ASTPrinter::visit(DeleteStatement& stmt) {
         indent();
         stmt.getWhereClause()->accept(*this);
         indentLevel -= 2;
+    }
+    
+    indentLevel -= 2;
+}
+
+void ASTPrinter::visit(UpdateStatement& stmt) {
+    printIndent();
+    output << "UpdateStatement:\n";
+    indent();
+    
+    printIndent();
+    output << "Table: " << stmt.getTableName() << "\n";
+    
+    if (stmt.getWhereClause()) {
+        printIndent();
+        output << "Where:\n";
+        indent();
+        stmt.getWhereClause()->accept(*this);
+        indentLevel -= 2;
+    }
+    
+    indentLevel -= 2;
+}
+
+void ASTPrinter::visit(ShowTablesStatement& stmt) {
+    printIndent();
+    output << "ShowTablesStatement\n";
+}
+
+void ASTPrinter::visit(DropStatement& stmt) {
+    printIndent();
+    output << "DropStatement:\n";
+    indent();
+    
+    printIndent();
+    output << "Table: " << stmt.getTableName() << "\n";
+    
+    indentLevel -= 2;
+}
+
+void ASTPrinter::visit(CallProcedureStatement& stmt) {
+    printIndent();
+    output << "CallProcedureStatement:\n";
+    indent();
+    
+    printIndent();
+    output << "Procedure: " << stmt.getProcName() << "\n";
+    
+    if (!stmt.getArgs().empty()) {
+        printIndent();
+        output << "Arguments: ";
+        for (size_t i = 0; i < stmt.getArgs().size(); ++i) {
+            if (i > 0) output << ", ";
+            output << stmt.getArgs()[i];
+        }
+        output << "\n";
+    }
+    
+    indentLevel -= 2;
+}
+
+void ASTPrinter::visit(CreateProcedureStatement& stmt) {
+    printIndent();
+    output << "CreateProcedureStatement:\n";
+    indent();
+    
+    printIndent();
+    output << "Procedure: " << stmt.getProcName() << "\n";
+    
+    if (!stmt.getParams().empty()) {
+        printIndent();
+        output << "Parameters: ";
+        for (size_t i = 0; i < stmt.getParams().size(); ++i) {
+            if (i > 0) output << ", ";
+            output << stmt.getParams()[i];
+        }
+        output << "\n";
+    }
+    
+    printIndent();
+    output << "Body: " << stmt.getBody() << "\n";
+    
+    indentLevel -= 2;
+}
+
+void ASTPrinter::visit(CreateIndexStatement& stmt) {
+    printIndent();
+    output << "CreateIndexStatement:\n";
+    indent();
+    
+    printIndent();
+    output << "Index: " << stmt.getIndexName() << "\n";
+    printIndent();
+    output << "Table: " << stmt.getTableName() << "\n";
+    printIndent();
+    output << "Type: " << stmt.getIndexType() << "\n";
+    
+    if (!stmt.getColumns().empty()) {
+        printIndent();
+        output << "Columns: ";
+        for (size_t i = 0; i < stmt.getColumns().size(); ++i) {
+            if (i > 0) output << ", ";
+            output << stmt.getColumns()[i];
+        }
+        output << "\n";
     }
     
     indentLevel -= 2;

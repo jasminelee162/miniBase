@@ -213,3 +213,77 @@ void Planner::visit(DeleteStatement& stmt) {
         currentPlan->predicate = expressionToPredicate(stmt.getWhereClause());
     }
 }
+
+// 访问聚合表达式
+void Planner::visit(AggregateExpression& expr) {
+    // 聚合表达式在SELECT语句中处理，这里不需要特殊处理
+}
+
+// 访问子查询表达式
+void Planner::visit(SubqueryExpression& expr) {
+    // 子查询表达式在SELECT语句中处理，这里不需要特殊处理
+}
+
+// 访问UPDATE语句
+void Planner::visit(UpdateStatement& stmt) {
+    Logger logger("logs/planner.log");
+    logger.log(std::string("[Planner] Update: ") + stmt.getTableName());
+    // 创建UPDATE计划节点
+    currentPlan = std::make_unique<PlanNode>();
+    currentPlan->type = PlanType::Update;
+    currentPlan->table_name = stmt.getTableName();
+    
+    // 如果有WHERE子句，添加谓词
+    if (stmt.getWhereClause()) {
+        currentPlan->predicate = expressionToPredicate(stmt.getWhereClause());
+    }
+}
+
+// 访问SHOW TABLES语句
+void Planner::visit(ShowTablesStatement& stmt) {
+    Logger logger("logs/planner.log");
+    logger.log("[Planner] ShowTables");
+    // 创建SHOW TABLES计划节点
+    currentPlan = std::make_unique<PlanNode>();
+    currentPlan->type = PlanType::ShowTables;
+}
+
+// 访问DROP语句
+void Planner::visit(DropStatement& stmt) {
+    Logger logger("logs/planner.log");
+    logger.log(std::string("[Planner] Drop: ") + stmt.getTableName());
+    // 创建DROP计划节点
+    currentPlan = std::make_unique<PlanNode>();
+    currentPlan->type = PlanType::Drop;
+    currentPlan->table_name = stmt.getTableName();
+}
+
+// 访问CALL PROCEDURE语句
+void Planner::visit(CallProcedureStatement& stmt) {
+    Logger logger("logs/planner.log");
+    logger.log(std::string("[Planner] Call: ") + stmt.getProcName());
+    // 创建CALL计划节点
+    currentPlan = std::make_unique<PlanNode>();
+    currentPlan->type = PlanType::CallProcedure;
+    currentPlan->table_name = stmt.getProcName();
+}
+
+// 访问CREATE PROCEDURE语句
+void Planner::visit(CreateProcedureStatement& stmt) {
+    Logger logger("logs/planner.log");
+    logger.log(std::string("[Planner] CreateProcedure: ") + stmt.getProcName());
+    // 创建CREATE PROCEDURE计划节点
+    currentPlan = std::make_unique<PlanNode>();
+    currentPlan->type = PlanType::CreateProcedure;
+    currentPlan->table_name = stmt.getProcName();
+}
+
+// 访问CREATE INDEX语句
+void Planner::visit(CreateIndexStatement& stmt) {
+    Logger logger("logs/planner.log");
+    logger.log(std::string("[Planner] CreateIndex: ") + stmt.getIndexName());
+    // 创建CREATE INDEX计划节点
+    currentPlan = std::make_unique<PlanNode>();
+    currentPlan->type = PlanType::CreateIndex;
+    currentPlan->table_name = stmt.getTableName();
+}

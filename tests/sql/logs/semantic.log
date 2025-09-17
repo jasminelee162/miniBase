@@ -1,0 +1,183 @@
+[2025-09-17 11:36:03.217] [INFO] [Semantic] Drop table: students
+[2025-09-17 11:36:03.217] [INFO] [Semantic] checkTableExists: students
+[2025-09-17 11:36:03.217] [INFO] [Semantic] Drop table checks passed for: students
+[2025-09-17 11:36:03.224] [INFO] [Semantic] Drop table: teachers
+[2025-09-17 11:36:03.224] [INFO] [Semantic] checkTableExists: teachers
+[2025-09-17 11:36:03.224] [INFO] [Semantic] Drop table checks passed for: teachers
+[2025-09-17 11:36:03.228] [INFO] [Semantic] Drop table: departments
+[2025-09-17 11:36:03.228] [INFO] [Semantic] checkTableExists: departments
+[2025-09-17 11:36:03.228] [INFO] [Semantic] Drop table checks passed for: departments
+[2025-09-17 11:36:03.232] [INFO] [Semantic] Drop table: employees
+[2025-09-17 11:36:03.232] [INFO] [Semantic] checkTableExists: employees
+[2025-09-17 11:36:03.232] [INFO] [Semantic] Drop table checks passed for: employees
+[2025-09-17 11:36:03.235] [INFO] [Semantic] Drop table: users
+[2025-09-17 11:36:03.236] [INFO] [Semantic] checkTableExists: users
+[2025-09-17 11:36:03.236] [INFO] [Semantic] Drop table checks passed for: users
+[2025-09-17 11:36:03.238] [INFO] [Semantic] Drop table: products
+[2025-09-17 11:36:03.239] [INFO] [Semantic] checkTableExists: products
+[2025-09-17 11:36:03.239] [INFO] [Semantic][ERROR] table not found: products
+[2025-09-17 11:36:03.244] [INFO] [Semantic] Drop table: test_proc
+[2025-09-17 11:36:03.244] [INFO] [Semantic] checkTableExists: test_proc
+[2025-09-17 11:36:03.244] [INFO] [Semantic][ERROR] table not found: test_proc
+[2025-09-17 11:36:03.253] [INFO] [Semantic] CreateTable: students
+[2025-09-17 11:36:03.253] [INFO] [Semantic] checkTableNotExists: students
+[2025-09-17 11:36:03.254] [INFO] [Semantic] CreateTable semantic check finished: students
+[2025-09-17 11:36:03.262] [INFO] [Semantic] Insert into: students
+[2025-09-17 11:36:03.262] [INFO] [Semantic] checkTableExists: students
+[2025-09-17 11:36:03.263] [INFO] [Semantic] Insert checks passed for: students
+[2025-09-17 11:36:03.272] [INFO] [Semantic] Insert into: students
+[2025-09-17 11:36:03.273] [INFO] [Semantic] checkTableExists: students
+[2025-09-17 11:36:03.275] [INFO] [Semantic] Insert checks passed for: students
+[2025-09-17 11:36:03.284] [INFO] [Semantic] Select from: students
+[2025-09-17 11:36:03.284] [INFO] [Semantic] checkTableExists: students
+[2025-09-17 11:36:03.284] [INFO] [Semantic] Select checks passed for: students
+[2025-09-17 11:36:03.301] [INFO] [Semantic] Select from: students
+[2025-09-17 11:36:03.301] [INFO] [Semantic] checkTableExists: students
+[2025-09-17 11:36:03.302] [INFO] [Semantic] Select checks passed for: students
+[2025-09-17 11:36:03.319] [INFO] [Semantic] Update on: students
+[2025-09-17 11:36:03.319] [INFO] [Semantic] checkTableExists: students
+[2025-09-17 11:36:03.320] [INFO] [Semantic] Update checks passed for: students
+[2025-09-17 11:36:03.329] [INFO] [Semantic] Delete from: students
+[2025-09-17 11:36:03.329] [INFO] [Semantic] checkTableExists: students
+[2025-09-17 11:36:03.330] [INFO] [Semantic] Delete checks passed for: students
+[2025-09-17 11:36:03.336] [INFO] [Semantic] Select from: students
+[2025-09-17 11:36:03.336] [INFO] [Semantic] checkTableExists: students
+[2025-09-17 11:36:03.337] [INFO] [Semantic] Select checks passed for: students
+[2025-09-17 11:36:03.362] [INFO] [Semantic] CreateTable: teachers
+[2025-09-17 11:36:03.363] [INFO] [Semantic] checkTableNotExists: teachers
+[2025-09-17 11:36:03.363] [INFO] [Semantic] CreateTable semantic check finished: teachers
+[2025-09-17 11:36:03.372] [INFO] [Semantic] Insert into: teachers
+[2025-09-17 11:36:03.373] [INFO] [Semantic] checkTableExists: teachers
+[2025-09-17 11:36:03.377] [INFO] [Semantic] Insert checks passed for: teachers
+[2025-09-17 11:36:03.392] [INFO] [Semantic] Select from: teachers
+[2025-09-17 11:36:03.393] [INFO] [Semantic] checkTableExists: teachers
+[2025-09-17 11:36:03.393] [INFO] [Semantic] Select checks passed for: teachers
+[2025-09-17 11:36:03.411] [INFO] [Semantic] Select from: teachers
+[2025-09-17 11:36:03.411] [INFO] [Semantic] checkTableExists: teachers
+[2025-09-17 11:36:03.411] [INFO] [Semantic] Select checks passed for: teachers
+[2025-09-17 11:36:03.421] [INFO] [Semantic] CreateTable: departments
+[2025-09-17 11:36:03.421] [INFO] [Semantic] checkTableNotExists: departments
+[2025-09-17 11:36:03.422] [INFO] [Semantic] CreateTable semantic check finished: departments
+[2025-09-17 11:36:03.431] [INFO] [Semantic] Insert into: departments
+[2025-09-17 11:36:03.432] [INFO] [Semantic] checkTableExists: departments
+[2025-09-17 11:36:03.434] [INFO] [Semantic] Insert checks passed for: departments
+[2025-09-17 11:36:03.447] [INFO] [Semantic] Create procedure: add_teacher
+[2025-09-17 11:36:03.451] [INFO] [Semantic] Call procedure: add_teacher
+[2025-09-17 11:36:03.460] [INFO] [Semantic] Select from: teachers
+[2025-09-17 11:36:03.460] [INFO] [Semantic] checkTableExists: teachers
+[2025-09-17 11:36:03.461] [INFO] [Semantic] Select checks passed for: teachers
+[2025-09-17 11:36:03.483] [INFO] [Semantic] CreateTable: users
+[2025-09-17 11:36:03.483] [INFO] [Semantic] checkTableNotExists: users
+[2025-09-17 11:36:03.483] [INFO] [Semantic] CreateTable semantic check finished: users
+[2025-09-17 11:36:03.491] [INFO] [Semantic] Insert into: users
+[2025-09-17 11:36:03.492] [INFO] [Semantic] checkTableExists: users
+[2025-09-17 11:36:03.493] [INFO] [Semantic] Insert checks passed for: users
+[2025-09-17 11:36:03.499] [INFO] [Semantic] Insert into: users
+[2025-09-17 11:36:03.499] [INFO] [Semantic] checkTableExists: users
+[2025-09-17 11:36:03.500] [INFO] [Semantic] Insert checks passed for: users
+[2025-09-17 11:36:03.505] [INFO] [Semantic] Insert into: users
+[2025-09-17 11:36:03.505] [INFO] [Semantic] checkTableExists: users
+[2025-09-17 11:36:03.506] [INFO] [Semantic] Insert checks passed for: users
+[2025-09-17 11:36:03.513] [INFO] [Semantic] Insert into: users
+[2025-09-17 11:36:03.513] [INFO] [Semantic] checkTableExists: users
+[2025-09-17 11:36:03.514] [INFO] [Semantic] Insert checks passed for: users
+[2025-09-17 11:36:03.519] [INFO] [Semantic] Insert into: users
+[2025-09-17 11:36:03.520] [INFO] [Semantic] checkTableExists: users
+[2025-09-17 11:36:03.520] [INFO] [Semantic] Insert checks passed for: users
+[2025-09-17 11:36:03.530] [INFO] [Semantic] Insert into: users
+[2025-09-17 11:36:03.530] [INFO] [Semantic] checkTableExists: users
+[2025-09-17 11:36:03.531] [INFO] [Semantic] Insert checks passed for: users
+[2025-09-17 11:36:03.535] [INFO] [Semantic] Insert into: users
+[2025-09-17 11:36:03.535] [INFO] [Semantic] checkTableExists: users
+[2025-09-17 11:36:03.536] [INFO] [Semantic] Insert checks passed for: users
+[2025-09-17 11:36:03.543] [INFO] [Semantic] Select from: users
+[2025-09-17 11:36:03.543] [INFO] [Semantic] checkTableExists: users
+[2025-09-17 11:36:03.543] [INFO] [Semantic] Select checks passed for: users
+[2025-09-17 11:36:03.562] [INFO] [Semantic] CreateTable: employees
+[2025-09-17 11:36:03.562] [INFO] [Semantic] checkTableNotExists: employees
+[2025-09-17 11:36:03.562] [INFO] [Semantic] CreateTable semantic check finished: employees
+[2025-09-17 11:36:03.573] [INFO] [Semantic] Insert into: employees
+[2025-09-17 11:36:03.574] [INFO] [Semantic] checkTableExists: employees
+[2025-09-17 11:36:03.581] [INFO] [Semantic] Insert checks passed for: employees
+[2025-09-17 11:36:03.599] [INFO] [Semantic] ShowTables statement - no semantic checks needed.
+[2025-09-17 11:36:03.599] [INFO] [Semantic] ShowTables checks passed.
+[2025-09-17 11:36:03.604] [INFO] [Semantic] Drop table: students
+[2025-09-17 11:36:03.604] [INFO] [Semantic] checkTableExists: students
+[2025-09-17 11:36:03.604] [INFO] [Semantic] Drop table checks passed for: students
+[2025-09-17 11:36:03.609] [INFO] [Semantic] Drop table: teachers
+[2025-09-17 11:36:03.609] [INFO] [Semantic] checkTableExists: teachers
+[2025-09-17 11:36:03.610] [INFO] [Semantic] Drop table checks passed for: teachers
+[2025-09-17 11:36:03.614] [INFO] [Semantic] Drop table: departments
+[2025-09-17 11:36:03.614] [INFO] [Semantic] checkTableExists: departments
+[2025-09-17 11:36:03.614] [INFO] [Semantic] Drop table checks passed for: departments
+[2025-09-17 11:36:03.618] [INFO] [Semantic] Drop table: users
+[2025-09-17 11:36:03.618] [INFO] [Semantic] checkTableExists: users
+[2025-09-17 11:36:03.618] [INFO] [Semantic] Drop table checks passed for: users
+[2025-09-17 11:36:03.623] [INFO] [Semantic] Drop table: employees
+[2025-09-17 11:36:03.624] [INFO] [Semantic] checkTableExists: employees
+[2025-09-17 11:36:03.624] [INFO] [Semantic] Drop table checks passed for: employees
+[2025-09-17 11:36:03.681] [INFO] [Semantic] CreateTable: dba_shared_table
+[2025-09-17 11:36:03.681] [INFO] [Semantic] checkTableNotExists: dba_shared_table
+[2025-09-17 11:36:03.681] [INFO] [Semantic] CreateTable semantic check finished: dba_shared_table
+[2025-09-17 11:36:03.692] [INFO] [Semantic] Insert into: dba_shared_table
+[2025-09-17 11:36:03.692] [INFO] [Semantic] checkTableExists: dba_shared_table
+[2025-09-17 11:36:03.694] [INFO] [Semantic] Insert checks passed for: dba_shared_table
+[2025-09-17 11:36:03.700] [INFO] [Semantic] CreateTable: dba_private_table
+[2025-09-17 11:36:03.700] [INFO] [Semantic] checkTableNotExists: dba_private_table
+[2025-09-17 11:36:03.700] [INFO] [Semantic] CreateTable semantic check finished: dba_private_table
+[2025-09-17 11:36:03.707] [INFO] [Semantic] Insert into: dba_private_table
+[2025-09-17 11:36:03.707] [INFO] [Semantic] checkTableExists: dba_private_table
+[2025-09-17 11:36:03.708] [INFO] [Semantic] Insert checks passed for: dba_private_table
+[2025-09-17 11:36:03.714] [INFO] [Semantic] Select from: dba_shared_table
+[2025-09-17 11:36:03.714] [INFO] [Semantic] checkTableExists: dba_shared_table
+[2025-09-17 11:36:03.714] [INFO] [Semantic] Select checks passed for: dba_shared_table
+[2025-09-17 11:36:03.722] [INFO] [Semantic] Insert into: dba_shared_table
+[2025-09-17 11:36:03.722] [INFO] [Semantic] checkTableExists: dba_shared_table
+[2025-09-17 11:36:03.723] [INFO] [Semantic] Insert checks passed for: dba_shared_table
+[2025-09-17 11:36:03.729] [INFO] [Semantic] Update on: dba_shared_table
+[2025-09-17 11:36:03.730] [INFO] [Semantic] checkTableExists: dba_shared_table
+[2025-09-17 11:36:03.731] [INFO] [Semantic] Update checks passed for: dba_shared_table
+[2025-09-17 11:36:03.736] [INFO] [Semantic] Delete from: dba_shared_table
+[2025-09-17 11:36:03.736] [INFO] [Semantic] checkTableExists: dba_shared_table
+[2025-09-17 11:36:03.737] [INFO] [Semantic] Delete checks passed for: dba_shared_table
+[2025-09-17 11:36:03.824] [INFO] [Semantic] Drop table: export_test_table
+[2025-09-17 11:36:03.824] [INFO] [Semantic] checkTableExists: export_test_table
+[2025-09-17 11:36:03.824] [INFO] [Semantic][ERROR] table not found: export_test_table
+[2025-09-17 11:36:03.827] [INFO] [Semantic] Drop table: complex_test_table
+[2025-09-17 11:36:03.827] [INFO] [Semantic] checkTableExists: complex_test_table
+[2025-09-17 11:36:03.827] [INFO] [Semantic][ERROR] table not found: complex_test_table
+[2025-09-17 11:36:03.831] [INFO] [Semantic] Drop table: constraint_test_table
+[2025-09-17 11:36:03.832] [INFO] [Semantic] checkTableExists: constraint_test_table
+[2025-09-17 11:36:03.832] [INFO] [Semantic][ERROR] table not found: constraint_test_table
+[2025-09-17 11:36:03.835] [INFO] [Semantic] Drop table: multi_data_table
+[2025-09-17 11:36:03.836] [INFO] [Semantic] checkTableExists: multi_data_table
+[2025-09-17 11:36:03.836] [INFO] [Semantic][ERROR] table not found: multi_data_table
+[2025-09-17 11:36:03.844] [INFO] [Semantic] CreateTable: export_test_table
+[2025-09-17 11:36:03.845] [INFO] [Semantic] checkTableNotExists: export_test_table
+[2025-09-17 11:36:03.845] [INFO] [Semantic] CreateTable semantic check finished: export_test_table
+[2025-09-17 11:36:03.854] [INFO] [Semantic] Insert into: export_test_table
+[2025-09-17 11:36:03.855] [INFO] [Semantic] checkTableExists: export_test_table
+[2025-09-17 11:36:03.858] [INFO] [Semantic] Insert checks passed for: export_test_table
+[2025-09-17 11:36:03.864] [INFO] [Semantic] Select from: export_test_table
+[2025-09-17 11:36:03.864] [INFO] [Semantic] checkTableExists: export_test_table
+[2025-09-17 11:36:03.865] [INFO] [Semantic] Select checks passed for: export_test_table
+[2025-09-17 11:36:03.880] [INFO] [Semantic] Drop table: export_test_table
+[2025-09-17 11:36:03.881] [INFO] [Semantic] checkTableExists: export_test_table
+[2025-09-17 11:36:03.881] [INFO] [Semantic] Drop table checks passed for: export_test_table
+[2025-09-17 11:36:03.885] [INFO] [Semantic] ShowTables statement - no semantic checks needed.
+[2025-09-17 11:36:03.885] [INFO] [Semantic] ShowTables checks passed.
+[2025-09-17 11:36:03.976] [INFO] [Semantic] Select from: export_test_table
+[2025-09-17 11:36:03.976] [INFO] [Semantic] checkTableExists: export_test_table
+[2025-09-17 11:36:03.977] [INFO] [Semantic] Select checks passed for: export_test_table
+[2025-09-17 11:36:03.986] [INFO] [Semantic] CreateTable: complex_test_table
+[2025-09-17 11:36:03.987] [INFO] [Semantic] checkTableNotExists: complex_test_table
+[2025-09-17 11:36:03.987] [INFO] [Semantic] CreateTable semantic check finished: complex_test_table
+[2025-09-17 11:36:04.000] [INFO] [Semantic] Insert into: complex_test_table
+[2025-09-17 11:36:04.000] [INFO] [Semantic] checkTableExists: complex_test_table
+[2025-09-17 11:36:04.004] [INFO] [Semantic] Insert checks passed for: complex_test_table
+[2025-09-17 11:36:04.015] [INFO] [Semantic] Select from: complex_test_table
+[2025-09-17 11:36:04.015] [INFO] [Semantic] checkTableExists: complex_test_table
+[2025-09-17 11:36:04.015] [INFO] [Semantic] Select checks passed for: complex_test_table
+[2025-09-17 11:36:04.035] [INFO] [Semantic] Drop table: complex_test_table
+[2025-09-17 11:36:04.035] [INFO] [Semantic] checkTableExists: complex_test_table
+[2025-09-17 11:36:04.035] [INFO] [Semantic] Drop table checks passed for: complex_test_table

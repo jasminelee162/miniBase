@@ -1,0 +1,1542 @@
+[2025-09-17 11:36:03.213] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.214] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.214] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.214] [INFO] [Lexer] Token: students
+[2025-09-17 11:36:03.214] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.214] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.214] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.223] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.223] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.223] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.223] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.223] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.223] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.223] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.227] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.227] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.227] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.227] [INFO] [Lexer] Token: departments
+[2025-09-17 11:36:03.227] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.227] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.227] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.231] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.231] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.231] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.231] [INFO] [Lexer] Token: employees
+[2025-09-17 11:36:03.231] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.231] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.231] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.234] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.234] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.235] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.235] [INFO] [Lexer] Token: users
+[2025-09-17 11:36:03.235] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.235] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.235] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.237] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.238] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.238] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.238] [INFO] [Lexer] Token: products
+[2025-09-17 11:36:03.238] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.238] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.238] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.243] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.243] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.243] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.243] [INFO] [Lexer] Token: test_proc
+[2025-09-17 11:36:03.243] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.243] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.243] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.250] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.251] [INFO] [Lexer] Token: CREATE
+[2025-09-17 11:36:03.251] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.251] [INFO] [Lexer] Token: students
+[2025-09-17 11:36:03.251] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.251] [INFO] [Lexer] Token: student_id
+[2025-09-17 11:36:03.251] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.251] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.251] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.251] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: 50
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: age
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: major
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: 30
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.252] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.259] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.259] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.259] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.259] [INFO] [Lexer] Token: students
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: student_id
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: age
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: major
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: 1001
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: Alice Johnson
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: 20
+[2025-09-17 11:36:03.260] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.261] [INFO] [Lexer] Token: Computer Science
+[2025-09-17 11:36:03.261] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.261] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.261] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.261] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.269] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.269] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.269] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.270] [INFO] [Lexer] Token: students
+[2025-09-17 11:36:03.270] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.270] [INFO] [Lexer] Token: student_id
+[2025-09-17 11:36:03.270] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.270] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.270] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.270] [INFO] [Lexer] Token: age
+[2025-09-17 11:36:03.270] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.270] [INFO] [Lexer] Token: major
+[2025-09-17 11:36:03.270] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: 1002
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: Bob Smith
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: 21
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: Mathematics
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: 1003
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: Carol Davis
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: 19
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: Physics
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: 1004
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: David Wilson
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: 22
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: Computer Science
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.271] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.272] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.272] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.281] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.281] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.281] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.282] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.282] [INFO] [Lexer] Token: students
+[2025-09-17 11:36:03.282] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.282] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.282] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.299] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.300] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.300] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.300] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.300] [INFO] [Lexer] Token: major
+[2025-09-17 11:36:03.300] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.300] [INFO] [Lexer] Token: students
+[2025-09-17 11:36:03.300] [INFO] [Lexer] Token: WHERE
+[2025-09-17 11:36:03.300] [INFO] [Lexer] Token: age
+[2025-09-17 11:36:03.300] [INFO] [Lexer] Token: >
+[2025-09-17 11:36:03.300] [INFO] [Lexer] Token: 20
+[2025-09-17 11:36:03.300] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.300] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.300] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.316] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.316] [INFO] [Lexer] Token: UPDATE
+[2025-09-17 11:36:03.316] [INFO] [Lexer] Token: students
+[2025-09-17 11:36:03.317] [INFO] [Lexer] Token: SET
+[2025-09-17 11:36:03.317] [INFO] [Lexer] Token: age
+[2025-09-17 11:36:03.317] [INFO] [Lexer] Token: =
+[2025-09-17 11:36:03.317] [INFO] [Lexer] Token: 23
+[2025-09-17 11:36:03.317] [INFO] [Lexer] Token: WHERE
+[2025-09-17 11:36:03.317] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.317] [INFO] [Lexer] Token: =
+[2025-09-17 11:36:03.317] [INFO] [Lexer] Token: David Wilson
+[2025-09-17 11:36:03.317] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.318] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.318] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.327] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.327] [INFO] [Lexer] Token: DELETE
+[2025-09-17 11:36:03.327] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.328] [INFO] [Lexer] Token: students
+[2025-09-17 11:36:03.328] [INFO] [Lexer] Token: WHERE
+[2025-09-17 11:36:03.328] [INFO] [Lexer] Token: student_id
+[2025-09-17 11:36:03.328] [INFO] [Lexer] Token: =
+[2025-09-17 11:36:03.328] [INFO] [Lexer] Token: 1003
+[2025-09-17 11:36:03.328] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.328] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.328] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.334] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.335] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.335] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.335] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.335] [INFO] [Lexer] Token: students
+[2025-09-17 11:36:03.335] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.335] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.335] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.357] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.357] [INFO] [Lexer] Token: CREATE
+[2025-09-17 11:36:03.357] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.357] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.357] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.357] [INFO] [Lexer] Token: teacher_id
+[2025-09-17 11:36:03.357] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.357] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.358] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.358] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.358] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.358] [INFO] [Lexer] Token: 50
+[2025-09-17 11:36:03.358] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.358] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.358] [INFO] [Lexer] Token: subject
+[2025-09-17 11:36:03.358] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.358] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.358] [INFO] [Lexer] Token: 30
+[2025-09-17 11:36:03.358] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.359] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.359] [INFO] [Lexer] Token: experience
+[2025-09-17 11:36:03.359] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.359] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.359] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.359] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.359] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.360] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.360] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.360] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.368] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: teacher_id
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: subject
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: experience
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: 2001
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: Prof. Smith
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: Mathematics
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: 10
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: 80000
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: 2002
+[2025-09-17 11:36:03.369] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: Prof. Johnson
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: Computer Science
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: 15
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: 95000
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: 2003
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: Prof. Brown
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: Physics
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: 8
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: 75000
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: 2004
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: Prof. Davis
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: Mathematics
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: 12
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: 85000
+[2025-09-17 11:36:03.370] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: 2005
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: Prof. Wilson
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: Computer Science
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: 6
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: 70000
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.371] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: subject
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: COUNT
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: as
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: teacher_count
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: AVG
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: experience
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: as
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: avg_experience
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: GROUP
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: BY
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: subject
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.381] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: subject
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: COUNT
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: as
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: teacher_count
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: AVG
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: as
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: avg_salary
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: GROUP
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: BY
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: subject
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: HAVING
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: COUNT
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.385] [INFO] [Lexer] Token: >
+[2025-09-17 11:36:03.386] [INFO] [Lexer] Token: 1
+[2025-09-17 11:36:03.386] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.386] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.386] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.389] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.389] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.389] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.389] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.389] [INFO] [Lexer] Token: subject
+[2025-09-17 11:36:03.389] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.389] [INFO] [Lexer] Token: experience
+[2025-09-17 11:36:03.389] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.389] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.390] [INFO] [Lexer] Token: ORDER
+[2025-09-17 11:36:03.390] [INFO] [Lexer] Token: BY
+[2025-09-17 11:36:03.390] [INFO] [Lexer] Token: experience
+[2025-09-17 11:36:03.390] [INFO] [Lexer] Token: DESC
+[2025-09-17 11:36:03.390] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.390] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.390] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.409] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.409] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: subject
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: SUM
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: as
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: total_salary
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: GROUP
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: BY
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: subject
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: ORDER
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: BY
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: total_salary
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: DESC
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.410] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.419] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.419] [INFO] [Lexer] Token: CREATE
+[2025-09-17 11:36:03.419] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.419] [INFO] [Lexer] Token: departments
+[2025-09-17 11:36:03.419] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.419] [INFO] [Lexer] Token: dept_id
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: dept_name
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: 30
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: building
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: 20
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: budget
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.420] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.427] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.427] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.428] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.428] [INFO] [Lexer] Token: departments
+[2025-09-17 11:36:03.428] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.428] [INFO] [Lexer] Token: dept_id
+[2025-09-17 11:36:03.428] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.428] [INFO] [Lexer] Token: dept_name
+[2025-09-17 11:36:03.428] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.428] [INFO] [Lexer] Token: building
+[2025-09-17 11:36:03.428] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.428] [INFO] [Lexer] Token: budget
+[2025-09-17 11:36:03.428] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.429] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.429] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.429] [INFO] [Lexer] Token: 1
+[2025-09-17 11:36:03.429] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.429] [INFO] [Lexer] Token: Computer Science
+[2025-09-17 11:36:03.429] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.429] [INFO] [Lexer] Token: Tech Building
+[2025-09-17 11:36:03.429] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.429] [INFO] [Lexer] Token: 500000
+[2025-09-17 11:36:03.429] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.429] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.429] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.429] [INFO] [Lexer] Token: 2
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: Mathematics
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: Science Hall
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: 300000
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: 3
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: Physics
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: Research Center
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: 400000
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.430] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.437] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.437] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.437] [INFO] [Lexer] Token: t
+[2025-09-17 11:36:03.437] [INFO] [Lexer] Token: .
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: t
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: .
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: subject
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: d
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: .
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: building
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: d
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: .
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: budget
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: t
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: JOIN
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: departments
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: d
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: ON
+[2025-09-17 11:36:03.438] [INFO] [Lexer] Token: t
+[2025-09-17 11:36:03.439] [INFO] [Lexer] Token: .
+[2025-09-17 11:36:03.439] [INFO] [Lexer] Token: subject
+[2025-09-17 11:36:03.439] [INFO] [Lexer] Token: =
+[2025-09-17 11:36:03.439] [INFO] [Lexer] Token: d
+[2025-09-17 11:36:03.439] [INFO] [Lexer] Token: .
+[2025-09-17 11:36:03.439] [INFO] [Lexer] Token: dept_name
+[2025-09-17 11:36:03.439] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.439] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.439] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.444] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.444] [INFO] [Lexer] Token: CREATE
+[2025-09-17 11:36:03.444] [INFO] [Lexer] Token: PROCEDURE
+[2025-09-17 11:36:03.444] [INFO] [Lexer] Token: add_teacher
+[2025-09-17 11:36:03.444] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.444] [INFO] [Lexer] Token: teacher_name
+[2025-09-17 11:36:03.444] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: teacher_subject
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: teacher_exp
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: BEGIN
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: teacher_id
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: subject
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: experience
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: 2000
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: +
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.445] [INFO] [Lexer] Token: COUNT
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: +
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: 1
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: teacher_name
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: teacher_subject
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: teacher_exp
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: 60000
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: END
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.446] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.449] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.450] [INFO] [Lexer] Token: CALL
+[2025-09-17 11:36:03.450] [INFO] [Lexer] Token: add_teacher
+[2025-09-17 11:36:03.450] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.450] [INFO] [Lexer] Token: Prof. New
+[2025-09-17 11:36:03.450] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.450] [INFO] [Lexer] Token: Chemistry
+[2025-09-17 11:36:03.450] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.450] [INFO] [Lexer] Token: 5
+[2025-09-17 11:36:03.450] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.450] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.450] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.450] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.451] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: teacher_id
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: subject
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: experience
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: 2000
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: +
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: COUNT
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: +
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: 1
+[2025-09-17 11:36:03.452] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.453] [INFO] [Lexer] Token: Prof. New
+[2025-09-17 11:36:03.453] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.453] [INFO] [Lexer] Token: Chemistry
+[2025-09-17 11:36:03.453] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.453] [INFO] [Lexer] Token: 5
+[2025-09-17 11:36:03.453] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.453] [INFO] [Lexer] Token: 60000
+[2025-09-17 11:36:03.453] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.453] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.453] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.453] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.457] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.457] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.458] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.458] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.458] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.458] [INFO] [Lexer] Token: WHERE
+[2025-09-17 11:36:03.458] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.458] [INFO] [Lexer] Token: =
+[2025-09-17 11:36:03.458] [INFO] [Lexer] Token: Prof. New
+[2025-09-17 11:36:03.458] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.458] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.458] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.479] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.479] [INFO] [Lexer] Token: CREATE
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: users
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: user_id
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: PRIMARY
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: KEY
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: username
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: 30
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.480] [INFO] [Lexer] Token: NOT
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: NULL
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: UNIQUE
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: email
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: 50
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: UNIQUE
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: age
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: DEFAULT
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: 18
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: status
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: 10
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: DEFAULT
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: active
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.481] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.487] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.487] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.487] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.487] [INFO] [Lexer] Token: users
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Token: user_id
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Token: username
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Token: 1
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Token: alice
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.488] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.497] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.497] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.497] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.497] [INFO] [Lexer] Token: users
+[2025-09-17 11:36:03.497] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.497] [INFO] [Lexer] Token: user_id
+[2025-09-17 11:36:03.497] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.497] [INFO] [Lexer] Token: username
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: email
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: age
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: 2
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: bob
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: bob@email.com
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: 25
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.498] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.503] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: users
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: user_id
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: username
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: 1
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: charlie
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.504] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.510] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.510] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.511] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.511] [INFO] [Lexer] Token: users
+[2025-09-17 11:36:03.511] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.511] [INFO] [Lexer] Token: user_id
+[2025-09-17 11:36:03.511] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.511] [INFO] [Lexer] Token: username
+[2025-09-17 11:36:03.511] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.511] [INFO] [Lexer] Token: email
+[2025-09-17 11:36:03.511] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.511] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.512] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.512] [INFO] [Lexer] Token: 3
+[2025-09-17 11:36:03.512] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.512] [INFO] [Lexer] Token: david
+[2025-09-17 11:36:03.512] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.512] [INFO] [Lexer] Token: david@email.com
+[2025-09-17 11:36:03.512] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.512] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.512] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.512] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.518] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.518] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.518] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.518] [INFO] [Lexer] Token: users
+[2025-09-17 11:36:03.518] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.518] [INFO] [Lexer] Token: user_id
+[2025-09-17 11:36:03.518] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.518] [INFO] [Lexer] Token: username
+[2025-09-17 11:36:03.518] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.518] [INFO] [Lexer] Token: email
+[2025-09-17 11:36:03.518] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.519] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.519] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.519] [INFO] [Lexer] Token: 4
+[2025-09-17 11:36:03.519] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.519] [INFO] [Lexer] Token: alice
+[2025-09-17 11:36:03.519] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.519] [INFO] [Lexer] Token: eve@email.com
+[2025-09-17 11:36:03.519] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.519] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.519] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.519] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.527] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.527] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.527] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.527] [INFO] [Lexer] Token: users
+[2025-09-17 11:36:03.527] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.528] [INFO] [Lexer] Token: user_id
+[2025-09-17 11:36:03.528] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.528] [INFO] [Lexer] Token: username
+[2025-09-17 11:36:03.528] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.528] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.528] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.528] [INFO] [Lexer] Token: 5
+[2025-09-17 11:36:03.528] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.528] [INFO] [Lexer] Token: NULL
+[2025-09-17 11:36:03.528] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.529] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.529] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.529] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: users
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: user_id
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: username
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: email
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: 6
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: frank
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: frank@email.com
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.534] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.542] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.542] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.542] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.542] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.542] [INFO] [Lexer] Token: users
+[2025-09-17 11:36:03.542] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.542] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.542] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: CREATE
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: employees
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: emp_id
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: 50
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.560] [INFO] [Lexer] Token: department
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: 30
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: position
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: 30
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: hire_year
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.561] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: employees
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: emp_id
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: department
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: position
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: hire_year
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: 3001
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: John Doe
+[2025-09-17 11:36:03.567] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: Engineering
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: Senior Developer
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: 90000
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: 2020
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: 3002
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: Jane Smith
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: Engineering
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: Junior Developer
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: 65000
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: 2022
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: 3003
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: Mike Johnson
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: Marketing
+[2025-09-17 11:36:03.568] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: Manager
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: 80000
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: 2019
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: 3004
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: Sarah Wilson
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: Marketing
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: Analyst
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: 55000
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: 2021
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: 3005
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: Tom Brown
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: Engineering
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: Architect
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.569] [INFO] [Lexer] Token: 110000
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: 2018
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: 3006
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: Lisa Davis
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: HR
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: Manager
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: 75000
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: 2020
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: 3007
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: Chris Lee
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: Engineering
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: Developer
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: 70000
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: 2021
+[2025-09-17 11:36:03.570] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.571] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.571] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.571] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: department
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: COUNT
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: as
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: employee_count
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: AVG
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.587] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: as
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: avg_salary
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: MAX
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: as
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: max_salary
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: MIN
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: as
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: min_salary
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: employees
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: WHERE
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: hire_year
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: >=
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: 2020
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: GROUP
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: BY
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: department
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: HAVING
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: COUNT
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.588] [INFO] [Lexer] Token: >=
+[2025-09-17 11:36:03.589] [INFO] [Lexer] Token: 2
+[2025-09-17 11:36:03.589] [INFO] [Lexer] Token: ORDER
+[2025-09-17 11:36:03.589] [INFO] [Lexer] Token: BY
+[2025-09-17 11:36:03.589] [INFO] [Lexer] Token: avg_salary
+[2025-09-17 11:36:03.589] [INFO] [Lexer] Token: DESC
+[2025-09-17 11:36:03.589] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.589] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.589] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: department
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: employees
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: WHERE
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: >
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: AVG
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: employees
+[2025-09-17 11:36:03.594] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.595] [INFO] [Lexer] Token: ORDER
+[2025-09-17 11:36:03.595] [INFO] [Lexer] Token: BY
+[2025-09-17 11:36:03.595] [INFO] [Lexer] Token: salary
+[2025-09-17 11:36:03.595] [INFO] [Lexer] Token: DESC
+[2025-09-17 11:36:03.595] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.595] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.595] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.598] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.598] [INFO] [Lexer] Token: SHOW
+[2025-09-17 11:36:03.598] [INFO] [Lexer] Token: TABLES
+[2025-09-17 11:36:03.598] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.598] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.598] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.603] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.603] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.603] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.603] [INFO] [Lexer] Token: students
+[2025-09-17 11:36:03.603] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.603] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.603] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.608] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.608] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.608] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.608] [INFO] [Lexer] Token: teachers
+[2025-09-17 11:36:03.608] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.608] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.608] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.612] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.612] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.613] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.613] [INFO] [Lexer] Token: departments
+[2025-09-17 11:36:03.613] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.613] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.613] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.617] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.617] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.617] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.617] [INFO] [Lexer] Token: users
+[2025-09-17 11:36:03.617] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.617] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.617] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.622] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.622] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.622] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.622] [INFO] [Lexer] Token: employees
+[2025-09-17 11:36:03.622] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.622] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.623] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.673] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.673] [INFO] [Lexer] Token: .
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: create_user
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: developer_user
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: 123456
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: developer
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: .
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: create_user
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: analyst_user
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: 123456
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: analyst
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: .
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: create_user
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: test_dba
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: 123456
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: dba
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.674] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.678] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.678] [INFO] [Lexer] Token: CREATE
+[2025-09-17 11:36:03.678] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.678] [INFO] [Lexer] Token: dba_shared_table
+[2025-09-17 11:36:03.678] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.678] [INFO] [Lexer] Token: id
+[2025-09-17 11:36:03.678] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.679] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.679] [INFO] [Lexer] Token: data
+[2025-09-17 11:36:03.679] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.679] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.679] [INFO] [Lexer] Token: 50
+[2025-09-17 11:36:03.679] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.679] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.679] [INFO] [Lexer] Token: owner
+[2025-09-17 11:36:03.679] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.679] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.679] [INFO] [Lexer] Token: 20
+[2025-09-17 11:36:03.680] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.680] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.680] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.680] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.680] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.688] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.688] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.688] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.688] [INFO] [Lexer] Token: dba_shared_table
+[2025-09-17 11:36:03.688] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.688] [INFO] [Lexer] Token: id
+[2025-09-17 11:36:03.688] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.689] [INFO] [Lexer] Token: data
+[2025-09-17 11:36:03.689] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.689] [INFO] [Lexer] Token: owner
+[2025-09-17 11:36:03.689] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.689] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.689] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.689] [INFO] [Lexer] Token: 1
+[2025-09-17 11:36:03.689] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: DBA created data
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: dba
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: 2
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: Shared information
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: dba
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.690] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.698] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.698] [INFO] [Lexer] Token: CREATE
+[2025-09-17 11:36:03.698] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Token: dba_private_table
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Token: id
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Token: secret_data
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Token: 50
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.699] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.704] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.704] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.704] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.705] [INFO] [Lexer] Token: dba_private_table
+[2025-09-17 11:36:03.705] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.705] [INFO] [Lexer] Token: id
+[2025-09-17 11:36:03.705] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.705] [INFO] [Lexer] Token: secret_data
+[2025-09-17 11:36:03.705] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.705] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.705] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.705] [INFO] [Lexer] Token: 1
+[2025-09-17 11:36:03.706] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.706] [INFO] [Lexer] Token: DBA private data
+[2025-09-17 11:36:03.706] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.706] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.706] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.706] [INFO] [Lexer] Token: 2
+[2025-09-17 11:36:03.706] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.706] [INFO] [Lexer] Token: Confidential info
+[2025-09-17 11:36:03.706] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.706] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.706] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.706] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.713] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.713] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.713] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.713] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.713] [INFO] [Lexer] Token: dba_shared_table
+[2025-09-17 11:36:03.713] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.713] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.713] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: dba_shared_table
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: id
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: data
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: owner
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: 3
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: New DBA data
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: dba
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.721] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.727] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.728] [INFO] [Lexer] Token: UPDATE
+[2025-09-17 11:36:03.728] [INFO] [Lexer] Token: dba_shared_table
+[2025-09-17 11:36:03.728] [INFO] [Lexer] Token: SET
+[2025-09-17 11:36:03.728] [INFO] [Lexer] Token: data
+[2025-09-17 11:36:03.728] [INFO] [Lexer] Token: =
+[2025-09-17 11:36:03.728] [INFO] [Lexer] Token: Updated by DBA
+[2025-09-17 11:36:03.728] [INFO] [Lexer] Token: WHERE
+[2025-09-17 11:36:03.728] [INFO] [Lexer] Token: id
+[2025-09-17 11:36:03.728] [INFO] [Lexer] Token: =
+[2025-09-17 11:36:03.728] [INFO] [Lexer] Token: 1
+[2025-09-17 11:36:03.729] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.729] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.729] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.735] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.735] [INFO] [Lexer] Token: DELETE
+[2025-09-17 11:36:03.735] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.735] [INFO] [Lexer] Token: dba_shared_table
+[2025-09-17 11:36:03.735] [INFO] [Lexer] Token: WHERE
+[2025-09-17 11:36:03.735] [INFO] [Lexer] Token: id
+[2025-09-17 11:36:03.735] [INFO] [Lexer] Token: =
+[2025-09-17 11:36:03.735] [INFO] [Lexer] Token: 2
+[2025-09-17 11:36:03.735] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.735] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.735] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.823] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.823] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.823] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.823] [INFO] [Lexer] Token: export_test_table
+[2025-09-17 11:36:03.823] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.823] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.823] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.826] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.826] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.826] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.826] [INFO] [Lexer] Token: complex_test_table
+[2025-09-17 11:36:03.826] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.826] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.826] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.829] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.829] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.829] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.829] [INFO] [Lexer] Token: constraint_test_table
+[2025-09-17 11:36:03.829] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.830] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.830] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.834] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.834] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.834] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.834] [INFO] [Lexer] Token: multi_data_table
+[2025-09-17 11:36:03.834] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.834] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.834] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: CREATE
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: export_test_table
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: id
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: 50
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: value
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: description
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: 100
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.843] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.851] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.851] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.851] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.852] [INFO] [Lexer] Token: export_test_table
+[2025-09-17 11:36:03.852] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.852] [INFO] [Lexer] Token: id
+[2025-09-17 11:36:03.852] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.852] [INFO] [Lexer] Token: name
+[2025-09-17 11:36:03.852] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.852] [INFO] [Lexer] Token: value
+[2025-09-17 11:36:03.852] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.852] [INFO] [Lexer] Token: description
+[2025-09-17 11:36:03.852] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.852] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.852] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: 1
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: Test Item 1
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: 100
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: First test item
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: 2
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: Test Item 2
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: 200
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: Second test item
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: 3
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: Test Item 3
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: 300
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: Third test item
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.853] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.854] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.863] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.863] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.863] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.863] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.863] [INFO] [Lexer] Token: export_test_table
+[2025-09-17 11:36:03.863] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.863] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.863] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.879] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.880] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:03.880] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.880] [INFO] [Lexer] Token: export_test_table
+[2025-09-17 11:36:03.880] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.880] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.880] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.884] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.884] [INFO] [Lexer] Token: SHOW
+[2025-09-17 11:36:03.884] [INFO] [Lexer] Token: TABLES
+[2025-09-17 11:36:03.884] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.884] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.884] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.975] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.975] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:03.975] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:03.975] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:03.975] [INFO] [Lexer] Token: export_test_table
+[2025-09-17 11:36:03.975] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.975] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.975] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: CREATE
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: complex_test_table
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: id
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: PRIMARY
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: KEY
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: username
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: 30
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: NOT
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: NULL
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: UNIQUE
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: email
+[2025-09-17 11:36:03.984] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: 50
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: UNIQUE
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: age
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: INT
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: DEFAULT
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: 18
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: status
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: 10
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: DEFAULT
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: active
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: created_date
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: 20
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: metadata
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: VARCHAR
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: 200
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.985] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.986] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.986] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:03.995] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:03.995] [INFO] [Lexer] Token: INSERT
+[2025-09-17 11:36:03.995] [INFO] [Lexer] Token: INTO
+[2025-09-17 11:36:03.995] [INFO] [Lexer] Token: complex_test_table
+[2025-09-17 11:36:03.996] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.996] [INFO] [Lexer] Token: id
+[2025-09-17 11:36:03.996] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.996] [INFO] [Lexer] Token: username
+[2025-09-17 11:36:03.996] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.996] [INFO] [Lexer] Token: email
+[2025-09-17 11:36:03.996] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.996] [INFO] [Lexer] Token: age
+[2025-09-17 11:36:03.996] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.996] [INFO] [Lexer] Token: status
+[2025-09-17 11:36:03.996] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.997] [INFO] [Lexer] Token: created_date
+[2025-09-17 11:36:03.997] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.997] [INFO] [Lexer] Token: metadata
+[2025-09-17 11:36:03.997] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.997] [INFO] [Lexer] Token: VALUES
+[2025-09-17 11:36:03.997] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.997] [INFO] [Lexer] Token: 1
+[2025-09-17 11:36:03.997] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.997] [INFO] [Lexer] Token: alice
+[2025-09-17 11:36:03.997] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.997] [INFO] [Lexer] Token: alice@example.com
+[2025-09-17 11:36:03.997] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: 25
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: active
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: 2024-01-01
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: {"role": "admin", "permissions": ["read", "write"]}
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: 2
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: bob
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: bob@example.com
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: 30
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: inactive
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: 2024-01-02
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: {"role": "user", "permissions": ["read"]}
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: (
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: 3
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: charlie
+[2025-09-17 11:36:03.998] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.999] [INFO] [Lexer] Token: charlie@example.com
+[2025-09-17 11:36:03.999] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.999] [INFO] [Lexer] Token: 22
+[2025-09-17 11:36:03.999] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.999] [INFO] [Lexer] Token: active
+[2025-09-17 11:36:03.999] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.999] [INFO] [Lexer] Token: 2024-01-03
+[2025-09-17 11:36:03.999] [INFO] [Lexer] Token: ,
+[2025-09-17 11:36:03.999] [INFO] [Lexer] Token: {"role": "moderator", "permissions": ["read", "moderate"]}
+[2025-09-17 11:36:03.999] [INFO] [Lexer] Token: )
+[2025-09-17 11:36:03.999] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:03.999] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:03.999] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:04.014] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:04.014] [INFO] [Lexer] Token: SELECT
+[2025-09-17 11:36:04.014] [INFO] [Lexer] Token: *
+[2025-09-17 11:36:04.014] [INFO] [Lexer] Token: FROM
+[2025-09-17 11:36:04.014] [INFO] [Lexer] Token: complex_test_table
+[2025-09-17 11:36:04.014] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:04.014] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:04.014] [INFO] [Lexer] Tokenizing finished
+[2025-09-17 11:36:04.034] [INFO] [Lexer] Start tokenizing input
+[2025-09-17 11:36:04.034] [INFO] [Lexer] Token: DROP
+[2025-09-17 11:36:04.034] [INFO] [Lexer] Token: TABLE
+[2025-09-17 11:36:04.034] [INFO] [Lexer] Token: complex_test_table
+[2025-09-17 11:36:04.034] [INFO] [Lexer] Token: ;
+[2025-09-17 11:36:04.034] [INFO] [Lexer] Token: 
+[2025-09-17 11:36:04.034] [INFO] [Lexer] Tokenizing finished

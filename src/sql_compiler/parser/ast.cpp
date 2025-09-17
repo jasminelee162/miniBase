@@ -20,6 +20,11 @@ void AggregateExpression::accept(ASTVisitor &visitor)
 {
     visitor.visit(*this);
 }
+
+void SubqueryExpression::accept(ASTVisitor &visitor)
+{
+    visitor.visit(*this);
+}
 void CreateTableStatement::accept(ASTVisitor &visitor)
 {
     visitor.visit(*this);

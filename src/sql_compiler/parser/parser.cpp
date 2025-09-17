@@ -367,7 +367,16 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
                 
                 Token funcToken = advance(); // 获取函数名
                 consume(TokenType::DELIMITER_LPAREN, SqlErrors::EXPECT_LPAREN);
-                Token colToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
+                
+                std::string columnName;
+                if (match(TokenType::OPERATOR_TIMES)) {
+                    // COUNT(*) 情况
+                    columnName = "*";
+                } else {
+                    // COUNT(column_name) 情况
+                    Token colToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
+                    columnName = colToken.lexeme;
+                }
                 consume(TokenType::DELIMITER_RPAREN, SqlErrors::EXPECT_RPAREN);
                 
                 std::string alias;
@@ -377,11 +386,27 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
                 }
                 
                 aggregates.push_back(std::make_unique<AggregateExpression>(
-                    funcToken.lexeme, colToken.lexeme, alias));
+                    funcToken.lexeme, columnName, alias));
             } else {
-                // 普通列名
-            Token nameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
-            columns.push_back(nameToken.lexeme);
+                // 普通列名，支持 table.column 格式
+                Token nameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
+                std::string columnName = nameToken.lexeme;
+                
+                // 检查是否有表别名 (table.column)
+                if (match(TokenType::DELIMITER_DOT)) {
+                    Token columnToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_COLUMN_NAME);
+                    columnName = nameToken.lexeme + "." + columnToken.lexeme;
+                }
+                
+                // 检查是否有列别名 (AS alias)
+                std::string alias;
+                if (match(TokenType::KEYWORD_AS)) {
+                    Token aliasToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_IDENTIFIER);
+                    alias = aliasToken.lexeme;
+                }
+                
+                // 如果有别名，使用别名；否则使用原列名
+                columns.push_back(alias.empty() ? columnName : alias);
             }
         } while (match(TokenType::DELIMITER_COMMA));
     }
@@ -398,6 +423,20 @@ std::unique_ptr<SelectStatement> Parser::selectStatement() {
     }
     Token mainTableNameToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_TABLE_NAME);
     std::string mainTableName = mainTableNameToken.lexeme; //mainTableName=tableName
+    
+    // 支持表别名 (table AS alias 或 table alias)
+    std::string tableAlias;
+    if (match(TokenType::KEYWORD_AS)) {
+        Token aliasToken = consume(TokenType::IDENTIFIER, SqlErrors::EXPECT_IDENTIFIER);
+        tableAlias = aliasToken.lexeme;
+    } else if (check(TokenType::IDENTIFIER) && !check(TokenType::KEYWORD_WHERE) && 
+                !check(TokenType::KEYWORD_GROUP_BY) && !check(TokenType::KEYWORD_ORDER) &&
+               !check(TokenType::KEYWORD_JOIN) && !check(TokenType::KEYWORD_INNER) &&
+               !check(TokenType::KEYWORD_LEFT) && !check(TokenType::KEYWORD_RIGHT)) {
+        // 隐式别名 (table alias)
+        Token aliasToken = advance();
+        tableAlias = aliasToken.lexeme;
+    }
 
     // 可选的WHERE子句
     std::unique_ptr<Expression> whereClause = nullptr;
@@ -837,9 +876,18 @@ std::unique_ptr<Expression> Parser::primary() {
     }
     
     if (match(TokenType::DELIMITER_LPAREN)) {
-        auto expr = expression();
-        consume(TokenType::DELIMITER_RPAREN, SqlErrors::EXPECT_RPAREN_AFTER_EXPR);
-        return expr;
+        // 检查是否是子查询 (SELECT ...)
+        if (check(TokenType::KEYWORD_SELECT)) {
+            // 解析子查询
+            auto subquery = selectStatement();
+            consume(TokenType::DELIMITER_RPAREN, SqlErrors::EXPECT_RPAREN_AFTER_EXPR);
+            return std::make_unique<SubqueryExpression>(std::move(subquery));
+        } else {
+            // 普通括号表达式
+            auto expr = expression();
+            consume(TokenType::DELIMITER_RPAREN, SqlErrors::EXPECT_RPAREN_AFTER_EXPR);
+            return expr;
+        }
     }
     
     throw ParseError(SqlErrors::withHint(SqlErrors::EXPECT_EXPRESSION, "可使用常量(如 1, 'txt')、列名，或以 '(' 开始的子表达式"), peek().line, peek().column);
