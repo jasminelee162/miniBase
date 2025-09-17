@@ -90,6 +90,14 @@
       </div>
       <div id="result" class="fixed tall" style="margin-top:8px;"></div>
 
+      <div class="section-title" style="margin-top:16px;">Import / Export</div>
+      <div class="row" style="margin-top:8px;">
+        <input type="file" id="importFileInput" accept=".sql" style="display:none;" onchange="handleImportFile()" />
+        <button onclick="document.getElementById('importFileInput').click()">Choose SQL File to Import</button>
+        <button onclick="exportDB()">Export to Local File</button>
+        <span id="importExportMsg" class="status muted"></span>
+      </div>
+
       
     </div>
 
@@ -123,14 +131,6 @@
         <span id="userMsg" class="status"></span>
       </div>
       <div id="userList" class="muted"></div>
-      <div class="section-title">Dump / Import</div>
-      <div class="row">
-        <input id="dumpFile" placeholder="dump filename (e.g. dump.sql)" />
-        <button onclick="dumpDB()">Dump</button>
-        <input id="importFile" placeholder="import filename (e.g. dump.sql)" />
-        <button onclick="importDB()">Import</button>
-        <span id="dumpMsg" class="status"></span>
-      </div>
     </div>
 
     </div>
@@ -298,23 +298,61 @@
         if (j.ok) refreshUsers();
       }
 
-      async function dumpDB(){
-        const f = document.getElementById('dumpFile').value.trim() || 'dump.sql';
-        const msg = document.getElementById('dumpMsg');
-        msg.textContent = 'Dumping...';
-        const r = await fetch('/db/dump', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({filename:f})});
-        const j = await r.json().catch(()=>({ok:false}));
-        msg.textContent = j.ok ? `Dumped to ${j.file||f}` : 'Dump failed';
+      async function handleImportFile(){
+        const fileInput = document.getElementById('importFileInput');
+        const file = fileInput.files[0];
+        if (!file) return;
+        
+        const msg = document.getElementById('importExportMsg');
+        msg.textContent = 'Reading file...';
+        
+        try {
+          const text = await file.text();
+          msg.textContent = 'Importing...';
+          
+          const r = await fetch('/db/import', { 
+            method:'POST', 
+            headers:{'Content-Type':'application/json'}, 
+            body: JSON.stringify({content: text, filename: file.name})
+          });
+          const j = await r.json().catch(()=>({ok:false}));
+          msg.textContent = j.ok ? `Import OK: ${file.name}` : 'Import failed';
+          
+          // 清空文件选择
+          fileInput.value = '';
+        } catch (error) {
+          msg.textContent = 'File read failed';
+          console.error('Import error:', error);
+        }
       }
 
-      async function importDB(){
-        const f = document.getElementById('importFile').value.trim();
-        const msg = document.getElementById('dumpMsg');
-        if (!f) { msg.textContent = 'import filename required'; return; }
-        msg.textContent = 'Importing...';
-        const r = await fetch('/db/import', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({filename:f})});
-        const j = await r.json().catch(()=>({ok:false}));
-        msg.textContent = j.ok ? 'Import OK' : 'Import failed';
+      async function exportDB(){
+        const msg = document.getElementById('importExportMsg');
+        msg.textContent = 'Exporting...';
+        
+        try {
+          const r = await fetch('/db/dump', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({filename:'export.sql'})});
+          const j = await r.json().catch(()=>({ok:false}));
+          
+          if (j.ok && j.content) {
+            // 创建下载链接
+            const blob = new Blob([j.content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = j.filename || 'minidb_export.sql';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            msg.textContent = 'Export downloaded';
+          } else {
+            msg.textContent = 'Export failed';
+          }
+        } catch (error) {
+          msg.textContent = 'Export failed';
+          console.error('Export error:', error);
+        }
       }
 
       async function callAI(){

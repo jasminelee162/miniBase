@@ -36,6 +36,8 @@ static void configure_no_crash_dialogs() {
     // 关闭断言弹窗，并将输出重定向到标准错误
     _CrtSetReportMode(_CRT_ASSERT, 0);
     _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
 #endif
 }
 
@@ -153,34 +155,71 @@ int main() {
         } catch (...) { res.status = 400; out["ok"]=false; res.body = out.dump(); }
     });
 
-    // 导出数据库到 SQL（仅DBA）
+    // 导出数据库到 SQL（所有用户）
     svr.Post("/db/dump", [&se, &catalog, &auth](const minihttplib::Request& req, minihttplib::Response& res){
         json out;
         try {
-            if (!auth.isLoggedIn() || !auth.isDBA()) { res.status = 403; out["ok"]=false; res.body = out.dump(); return; }
+            if (!auth.isLoggedIn()) { res.status = 403; out["ok"]=false; res.body = out.dump(); return; }
             auto j = json::parse(req.body);
             std::string filename = j.value("filename", "dump.sql");
+            
+            // 创建临时文件进行导出
+            std::string temp_file = "temp_" + filename;
             SQLDumper dumper(catalog.get(), se.get());
-            bool ok = dumper.DumpToFile(filename, DumpOption::StructureAndData);
-            out["ok"] = ok; out["file"] = filename;
+            bool ok = dumper.DumpToFile(temp_file, DumpOption::StructureAndData);
+            
+            if (ok) {
+                // 读取文件内容并返回
+                std::ifstream file(temp_file);
+                if (file.is_open()) {
+                    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+                    file.close();
+                    out["ok"] = true; 
+                    out["filename"] = filename;
+                    out["content"] = content;
+                    // 删除临时文件
+                    std::remove(temp_file.c_str());
+                } else {
+                    out["ok"] = false;
+                }
+            } else {
+                out["ok"] = false;
+            }
             res.headers["Content-Type"] = "application/json";
             res.body = out.dump();
         } catch (...) { res.status = 400; out["ok"]=false; res.body = out.dump(); }
     });
 
-    // 从 SQL 导入（仅DBA）
+    // 从 SQL 导入（所有用户）
     svr.Post("/db/import", [&se, &catalog, &auth](const minihttplib::Request& req, minihttplib::Response& res){
         json out;
         try {
-            if (!auth.isLoggedIn() || !auth.isDBA()) { res.status = 403; out["ok"]=false; res.body = out.dump(); return; }
+            if (!auth.isLoggedIn()) { res.status = 403; out["ok"]=false; res.body = out.dump(); return; }
             auto j = json::parse(req.body);
+            
+            // 支持两种方式：直接内容或文件名
+            std::string content = j.value("content", "");
             std::string filename = j.value("filename", "");
-            if (filename.empty()) { res.status = 400; out["ok"]=false; res.body = out.dump(); return; }
-            auto exec = std::make_unique<Executor>(se);
-            exec->SetCatalog(catalog);
-            SQLImporter importer(exec.get(), catalog.get());
-            bool ok = importer.ImportSQLFile(filename);
-            out["ok"] = ok;
+            
+            if (!content.empty()) {
+                // 直接使用内容
+                auto exec = std::make_unique<Executor>(se);
+                exec->SetCatalog(catalog);
+                exec->SetAuthService(&auth);
+                SQLImporter importer(exec.get(), catalog.get());
+                bool ok = importer.ImportSQLContent(content);
+                out["ok"] = ok;
+            } else if (!filename.empty()) {
+                // 使用文件名（向后兼容）
+                auto exec = std::make_unique<Executor>(se);
+                exec->SetCatalog(catalog);
+                exec->SetAuthService(&auth);
+                SQLImporter importer(exec.get(), catalog.get());
+                bool ok = importer.ImportSQLFile(filename);
+                out["ok"] = ok;
+            } else {
+                res.status = 400; out["ok"]=false; res.body = out.dump(); return;
+            }
             res.headers["Content-Type"] = "application/json";
             res.body = out.dump();
         } catch (...) { res.status = 400; out["ok"]=false; res.body = out.dump(); }
@@ -474,7 +513,7 @@ int main() {
     });
 
     try {
-        std::cout << "MiniDB WebUI server (mock) started on http://127.0.0.1:8080" << std::endl;
+        std::cout << "MiniDB WebUI server started on http://127.0.0.1:8080" << std::endl;
         svr.listen("0.0.0.0", 8080);
         return 0;
     } catch (const std::exception& e) {

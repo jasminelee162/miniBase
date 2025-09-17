@@ -28,6 +28,13 @@ namespace minidb
          */
         bool ImportSQLFile(const std::string &filename);
 
+        /**
+         * @brief 从 SQL 内容直接导入
+         * @param content SQL 内容字符串
+         * @return 成功返回 true，失败返回 false
+         */
+        bool ImportSQLContent(const std::string &content);
+
         // ✅ 确保这个函数在 public 里
         bool ExecuteSQLFile(const std::string &filename);
 

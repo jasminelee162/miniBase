@@ -82,6 +82,49 @@ namespace minidb
         return true;
     }
 
+    bool SQLImporter::ImportSQLContent(const std::string &content)
+    {
+        std::istringstream stream(content);
+        std::string line, sql;
+        
+        while (std::getline(stream, line))
+        {
+            // 去掉行首尾空格
+            line.erase(0, line.find_first_not_of(" \t\n\r"));
+            line.erase(line.find_last_not_of(" \t\n\r") + 1);
+            
+            // 跳过空行和注释
+            if (line.empty() || line[0] == '-')
+                continue;
+            
+            sql += line + " ";
+            
+            // 如果行以分号结尾，执行SQL
+            if (line.back() == ';')
+            {
+                sql.pop_back(); // 去掉最后的空格
+                if (!ExecuteSQL(sql))
+                {
+                    std::cerr << "[SQLImporter] 执行SQL失败: " << sql << std::endl;
+                    return false;
+                }
+                sql.clear();
+            }
+        }
+        
+        // 处理最后一条SQL（如果没有分号结尾）
+        if (!sql.empty())
+        {
+            if (!ExecuteSQL(sql))
+            {
+                std::cerr << "[SQLImporter] 执行最后一条SQL失败: " << sql << std::endl;
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
     bool SQLImporter::ExecuteSQL(const std::string &sql)
     {
         std::string stmt = sql;

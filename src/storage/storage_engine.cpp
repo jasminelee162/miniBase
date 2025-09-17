@@ -33,6 +33,10 @@ namespace minidb
         buffer_pool_manager_->SetReadaheadWindow(GetRuntimeConfig().bpm_readahead_window);
         // 设置默认页面替换策略
         SetReplacementPolicy(DEFAULT_REPLACEMENT_POLICY);
+        // 启动后台flush线程
+        buffer_pool_manager_->StartBackgroundFlusher();
+        // 启动StorageEngine级别的后台flush线程
+        StartBackgroundFlush(GetRuntimeConfig().bpm_flush_interval_ms);
         // I/O 线程与批量
         // 目前 DiskManager 在构造时启动 1 worker，可根据配置扩展（简化未动态变更）
     }

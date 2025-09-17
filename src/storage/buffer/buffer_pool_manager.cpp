@@ -245,6 +245,7 @@ void BufferPoolManager::StopBackgroundFlusher() {
 
 void BufferPoolManager::FlusherMainLoop() {
     using namespace std::chrono;
+    global_log_info("[BPM] Background flusher thread started");
     while (flusher_running_.load()) {
         size_t flushed = 0;
         {
@@ -259,13 +260,37 @@ void BufferPoolManager::FlusherMainLoop() {
                     Status s = disk_manager_->WritePageAsync(frame_page_ids_[fid], page.GetData()).get();
                     if (s == Status::OK) {
                         page.SetDirty(false);
+                        num_writebacks_.fetch_add(1);
                         ++flushed;
                     }
                 }
             }
         }
         if (flushed > 0) {
+            global_log_info(std::string("[BPM] Flushed ") + std::to_string(flushed) + " dirty pages");
             disk_manager_->FlushAllPages();
+        } else {
+            // 检查是否有脏页但没有被flush（可能被pin了）
+            size_t dirty_count = 0;
+            size_t pinned_dirty_count = 0;
+            {
+                std::shared_lock<std::shared_mutex> lock(latch_);
+                for (auto& kv : page_table_) {
+                    frame_id_t fid = kv.second;
+                    if (fid == INVALID_FRAME_ID) continue;
+                    Page& page = pages_[fid];
+                    if (page.IsDirty()) {
+                        dirty_count++;
+                        if (page.GetPinCount() > 0) {
+                            pinned_dirty_count++;
+                        }
+                    }
+                }
+            }
+            if (dirty_count > 0) {
+                global_log_debug(std::string("[BPM] Found ") + std::to_string(dirty_count) + 
+                               " dirty pages (" + std::to_string(pinned_dirty_count) + " pinned)");
+            }
         }
         MaybeAutoResize();
         std::this_thread::sleep_for(milliseconds(flush_interval_ms_.load()));
