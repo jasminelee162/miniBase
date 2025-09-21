@@ -12,7 +12,7 @@ namespace minidb
     constexpr size_t MAX_PAGES = 1000000;
     // 默认虚拟磁盘大小（用于新建时预分配），可按需调整
     // constexpr size_t DEFAULT_DISK_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
-    constexpr size_t DEFAULT_DISK_SIZE_BYTES = 160 * 1024;   //128KB
+    constexpr size_t DEFAULT_DISK_SIZE_BYTES = 160 * 1024;   //160KB
     constexpr size_t DEFAULT_MAX_PAGES = DEFAULT_DISK_SIZE_BYTES / PAGE_SIZE;
 
     // 可选：是否输出存储层日志
@@ -21,7 +21,7 @@ namespace minidb
     // 运行时可调参数（通过环境变量或配置加载时覆盖）
     struct RuntimeConfig {
         size_t buffer_pool_pages = BUFFER_POOL_SIZE;
-        size_t io_worker_threads = 1;
+        size_t io_worker_threads = 3;
         size_t io_batch_max = 64;
         uint32_t bpm_flush_interval_ms = 200;
         size_t bpm_max_flush_per_cycle = 64;

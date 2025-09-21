@@ -191,7 +191,7 @@ namespace minidb
         return role_manager.getRolePermissions(getCurrentUserRole());
     }
 
-    // 文件持久化方法已移除，数据通过存储引擎自动持久化
+    // 数据通过存储引擎自动持久化
 
     void AuthService::setCurrentUser(const std::string &username)
     {
