@@ -2,6 +2,7 @@
 #include "util/logger.h"
 #include <cassert>
 #include <iostream>
+#include <chrono>
 
 namespace minidb {
 
@@ -23,6 +24,7 @@ BufferPoolManager::BufferPoolManager(size_t pool_size, DiskManager* disk_manager
 }
 
 BufferPoolManager::~BufferPoolManager() {
+    StopBackgroundFlusher();
     FlushAllPages();
     delete[] pages_;
 }
@@ -51,7 +53,7 @@ bool BufferPoolManager::FlushFrameToPages(frame_id_t frame_id) {
     Page& page = pages_[frame_id];
     if (frame_page_ids_[frame_id] == INVALID_PAGE_ID) return true;
     if (!page.IsDirty()) return true;
-    Status s = disk_manager_->WritePage(frame_page_ids_[frame_id], page.GetData());
+    Status s = disk_manager_->WritePageAsync(frame_page_ids_[frame_id], page.GetData()).get();
     if (s != Status::OK) return false;
     page.SetDirty(false);
     num_writebacks_.fetch_add(1);
@@ -100,7 +102,7 @@ Page* BufferPoolManager::FetchPage(page_id_t page_id) {
     }
 
     // 从磁盘读入目标页
-    Status s = disk_manager_->ReadPage(page_id, frame_page.GetData());
+    Status s = disk_manager_->ReadPageAsync(page_id, frame_page.GetData()).get();
     global_log_debug(std::string("[BufferPoolManager::FetchPage] ReadPage page_id=") + std::to_string(page_id) + " returned status=" + std::to_string((int)s));
     if (s != Status::OK) {
         // 读失败，回收该帧到空闲列表
@@ -118,6 +120,8 @@ Page* BufferPoolManager::FetchPage(page_id_t page_id) {
     // 我们不在 Page 中持久保存 page_id_ 的 setter，因此不依赖内部 page_id_ 字段用于磁盘定位。
     frame_page.IncPinCount();
     if (policy_ == ReplacementPolicy::LRU) lru_replacer_->Pin(fid); else fifo_replacer_->Pin(fid);
+    // 记录顺序访问并尝试预读
+    MaybeReadahead(page_id);
     return &frame_page;
 }
 //申请新页 向DiskManager申请新页号,找一个槽位，清空页内容，pin 并返回
@@ -184,7 +188,7 @@ bool BufferPoolManager::FlushPage(page_id_t page_id) {
     frame_id_t fid = it->second;
     Page& page = pages_[fid];
     if (frame_page_ids_[fid] == INVALID_PAGE_ID) return false;
-    Status s = disk_manager_->WritePage(page_id, page.GetData());
+    Status s = disk_manager_->WritePageAsync(page_id, page.GetData()).get();
     if (s != Status::OK) return false;
     page.SetDirty(false);
     return true;
@@ -199,7 +203,7 @@ bool BufferPoolManager::DeletePage(page_id_t page_id) {
         if (page.GetPinCount() > 0) return false; // 仍被引用
         // 脏页落盘（可选：若是删除可跳过写回，这里简单处理）
         if (page.IsDirty()) {
-            if (disk_manager_->WritePage(page_id, page.GetData()) != Status::OK) {
+            if (disk_manager_->WritePageAsync(page_id, page.GetData()).get() != Status::OK) {
                 return false;
             }
         }
@@ -220,11 +224,142 @@ void BufferPoolManager::FlushAllPages() {
         Page& page = pages_[fid];
         if (frame_page_ids_[fid] == INVALID_PAGE_ID) continue;
         if (page.IsDirty()) {
-            disk_manager_->WritePage(kv.first, page.GetData());
+            disk_manager_->WritePageAsync(kv.first, page.GetData()).get();
             page.SetDirty(false);
         }
     }
     disk_manager_->FlushAllPages();
+}
+
+void BufferPoolManager::StartBackgroundFlusher() {
+    bool expected = false;
+    if (!flusher_running_.compare_exchange_strong(expected, true)) return;
+    flusher_thread_ = std::thread(&BufferPoolManager::FlusherMainLoop, this);
+}
+
+void BufferPoolManager::StopBackgroundFlusher() {
+    bool expected = true;
+    if (!flusher_running_.compare_exchange_strong(expected, false)) return;
+    if (flusher_thread_.joinable()) flusher_thread_.join();
+}
+
+void BufferPoolManager::FlusherMainLoop() {
+    using namespace std::chrono;
+    global_log_info("[BPM] Background flusher thread started");
+    while (flusher_running_.load()) {
+        size_t flushed = 0;
+        {
+            std::shared_lock<std::shared_mutex> lock(latch_);
+            for (auto& kv : page_table_) {
+                if (flushed >= max_flush_per_cycle_.load()) break;
+                frame_id_t fid = kv.second;
+                if (fid == INVALID_FRAME_ID) continue;
+                Page& page = pages_[fid];
+                // 仅 flush 未被pin的脏页
+                if (page.GetPinCount() == 0 && page.IsDirty() && frame_page_ids_[fid] != INVALID_PAGE_ID) {
+                    Status s = disk_manager_->WritePageAsync(frame_page_ids_[fid], page.GetData()).get();
+                    if (s == Status::OK) {
+                        page.SetDirty(false);
+                        num_writebacks_.fetch_add(1);
+                        ++flushed;
+                    }
+                }
+            }
+        }
+        if (flushed > 0) {
+            global_log_info(std::string("[BPM] Flushed ") + std::to_string(flushed) + " dirty pages");
+            disk_manager_->FlushAllPages();
+        } else {
+            // 检查是否有脏页但没有被flush（可能被pin了）
+            size_t dirty_count = 0;
+            size_t pinned_dirty_count = 0;
+            {
+                std::shared_lock<std::shared_mutex> lock(latch_);
+                for (auto& kv : page_table_) {
+                    frame_id_t fid = kv.second;
+                    if (fid == INVALID_FRAME_ID) continue;
+                    Page& page = pages_[fid];
+                    if (page.IsDirty()) {
+                        dirty_count++;
+                        if (page.GetPinCount() > 0) {
+                            pinned_dirty_count++;
+                        }
+                    }
+                }
+            }
+            if (dirty_count > 0) {
+                global_log_debug(std::string("[BPM] Found ") + std::to_string(dirty_count) + 
+                               " dirty pages (" + std::to_string(pinned_dirty_count) + " pinned)");
+            }
+        }
+        MaybeAutoResize();
+        std::this_thread::sleep_for(milliseconds(flush_interval_ms_.load()));
+    }
+}
+
+void BufferPoolManager::MaybeAutoResize() {
+    if (!auto_resize_enabled_.load()) return;
+    // 基于命中率 + I/O 队列长度的简单自适应
+    double hit = GetHitRate();
+    size_t pool = pool_size_;
+    size_t free_cnt = GetFreeFramesCount();
+    size_t qd = disk_manager_->GetQueueDepth();
+    // 放大条件：命中率低 或 I/O 队列积压较大，且空闲帧不足
+    if (pool >= 8 && (hit < 0.35 || qd > 64) && free_cnt * 10 < pool) {
+        size_t target = pool + std::max<size_t>(8, pool / 2);
+        ResizePool(target);
+        if constexpr (ENABLE_STORAGE_LOG) {
+            g_storage_logger_bpm.log(std::string("[BPM] AutoResize up ") + std::to_string(pool) + " -> " + std::to_string(target) + ", hit=" + std::to_string(hit) + ", qd=" + std::to_string(qd));
+        }
+        return;
+    }
+    // 缩小条件（保守）：命中率高且队列很短且空闲帧很多时，暂不实现（避免抖动）
+}
+
+void BufferPoolManager::TryPrefetch(page_id_t page_id) {
+    // 非阻塞预取：如果该页不在缓存，且有空闲帧则同步读入一页（简化版）
+    if (!readahead_enabled_.load()) return;
+    if (page_id == INVALID_PAGE_ID) return;
+    if (static_cast<size_t>(page_id) > disk_manager_->GetNumPages()) return;
+    if (page_table_.find(page_id) != page_table_.end()) return;
+    frame_id_t fid = FindVictimFrame();
+    if (fid == INVALID_FRAME_ID) return;
+    Page& frame_page = pages_[fid];
+    if (frame_page_ids_[fid] != INVALID_PAGE_ID) {
+        if (!FlushFrameToPages(fid)) {
+            // 放回空闲
+            std::lock_guard<std::mutex> guard(free_list_mutex_);
+            free_list_.push_front(fid);
+            return;
+        }
+        page_table_.erase(frame_page_ids_[fid]);
+        frame_page.Reset();
+        frame_page_ids_[fid] = INVALID_PAGE_ID;
+    }
+    if (disk_manager_->ReadPageAsync(page_id, frame_page.GetData()).get() != Status::OK) {
+        std::lock_guard<std::mutex> guard(free_list_mutex_);
+        free_list_.push_front(fid);
+        return;
+    }
+    frame_page.SetDirty(false);
+    frame_page.SetPageId(page_id);
+    page_table_[page_id] = fid;
+    frame_page_ids_[fid] = page_id;
+    // 不提升 pin，作为冷启动页，进入替换器候选
+    if (policy_ == ReplacementPolicy::LRU) lru_replacer_->Unpin(fid); else fifo_replacer_->Unpin(fid);
+}
+
+void BufferPoolManager::MaybeReadahead(page_id_t just_fetched) {
+    if (!readahead_enabled_.load()) return;
+    page_id_t prev = last_seq_page_id_.load();
+    last_seq_page_id_.store(just_fetched);
+    if (prev == INVALID_PAGE_ID) return;
+    if (just_fetched != prev + 1) return; // 仅在线性递增时预读
+    uint32_t win = readahead_window_.load();
+    for (uint32_t i = 1; i <= win; ++i) {
+        page_id_t pid = just_fetched + i;
+        TryPrefetch(pid);
+    }
 }
 
 double BufferPoolManager::GetHitRate() const {
@@ -246,7 +381,7 @@ bool BufferPoolManager::GrowPool(size_t new_size) {
         frame_id_t fid = kv.second;
         Page& page = pages_[fid];
         if (frame_page_ids_[fid] != INVALID_PAGE_ID && page.IsDirty()) {
-            disk_manager_->WritePage(frame_page_ids_[fid], page.GetData());
+            disk_manager_->WritePageAsync(frame_page_ids_[fid], page.GetData()).get();
             page.SetDirty(false);
         }
     }

@@ -69,6 +69,11 @@ namespace minidb
         size_t GetBufferPoolSize() const;
         size_t GetNumReplacements() const;
         size_t GetNumWritebacks() const;
+        size_t GetIOQueueDepth() const { return disk_manager_ ? const_cast<DiskManager*>(disk_manager_.get())->GetQueueDepth() : 0; }
+        double GetIOAvgReadMs() const { return disk_manager_ ? const_cast<DiskManager*>(disk_manager_.get())->GetAvgReadLatencyMs() : 0.0; }
+        double GetIOAvgWriteMs() const { return disk_manager_ ? const_cast<DiskManager*>(disk_manager_.get())->GetAvgWriteLatencyMs() : 0.0; }
+        size_t GetIOReadOps() const { return disk_manager_ ? const_cast<DiskManager*>(disk_manager_.get())->GetReadOps() : 0; }
+        size_t GetIOWriteOps() const { return disk_manager_ ? const_cast<DiskManager*>(disk_manager_.get())->GetWriteOps() : 0; }
         void SetReplacementPolicy(ReplacementPolicy policy);
         bool AdjustBufferPoolSize(size_t new_size);
 

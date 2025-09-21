@@ -1,6 +1,8 @@
 DROP TABLE IF EXISTS teachers;
 DROP TABLE students;
 
+-- 创建一个数据表student，字段名为name和age，给我sql语句
+
 SHOW TABLES;
 
 CREATE TABLE teachers_916 (
@@ -32,8 +34,10 @@ SELECT full_name, subject FROM teachers;
 
 SELECT full_name, subject FROM teachers WHERE experience > 5; 
 
+SELECT * FROM teachers JOIN departments ON teachers.subject = departments.dept_name;
 
-UPDATE teachers SET experience = 9 WHERE full_name = 'Bob Johnson';
+
+UPDATE teachers SET experience = 9 WHERE full_name = 'David Kim';
 
 
 DELETE FROM teachers WHERE teacher_id = 203;
@@ -45,7 +49,8 @@ SELECT subject, SUM(experience) AS total_exp FROM teachers GROUP BY subject;
 SELECT subject, SUM(experience) AS total_exp FROM teachers GROUP BY subject HAVING total_exp > 15;
 
 SELECT * FROM teachers ORDER BY experience ASC;
-SELECT subject, SUM(experience) AS total FROM teachers GROUP BY subject ORDER BY total DESC;
+SELECT * FROM teachers ORDER BY experience DESC;
+-- SELECT subject, SUM(experience) AS total FROM teachers GROUP BY subject ORDER BY total DESC;
 
 CREATE TABLE departments (
     dept_id INT,
@@ -60,6 +65,8 @@ INSERT INTO departments (dept_id, dept_name, building) VALUES
     (4, 'History', 'Liberal Arts Hall'),
     (5, 'Chemistry', 'Science Hall');
 SELECT * FROM departments;
+
+
 SELECT * FROM teachers JOIN departments ON teachers.subject = departments.dept_name;
 
 -- 存储过程

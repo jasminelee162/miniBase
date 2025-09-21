@@ -11,6 +11,7 @@
 #include <shared_mutex>
 #include <atomic>
 #include <vector>
+#include <array>
 
 namespace minidb {
 
@@ -45,10 +46,23 @@ public:
     // 高级特性：动态调整
     bool ResizePool(size_t new_size);
 
+    // 后台刷盘控制（启动/停止），可重复调用，线程安全
+    void StartBackgroundFlusher();
+    void StopBackgroundFlusher();
+    void SetFlushIntervalMs(uint32_t ms) { flush_interval_ms_.store(ms); }
+    void SetMaxPagesFlushedPerCycle(size_t n) { max_flush_per_cycle_.store(n); }
+    void EnableAutoResize(bool enable) { auto_resize_enabled_.store(enable); }
+    void EnableReadahead(bool enable) { readahead_enabled_.store(enable); }
+    void SetReadaheadWindow(uint32_t n) { readahead_window_.store(n); }
+
 private:
     // 辅助方法
     frame_id_t FindVictimFrame();
     bool FlushFrameToPages(frame_id_t frame_id);
+    void FlusherMainLoop();
+    void MaybeAutoResize();
+    void MaybeReadahead(page_id_t just_fetched);
+    void TryPrefetch(page_id_t page_id);
     
     size_t pool_size_;
     Page* pages_;  // 页面池数组
@@ -56,6 +70,9 @@ private:
     
     // 页表：page_id -> frame_id 映射 某页在缓存的哪个“槽位”,即帧frame
     std::unordered_map<page_id_t, frame_id_t> page_table_;
+    static constexpr size_t kShardCount = 8;
+    std::array<std::shared_mutex, kShardCount> shard_locks_;
+    size_t ShardIndex(page_id_t pid) const { return static_cast<size_t>(pid) & (kShardCount - 1); }
     // 反向映射：frame_id -> page_id（用于判定槽位是否占用、写回等）
     std::vector<page_id_t> frame_page_ids_;
     
@@ -81,6 +98,18 @@ private:
 
     // 仅用于渐进扩容时的新页数组与迁移
     bool GrowPool(size_t new_size);
+
+    // 后台刷盘与自适应
+    std::atomic<bool> flusher_running_{false};
+    std::thread flusher_thread_;
+    std::atomic<uint32_t> flush_interval_ms_{200};
+    std::atomic<size_t> max_flush_per_cycle_{64};
+    std::atomic<bool> auto_resize_enabled_{true};
+
+    // 顺序扫描预读
+    std::atomic<bool> readahead_enabled_{true};
+    std::atomic<uint32_t> readahead_window_{4};
+    std::atomic<page_id_t> last_seq_page_id_{INVALID_PAGE_ID};
 };
 
 }

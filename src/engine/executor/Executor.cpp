@@ -655,11 +655,22 @@ namespace minidb
             global_log_debug(std::string("[Executor] 顺序扫描表: ") + node->table_name);
 
             // 权限校验：DBA 总是允许；否则按表权限检查
-            if (auth_service_ && auth_service_->isDBA())
+            if (!auth_service_)
             {
+                std::cerr << "[SeqScan] No auth_service_ set!" << std::endl;
+                throw std::runtime_error("No authentication service available");
+            }
+            else if (!permissionChecker_)
+            {
+                std::cerr << "[SeqScan] No permissionChecker_ set!" << std::endl;
+                throw std::runtime_error("No permission checker available");
+            }
+            else if (auth_service_->isDBA())
+            {
+                std::cout << "[SeqScan] DBA user, allowing access to table: " << node->table_name << std::endl;
                 // allow
             }
-            else if (permissionChecker_ && !permissionChecker_->checkTablePermission(node->table_name, Permission::SELECT))
+            else if (!permissionChecker_->checkTablePermission(node->table_name, Permission::SELECT))
             {
                 std::cerr << "[SeqScan] Permission denied on table: " << node->table_name << std::endl;
                 throw std::runtime_error(std::string("Permission denied: ") + node->table_name);

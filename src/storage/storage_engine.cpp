@@ -19,9 +19,26 @@ namespace minidb
 
     StorageEngine::StorageEngine(const std::string &db_file, size_t buffer_pool_size)
         : disk_manager_(std::make_unique<DiskManager>(db_file)),
-          buffer_pool_manager_(std::make_unique<BufferPoolManager>(buffer_pool_size, disk_manager_.get())),
+          buffer_pool_manager_(std::make_unique<BufferPoolManager>(
+              (buffer_pool_size ? buffer_pool_size : GetRuntimeConfig().buffer_pool_pages),
+              disk_manager_.get())),
           db_file_(db_file)
     {
+        // 应用运行时配置
+        buffer_pool_manager_->SetMaxPagesFlushedPerCycle(GetRuntimeConfig().bpm_max_flush_per_cycle);
+        buffer_pool_manager_->SetFlushIntervalMs(GetRuntimeConfig().bpm_flush_interval_ms);
+        // 关闭自适应缓存扩缩功能（按需固定缓存大小）
+        buffer_pool_manager_->EnableAutoResize(false);
+        buffer_pool_manager_->EnableReadahead(GetRuntimeConfig().bpm_readahead);
+        buffer_pool_manager_->SetReadaheadWindow(GetRuntimeConfig().bpm_readahead_window);
+        // 设置默认页面替换策略
+        SetReplacementPolicy(DEFAULT_REPLACEMENT_POLICY);
+        // 启动后台flush线程
+        buffer_pool_manager_->StartBackgroundFlusher();
+        // 启动StorageEngine级别的后台flush线程
+        StartBackgroundFlush(GetRuntimeConfig().bpm_flush_interval_ms);
+        // I/O 线程与批量
+        // 目前 DiskManager 在构造时启动 1 worker，可根据配置扩展（简化未动态变更）
     }
 
     StorageEngine::~StorageEngine()

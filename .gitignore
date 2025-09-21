@@ -122,3 +122,6 @@ test*.dat
 !docs/**
 !README.md
 !CMakeLists.txt
+
+
+data/mini.db
