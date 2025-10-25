@@ -1,6 +1,6 @@
 # miniBase
 
-miniBase 是一个面向教学与实训的迷你关系型数据库系统，旨在帮助学习者贯通编译原理、操作系统与数据库三门核心课程。从 SQL 语言的编译到底层存储再到数据库系统实现，全流程覆盖。项目采用 C++17 开发，支持 Windows（MSVC）、Linux（Clang/GCC）平台。
+miniBase 是一个面向教学与实训的迷你关系型数据库系统，旨在帮助学习者贯通编译原理、操作系统与数据库三门核心课程。从 SQL 语言的编译到底层存储与执行引擎，覆盖编译器、存储、执行引擎与 CLI 的端到端实现。
 
 ## 项目结构
 
@@ -65,7 +65,17 @@ BufferPoolSize=64, HitRate=1
 
 ## 导入导出功能
 
-通过 CLI 支持 `.dump` 和 `.import` 命令，支持 SQL 文件的导入导出，并集成错误提示及帮助信息。详见 [IMPORT_EXPORT_COMPLETION_REPORT.md](./IMPORT_EXPORT_COMPLETION_REPORT.md)。
+通过 CLI 支持 `.dump` 和 `.import` 命令，支持 SQL 文件的导入导出，并集成错误提示及帮助信息。详见项目 docs 目录中的文档。
+
+## 项目文档 (docs/)
+
+下列文档位于仓库的 docs/ 目录，已作为超链接添加，方便直接在 README 中访问：
+
+- [bin_file_layout.md](./docs/bin_file_layout.md) - 二进制文件/页布局说明
+- [cli权限使用.md](./docs/cli权限使用.md) - CLI 使用与权限说明
+- [import_export_guide.md](./docs/import_export_guide.md) - 导入导出使用指南
+- [storage_api_content.md](./docs/storage_api_content.md) - 存储 API 与 .bin 三页划分说明
+- [使用文档.md](./docs/使用文档.md) - 常规使用与连接数据库示例
 
 ## 构建与运行
 
