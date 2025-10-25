@@ -133,20 +133,3 @@ ctest -C Debug --output-on-failure
 ## 版权与许可
 
 本项目仅用于教学与学习目的。
-
-## Benchmark script (Windows PowerShell)
-
-A helper script `bench.ps1` automates generating big data, importing, indexing, and benchmarking.
-
-Example:
-
-```powershell
-# From repo root in PowerShell
-./bench.ps1 -Rows 1000000 -Runs 5 -UserId 12345 `
-./bench.ps1 -Rows 100000 -Runs 5 -UserId 12345 `
-  -Db "E:\Code\Project_grade3\SX\new\miniBase\data\mini.db" `
-  -Cli "E:\Code\Project_grade3\SX\new\miniBase\build\src\cli\Debug\minidb_cli.exe" `
-  -OutDir "E:\Code\Project_grade3\SX\new\miniBase\bench_out"
-```
-
-Outputs a CSV with per-run timing under `bench_out/` and an `import.log` with import output. Adjust parameters to test different scales and selectivities.
