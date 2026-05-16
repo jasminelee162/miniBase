@@ -1,6 +1,6 @@
 # miniBase
 
-miniBase 是一个面向教学与实训的迷你关系型数据库系统，旨在帮助学习者贯通编译原理、操作系统与数据库三门核心课程。从 SQL 语言的编译到底层存储与执行引擎，覆盖编译器、存储、执行引擎与 CLI 的端到端实现。
+miniBase 是一个面向教学与实训的迷你关系型数据库系统，旨在帮助学习者贯通编译原理、操作系统与数据库三门核心课程。从 SQL 语言的编译到底层存储与执行引擎，覆盖编译器、存储、执行引擎、CLI 与 WebUI 的端到端实现。项目中还包含 AI 问答/SQL 助手接口，可将自然语言需求转换为 SQL，用于辅助查询、分析和智能化交互。
 
 ## 项目结构
 
@@ -14,7 +14,10 @@ miniBase/
   │  ├─ catalog/              # 系统目录 (表/列元数据)
   │  ├─ sql_compiler/         # SQL 编译器模块（lexer/parser/semantic/planner）
   │  ├─ engine/               # 数据库执行引擎
+  │  ├─ cli/                  # 命令行交互入口
+  │  ├─ webui/                # Web 管理界面与 AI 转发接口
   │  └─ main.cpp              # 最小可运行示例
+  ├─ ai/                      # AI 问答服务示例（自然语言转 SQL）
   ├─ tests/                   # 单元测试
   │  └─ unit/                 # 存储模块测试等
   ├─ data/                    # 运行时生成的数据文件
@@ -67,6 +70,19 @@ BufferPoolSize=64, HitRate=1
 
 通过 CLI 支持 `.dump` 和 `.import` 命令，支持 SQL 文件的导入导出，并集成错误提示及帮助信息。详见项目 docs 目录中的文档。
 
+## AI 问答功能
+
+项目提供了一个轻量级 AI SQL 助手：`ai/ai_helper.py` 负责调用大模型，将用户的自然语言描述转换为 SQL；`ai/server.py` 对外提供 `POST /ai/chat` 接口；WebUI 中的 AI Assistant 面板会通过 `/ai/complete` 转发请求。默认端点可写在 `ai/endpoint.txt` 中，也可以通过 `MINIDB_AI_ENDPOINT` 环境变量配置。
+
+简单使用流程：
+
+```bash
+# 启动 AI 服务
+python ai/server.py
+
+# WebUI 默认可转发到 ai/endpoint.txt 中配置的 http://127.0.0.1:9000/ai/chat
+```
+
 ## 项目文档 (docs/)
 
 下列文档位于仓库的 docs/ 目录，已作为超链接添加，方便直接在 README 中访问：
@@ -83,6 +99,7 @@ BufferPoolSize=64, HitRate=1
 
 - CMake（3.16+）
 - C++17 编译器（Windows: MSVC 2022；Linux/macOS: Clang/GCC）
+- Python 3（仅 AI 问答示例需要；需配置相应模型 API Key）
 
 ### 构建（以 Windows/MSVC 为例）
 
@@ -129,6 +146,7 @@ ctest -C Debug --output-on-failure
 - **向后兼容**：新功能与原有代码完全兼容，便于在实际教学/开发场景平滑升级。
 - **系统健壮性与可靠性**：详细文档和 checklist，易于集成和二次开发。
 - **WebUI/AI 接口扩展**：有 WebUI 示例和 AI 对接接口，为可视化和智能化扩展预留空间。
+- **AI 支持**：项目已经包含 AI 问答助手示例，可通过自然语言生成 SQL，增强交互体验和自动化分析场景。
 
 ## 版权与许可
 
